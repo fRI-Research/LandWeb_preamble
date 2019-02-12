@@ -103,8 +103,6 @@ Init <- function(sim) {
     ml <- fmaDMI(ml, P(sim)$runName, dataDir, sim$canProvs)
   } else if (grepl("LP", P(sim)$runName)) {
     ml <- fmaLP(ml, P(sim)$runName, dataDir, sim$canProvs)
-  } else if (grepl("MPB", P(sim)$runName)) {
-    ml <- studyAreaMPB(ml, P(sim)$runName, dataDir, sim$canProvs)
   } else if (grepl("tolko", P(sim)$runName)) {
     ml <- fmaTolko(ml, P(sim)$runName, dataDir, sim$canProvs)
   } else {
