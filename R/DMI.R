@@ -3,7 +3,7 @@ fmaDMI <- function(ml, runName, dataDir, canProvs) {
   if (!dir.exists(dataDirDMI)) dir.create(dataDirDMI)
 
   ## There are 3 parts to the DMI FMA: an East and two West areas (North and South)
-browser()
+
   dmi <- ml$`FMA Boundaries Updated`[grepl("Mercer Peace River",
                                            ml$`FMA Boundaries Updated`$Name), ]
   #plot(dmi[, "Name"], main = "DMI full", col = "lightblue")
