@@ -76,6 +76,11 @@ Init <- function(sim) {
                url = "https://drive.google.com/file/d/1nTFOcrdMf1hIsxd_yNCSTr8RrYNHHwuc/view?usp=sharing",
                columnNameForLabels = "Name", isStudyArea = FALSE, filename2 = NULL)
 
+  ids <- grep("Daishowa-Marubeni International Ltd", ml$`FMA Boundaries Updated`$Name)
+  newNames <- c("Mercer Peace River (East)", "Mercer Peace River (West)") ## DMI is now Mercer (MPR)
+  ml$`FMA Boundaries Updated`$Name[ids] <- newNames
+  ml$`FMA Boundaries Updated`$shinyLabel[ids] <- newNames
+
   ## Alberta Natural Subregions (ANSRs)
   ml <- mapAdd(map = ml, layerName = "Alberta Natural Subregions",
                useSAcrs = TRUE, poly = TRUE, overwrite = TRUE,
@@ -99,7 +104,7 @@ Init <- function(sim) {
 
   if (grepl("ANC", P(sim)$runName)) {
     ml <- fmaANC(ml, P(sim)$runName, dataDir, sim$canProvs)
-  } else if (grepl("DMI", P(sim)$runName)) {
+  } else if (grepl("DMI|MPR", P(sim)$runName)) {
     ml <- fmaDMI(ml, P(sim)$runName, dataDir, sim$canProvs)
   } else if (grepl("LP", P(sim)$runName)) {
     ml <- fmaLP(ml, P(sim)$runName, dataDir, sim$canProvs)

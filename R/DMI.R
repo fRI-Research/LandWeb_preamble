@@ -3,20 +3,20 @@ fmaDMI <- function(ml, runName, dataDir, canProvs) {
   if (!dir.exists(dataDirDMI)) dir.create(dataDirDMI)
 
   ## There are 3 parts to the DMI FMA: an East and two West areas (North and South)
-
-  dmi <- ml$`FMA Boundaries Updated`[grepl("Daishowa-Marubeni International Ltd",
+browser()
+  dmi <- ml$`FMA Boundaries Updated`[grepl("Mercer Peace River",
                                            ml$`FMA Boundaries Updated`$Name), ]
   #plot(dmi[, "Name"], main = "DMI full", col = "lightblue")
 
   dmi.full <- maptools::unionSpatialPolygons(dmi, rep(1, 2))
   shapefile(dmi.full, filename = file.path(dataDirDMI, "DMI_Full.shp"), overwrite = TRUE)
 
-  dmi.e <- ml$`FMA Boundaries Updated`[grepl("Daishowa-Marubeni International Ltd.*East",
+  dmi.e <- ml$`FMA Boundaries Updated`[grepl("Mercer Peace River.*East",
                                              ml$`FMA Boundaries Updated`$Name), ]
   #plot(dmi.e, col = "purple", add = TRUE)
   shapefile(dmi.e, filename = file.path(dataDirDMI, "DMI_East.shp"), overwrite = TRUE)
 
-  dmi.w <- ml$`FMA Boundaries Updated`[grepl("Daishowa-Marubeni International Ltd.*West",
+  dmi.w <- ml$`FMA Boundaries Updated`[grepl("Mercer Peace River.*West",
                                              ml$`FMA Boundaries Updated`$Name), ]
   shapefile(dmi.w, filename = file.path(dataDirDMI, "DMI_West.shp"), overwrite = TRUE)
 
