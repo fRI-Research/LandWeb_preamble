@@ -77,7 +77,7 @@ Init <- function(sim) {
                columnNameForLabels = "Name", isStudyArea = FALSE, filename2 = NULL)
 
   ids <- grep("Daishowa-Marubeni International Ltd", ml$`FMA Boundaries Updated`$Name)
-  newNames <- c("Mercer Peace River (East)", "Mercer Peace River (West)") ## DMI is now Mercer (MPR)
+  newNames <- c("Mercer Peace River Pulp Ltd. (East)", "Mercer Peace River Pulp Ltd. (West)") ## DMI is now Mercer (MPR)
   ml$`FMA Boundaries Updated`$Name[ids] <- newNames
   ml$`FMA Boundaries Updated`$shinyLabel[ids] <- newNames
 
