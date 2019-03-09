@@ -4,20 +4,23 @@ fmaANC <- function(ml, runName, dataDir, canProvs) {
 
   alberta <- canProvs[canProvs$NAME_1 %in% c("Alberta"), ]
   anc <- ml$`FMA Boundaries Updated`[grepl("ANC", ml$`FMA Boundaries Updated`$Name), ]
+  anc.sp <- as(anc, "SpatialPolygons")
   #plot(spTransform(alberta, crs(anc)))
   #plot(anc, col = "lightblue", add = TRUE)
 
   shapefile(anc, filename = file.path(dataDirANC, "ANC.shp"), overwrite = TRUE)
 
   ## reportingPolygons
-  anc.ansr <- postProcess(ml$`Alberta Natural Subregions`, studyArea = anc, useSAcrs = TRUE,
+  anc.ansr <- postProcess(ml$`Alberta Natural Subregions`,
+                          studyArea = anc.sp, useSAcrs = TRUE,
                           filename2 = file.path(dataDirANC, "ANC_ANSR.shp"),
                           overwrite = TRUE)
   #plot(anc.ansr, add = TRUE)
 
-  anc.caribou <- postProcess(ml$`Boreal Caribou Ranges`, studyArea = anc, useSAcrs = TRUE,
-                               filename2 = file.path(dataDirANC, "ANC_caribou.shp"),
-                               overwrite = TRUE)
+  anc.caribou <- postProcess(ml$`Boreal Caribou Ranges`,
+                             studyArea = anc.sp, useSAcrs = TRUE,
+                             filename2 = file.path(dataDirANC, "ANC_caribou.shp"),
+                             overwrite = TRUE)
   #plot(anc.caribou, col = "magenta", add = TRUE)
 
   ml <- mapAdd(anc, ml, layerName = "ANC", useSAcrs = TRUE, poly = TRUE,
@@ -32,10 +35,10 @@ fmaANC <- function(ml, runName, dataDir, canProvs) {
 
   ## studyArea shouldn't use analysisGroup because it's not a reportingPolygon
   anc_sr <- postProcess(ml$`LandWeb Study Area`,
-                          studyArea = amc::outerBuffer(anc, 50000), # 50 km buffer
-                          useSAcrs = TRUE,
-                          filename2 = file.path(dataDirANC, "ANC_SR.shp"),
-                          overwrite = TRUE)
+                        studyArea = amc::outerBuffer(anc, 50000), # 50 km buffer
+                        useSAcrs = TRUE,
+                        filename2 = file.path(dataDirANC, "ANC_SR.shp"),
+                        overwrite = TRUE)
   #plot(anc_sr)
 
   ml <- mapAdd(anc_sr, ml, isStudyArea = TRUE, layerName = "ANC SR",

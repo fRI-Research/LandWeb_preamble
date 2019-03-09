@@ -16,10 +16,12 @@ fmaLP <- function(ml, runName, dataDir, canProvs) {
   if (grepl("LP_MB", runName)) {
     ## reportingPolygons
     lp_mb <- ml$`FMA Boundaries Updated`[grepl("Mountain", ml$`FMA Boundaries Updated`$Name), ]
+    lp_mb.sp <- as(lp_mb, "SpatialPolygons")
     #plot(lp_mb, col = "purple", add = TRUE)
     shapefile(lp_mb, filename = file.path(dataDirLP, "LP_MB.shp"), overwrite = TRUE)
 
-    lp_mb.caribou <- postProcess(ml$`Boreal Caribou Ranges`, studyArea = lp_mb, useSAcrs = TRUE,
+    lp_mb.caribou <- postProcess(ml$`Boreal Caribou Ranges`,
+                                 studyArea = lp_mp.sp, useSAcrs = TRUE,
                                  filename2 = file.path(dataDirLP, "LP_MB_caribou.shp"),
                                  overwrite = TRUE)
     #plot(lp_mb.caribou, col = "magenta", add = TRUE)

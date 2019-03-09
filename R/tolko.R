@@ -15,21 +15,22 @@ fmaTolko <- function(ml, runName, dataDir, canProvs) {
   tolko.full <- maptools::unionSpatialPolygons(tolko, rep(1, 5))
   shapefile(tolko.full, filename = file.path(dataDirTolko, "Tolko_Full.shp"), overwrite = TRUE)
 
-
-
   if (grepl("tolko_AB_N", runName)) {
     ## reporting polygons
 
     tolko_ab_n <- tolko[4, ]
+    tolko_ab_n.sp <- as(tolko_ab_n, "SpatialPolygons")
     #plot(tolko_ab_n, add = TRUE, col = colours[4])
     shapefile(tolko_ab_n, filename = file.path(dataDirTolko, "Tolko_AB_N.shp"), overwrite = TRUE)
 
-    tolko_ab_n.ansr <- postProcess(ml$`Alberta Natural Subregions`, studyArea = tolko_ab_n, useSAcrs = TRUE,
+    tolko_ab_n.ansr <- postProcess(ml$`Alberta Natural Subregions`,
+                                   studyArea = tolko_ab_n.sp, useSAcrs = TRUE,
                                    filename2 = file.path(dataDirTolko, "Tolko_AB_N_ANSR.shp"),
                                    overwrite = TRUE)
     #plot(tolko_ab_n.ansr)
 
-    tolko_ab_n.caribou <- postProcess(ml$`Boreal Caribou Ranges`, studyArea = tolko_ab_n, useSAcrs = TRUE,
+    tolko_ab_n.caribou <- postProcess(ml$`Boreal Caribou Ranges`,
+                                      studyArea = tolko_ab_n.sp, useSAcrs = TRUE,
                                       filename2 = file.path(dataDirTolko, "Tolko_AB_N_caribou.shp"),
                                       overwrite = TRUE)
     #plot(tolko_ab_n.caribou)
@@ -57,15 +58,18 @@ fmaTolko <- function(ml, runName, dataDir, canProvs) {
   } else if (grepl("tolko_AB_S", runName)) {
     ## reportingPolygons
     tolko_ab_s <- tolko[c(2, 3, 5), ]
+    tolko_ab_s.sp <- as(tolko_ab_s, "SpatialPolygons")
     #plot(tolko_ab_s, col = colours[c(2, 3, 5)])
     shapefile(tolko_ab_s, filename = file.path(dataDirTolko, "Tolko_AB_S.shp"), overwrite = TRUE)
 
-    tolko_ab_s.ansr <- postProcess(ml$`Alberta Natural Subregions`, studyArea = tolko_ab_s, useSAcrs = TRUE,
+    tolko_ab_s.ansr <- postProcess(ml$`Alberta Natural Subregions`,
+                                   studyArea = tolko_ab_s.sp, useSAcrs = TRUE,
                                    filename2 = file.path(dataDirTolko, "Tolko_AB_S_ANSR.shp"),
                                    overwrite = TRUE)
     #plot(tolko_ab_s.ansr)
 
-    tolko_ab_s.caribou <- postProcess(ml$`Boreal Caribou Ranges`, studyArea = tolko_ab_s, useSAcrs = TRUE,
+    tolko_ab_s.caribou <- postProcess(ml$`Boreal Caribou Ranges`,
+                                      studyArea = tolko_ab_s.sp, useSAcrs = TRUE,
                                       filename2 = file.path(dataDirTolko, "Tolko_AB_S_caribou.shp"),
                                       overwrite = TRUE)
     #plot(tolko_ab_s.caribou)
@@ -93,12 +97,14 @@ fmaTolko <- function(ml, runName, dataDir, canProvs) {
   } else if (grepl("tolko_SK", runName)) {
     ## reportingPolygons
     tolko_sk <- tolko[1, ]
+    tolko_sk.sp <- as(tolko_sk, "SpatialPolygons")
     #plot(tolko_sk, col = colours[1])
     shapefile(tolko_sk, filename = file.path(dataDirTolko, "Tolko_SK.shp"), overwrite = TRUE)
 
     # NOTE: no ANSR in SK ;)
 
-    tolko_sk.caribou <- postProcess(ml$`Boreal Caribou Ranges`, studyArea = tolko_sk, useSAcrs = TRUE,
+    tolko_sk.caribou <- postProcess(ml$`Boreal Caribou Ranges`,
+                                    studyArea = tolko_sk.sp, useSAcrs = TRUE,
                                     filename2 = file.path(dataDirTolko, "Tolko_SK_caribou.shp"),
                                     overwrite = TRUE)
     #plot(tolko_sk.caribou)

@@ -6,6 +6,7 @@ fmaDMI <- function(ml, runName, dataDir, canProvs) {
 
   dmi <- ml$`FMA Boundaries Updated`[grepl("Mercer Peace River",
                                            ml$`FMA Boundaries Updated`$Name), ]
+  dmi.sp <- as(dmi, "SpatialPolygons")
   #plot(dmi[, "Name"], main = "DMI full", col = "lightblue")
 
   dmi.full <- maptools::unionSpatialPolygons(dmi, rep(1, 2))
@@ -29,11 +30,13 @@ fmaDMI <- function(ml, runName, dataDir, canProvs) {
   shapefile(dmi.sw, filename = file.path(dataDirDMI, "DMI_West_South.shp"), overwrite = TRUE)
 
   ## reporting polygons ----------------------------------------------------- ##
-  dmi.ansr <- postProcess(ml$`Alberta Natural Subregions`, studyArea = dmi, useSAcrs = TRUE,
+  dmi.ansr <- postProcess(ml$`Alberta Natural Subregions`,
+                          studyArea = dmi.sp, useSAcrs = TRUE,
                           filename2 = file.path(dataDirDMI, "DMI_ANSR.shp"))
   #plot(dmi.ansr)
 
-  dmi.caribou <- postProcess(ml$`Boreal Caribou Ranges`, studyArea = dmi, useSAcrs = TRUE,
+  dmi.caribou <- postProcess(ml$`Boreal Caribou Ranges`,
+                             studyArea = dmi.sp, useSAcrs = TRUE,
                              filename2 = file.path(dataDirDMI, "DMI_caribou.shp"))
   #plot(dmi.caribou)
 
