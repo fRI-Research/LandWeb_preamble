@@ -64,6 +64,10 @@ fmaDMI <- function(ml, runName, dataDir, canProvs) {
                analysisGroupReportingPolygon = "DMI AB E",
                columnNameForLabels = "Name", filename2 = NULL)
 
+  ## TODO: workaround problematic intersect() that changes Name to Name.1 and Name.2
+  names(ml$`DMI ANSR`) <- gsub("[.]1", "", names(ml$`DMI ANSR`))
+  names(ml$`DMI Caribou`) <- gsub("[.]1", "", names(ml$`DMI Caribou`))
+
   ## buffered study area (needs to have LTHFC data) ---------------------------#
   dmi.sr <- postProcess(ml$`LandWeb Study Area`,
                         studyArea = amc::outerBuffer(dmi.full, 50000), ## 50 km buffer

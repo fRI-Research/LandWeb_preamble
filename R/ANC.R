@@ -33,6 +33,10 @@ fmaANC <- function(ml, runName, dataDir, canProvs) {
                analysisGroupReportingPolygon = "ANC Caribou",
                columnNameForLabels = "Name", filename2 = NULL)
 
+  ## TODO: workaround problematic intersect() that changes Name to Name.1 and Name.2
+  names(ml$`ANC ANSR`) <- gsub("[.]1", "", names(ml$`ANC ANSR`))
+  names(ml$`ANC Caribou`) <- gsub("[.]1", "", names(ml$`ANC Caribou`))
+
   ## studyArea shouldn't use analysisGroup because it's not a reportingPolygon
   anc_sr <- postProcess(ml$`LandWeb Study Area`,
                         studyArea = amc::outerBuffer(anc, 50000), # 50 km buffer

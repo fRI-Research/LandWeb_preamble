@@ -45,6 +45,10 @@ fmaTolko <- function(ml, runName, dataDir, canProvs) {
                  analysisGroupReportingPolygon = "Tolko AB North Caribou",
                  columnNameForLabels = "Name", filename2 = NULL)
 
+    ## TODO: workaround problematic intersect() that changes Name to Name.1 and Name.2
+    names(ml$`Tolko AB North ANSR`) <- gsub("[.]1", "", names(ml$`Tolko AB North ANSR`))
+    names(ml$`Tolko AB North Caribou`) <- gsub("[.]1", "", names(ml$`Tolko North Caribou`))
+
     ## studyArea shouldn't use analysisGroup because it's not a reportingPolygon
     tolko_ab_n_sr <- postProcess(ml$`LandWeb Study Area`,
                                  studyArea = amc::outerBuffer(tolko_ab_n, 50000), # 50 km buffer
@@ -84,6 +88,10 @@ fmaTolko <- function(ml, runName, dataDir, canProvs) {
                  analysisGroupReportingPolygon = "Tolko AB South Caribou",
                  columnNameForLabels = "Name", filename2 = NULL)
 
+    ## TODO: workaround problematic intersect() that changes Name to Name.1 and Name.2
+    names(ml$`Tolko AB South ANSR`) <- gsub("[.]1", "", names(ml$`Tolko AB South ANSR`))
+    names(ml$`Tolko AB South Caribou`) <- gsub("[.]1", "", names(ml$`Tolko South Caribou`))
+
     ## studyArea shouldn't use analysisGroup because it's not a reportingPolygon
     tolko_ab_s_sr <- postProcess(ml$`LandWeb Study Area`,
                                  studyArea = amc::outerBuffer(tolko_ab_s, 50000), # 50 km buffer
@@ -115,6 +123,9 @@ fmaTolko <- function(ml, runName, dataDir, canProvs) {
     ml <- mapAdd(tolko_sk.caribou, ml, layerName = "Tolko SK Caribou", useSAcrs = TRUE, poly = TRUE,
                  analysisGroupReportingPolygon = "Tolko SK Caribou",
                  columnNameForLabels = "Name", filename2 = NULL)
+
+    ## TODO: workaround problematic intersect() that changes Name to Name.1 and Name.2
+    names(ml$`Tolko SK Caribou`) <- gsub("[.]1", "", names(ml$`Tolko SK Caribou`))
 
     ## studyArea shouldn't use analysisGroup because it's not a reportingPolygon
     tolko_sk_sr <- postProcess(ml$`LandWeb Study Area`,

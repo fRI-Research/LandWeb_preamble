@@ -33,6 +33,9 @@ fmaLP <- function(ml, runName, dataDir, canProvs) {
                  analysisGroupReportingPolygon = "LP MB Caribou",
                  columnNameForLabels = "Name", filename2 = NULL)
 
+    ## TODO: workaround problematic intersect() that changes Name to Name.1 and Name.2
+    names(ml$`LP MB Caribou`) <- gsub("[.]1", "", names(ml$`LP MB Caribou`))
+
     ## studyArea shouldn't use analysisGroup because it's not a reportingPolygon
     lp_mb_sr <- postProcess(ml$`LandWeb Study Area`,
                             studyArea = amc::outerBuffer(lp_mb, 50000), # 50 km buffer
