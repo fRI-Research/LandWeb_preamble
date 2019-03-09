@@ -35,7 +35,7 @@ fmaTolko <- function(ml, runName, dataDir, canProvs) {
                                       overwrite = TRUE)
     #plot(tolko_ab_n.caribou)
 
-    ml <- mapAdd(tolko_ab_n.sp, ml, layerName = "Tolko AB North", useSAcrs = TRUE, poly = TRUE,
+    ml <- mapAdd(tolko_ab_n, ml, layerName = "Tolko AB North", useSAcrs = TRUE, poly = TRUE,
                  analysisGroupReportingPolygon = "Tolko AB North", isStudyArea = TRUE,
                  columnNameForLabels = "Name", filename2 = NULL)
     ml <- mapAdd(tolko_ab_n.ansr, ml, layerName = "Tolko AB North ANSR", useSAcrs = TRUE, poly = TRUE,
@@ -74,7 +74,7 @@ fmaTolko <- function(ml, runName, dataDir, canProvs) {
                                       overwrite = TRUE)
     #plot(tolko_ab_s.caribou)
 
-    ml <- mapAdd(tolko_ab_s.sp, ml, layerName = "Tolko AB South", useSAcrs = TRUE, poly = TRUE,
+    ml <- mapAdd(tolko_ab_s, ml, layerName = "Tolko AB South", useSAcrs = TRUE, poly = TRUE,
                  analysisGroupReportingPolygon = "Tolko AB South", isStudyArea = TRUE,
                  columnNameForLabels = "Name", filename2 = NULL)
     ml <- mapAdd(tolko_ab_s.ansr, ml, layerName = "Tolko AB South ANSR", useSAcrs = TRUE, poly = TRUE,
@@ -109,7 +109,7 @@ fmaTolko <- function(ml, runName, dataDir, canProvs) {
                                     overwrite = TRUE)
     #plot(tolko_sk.caribou)
 
-    ml <- mapAdd(tolko_sk.sp, ml, layerName = "Tolko SK", useSAcrs = TRUE, poly = TRUE,
+    ml <- mapAdd(tolko_sk, ml, layerName = "Tolko SK", useSAcrs = TRUE, poly = TRUE,
                  analysisGroupReportingPolygon = "Tolko SK", isStudyArea = TRUE,
                  columnNameForLabels = "Name", filename2 = NULL)
     ml <- mapAdd(tolko_sk.caribou, ml, layerName = "Tolko SK Caribou", useSAcrs = TRUE, poly = TRUE,

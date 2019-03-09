@@ -40,7 +40,7 @@ fmaDMI <- function(ml, runName, dataDir, canProvs) {
                              filename2 = file.path(dataDirDMI, "DMI_caribou.shp"))
   #plot(dmi.caribou)
 
-  ml <- mapAdd(dmi.sp, ml, layerName = "DMI Full", useSAcrs = TRUE, poly = TRUE,
+  ml <- mapAdd(dmi, ml, layerName = "DMI Full", useSAcrs = TRUE, poly = TRUE,
                analysisGroupReportingPolygon = "DMI Full", isStudyArea = TRUE,
                columnNameForLabels = "Name", filename2 = NULL)
 
