@@ -26,7 +26,7 @@ fmaLP <- function(ml, runName, dataDir, canProvs) {
                                  overwrite = TRUE)
     #plot(lp_mb.caribou, col = "magenta", add = TRUE)
 
-    ml <- mapAdd(lp_mb, ml, layerName = "LP MB", useSAcrs = TRUE, poly = TRUE,
+    ml <- mapAdd(lp_mb.sp, ml, layerName = "LP MB", useSAcrs = TRUE, poly = TRUE,
                  analysisGroupReportingPolygon = "LP MB", isStudyArea = TRUE,
                  columnNameForLabels = "Name", filename2 = NULL)
     ml <- mapAdd(lp_mb.caribou, ml, layerName = "LP MB Caribou", useSAcrs = TRUE, poly = TRUE,
