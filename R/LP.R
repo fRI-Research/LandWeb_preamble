@@ -21,7 +21,7 @@ fmaLP <- function(ml, runName, dataDir, canProvs) {
     shapefile(lp_mb, filename = file.path(dataDirLP, "LP_MB.shp"), overwrite = TRUE)
 
     lp_mb.caribou <- postProcess(ml$`Boreal Caribou Ranges`,
-                                 studyArea = lp_mp.sp, useSAcrs = TRUE,
+                                 studyArea = lp_mb.sp, useSAcrs = TRUE,
                                  filename2 = file.path(dataDirLP, "LP_MB_caribou.shp"),
                                  overwrite = TRUE)
     #plot(lp_mb.caribou, col = "magenta", add = TRUE)
