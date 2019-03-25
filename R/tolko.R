@@ -17,7 +17,6 @@ fmaTolko <- function(ml, runName, dataDir, canProvs) {
 
   if (grepl("tolko_AB_N", runName)) {
     ## reporting polygons
-
     tolko_ab_n <- tolko[4, ]
     tolko_ab_n.sp <- as(tolko_ab_n, "SpatialPolygons")
     #plot(tolko_ab_n, add = TRUE, col = colours[4])
@@ -47,7 +46,7 @@ fmaTolko <- function(ml, runName, dataDir, canProvs) {
 
     ## TODO: workaround problematic intersect() that changes Name to Name.1 and Name.2
     names(ml$`Tolko AB North ANSR`) <- gsub("[.]1", "", names(ml$`Tolko AB North ANSR`))
-    names(ml$`Tolko AB North Caribou`) <- gsub("[.]1", "", names(ml$`Tolko North Caribou`))
+    names(ml$`Tolko AB North Caribou`) <- gsub("[.]1", "", names(ml$`Tolko AB North Caribou`))
 
     ## studyArea shouldn't use analysisGroup because it's not a reportingPolygon
     tolko_ab_n_sr <- postProcess(ml$`LandWeb Study Area`,
@@ -90,7 +89,7 @@ fmaTolko <- function(ml, runName, dataDir, canProvs) {
 
     ## TODO: workaround problematic intersect() that changes Name to Name.1 and Name.2
     names(ml$`Tolko AB South ANSR`) <- gsub("[.]1", "", names(ml$`Tolko AB South ANSR`))
-    names(ml$`Tolko AB South Caribou`) <- gsub("[.]1", "", names(ml$`Tolko South Caribou`))
+    names(ml$`Tolko AB South Caribou`) <- gsub("[.]1", "", names(ml$`Tolko AB South Caribou`))
 
     ## studyArea shouldn't use analysisGroup because it's not a reportingPolygon
     tolko_ab_s_sr <- postProcess(ml$`LandWeb Study Area`,
