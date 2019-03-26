@@ -1,6 +1,5 @@
 fmaTolko <- function(ml, runName, dataDir, canProvs) {
-  dataDirTolko <- file.path(dataDir, "Tolko")
-  if (!dir.exists(dataDirTolko)) dir.create(dataDirTolko)
+  dataDirTolko <- file.path(dataDir, "Tolko") %>% checkPath(create = TRUE)
 
   ## There are 3 parts to the Tolko FMA in AB and one in SK
   west <- canProvs[canProvs$NAME_1 %in% c("British Columbia", "Alberta", "Saskatchewan"), ]
@@ -15,7 +14,7 @@ fmaTolko <- function(ml, runName, dataDir, canProvs) {
   tolko.full <- maptools::unionSpatialPolygons(tolko, rep(1, 5))
   shapefile(tolko.full, filename = file.path(dataDirTolko, "Tolko_Full.shp"), overwrite = TRUE)
 
-  if (grepl("tolko_AB_N", runName)) {
+  if (grepl("Tolko_AB_N|tolko_AB_N", runName)) {
     ## reporting polygons
     tolko_ab_n <- tolko[4, ]
     tolko_ab_n.sp <- as(tolko_ab_n, "SpatialPolygons")
@@ -54,11 +53,12 @@ fmaTolko <- function(ml, runName, dataDir, canProvs) {
                                  useSAcrs = TRUE,
                                  filename2 = file.path(dataDirTolko, "Tolko_AB_N_SR.shp"),
                                  overwrite = TRUE)
+    #plot(tolko_ab_n_sr, add = TRUE)
 
     ml <- mapAdd(tolko_ab_n_sr, ml, isStudyArea = TRUE, layerName = "Tolko AB North SR",
                  useSAcrs = TRUE, poly = TRUE, studyArea = NULL, # don't crop/mask to studyArea(ml, 2)
                  columnNameForLabels = "NSN", filename2 = NULL)
-  } else if (grepl("tolko_AB_S", runName)) {
+  } else if (grepl("Tolko_AB_S|tolko_AB_S", runName)) {
     ## reportingPolygons
     tolko_ab_s <- tolko[c(2, 3, 5), ]
     tolko_ab_s.sp <- as(tolko_ab_s, "SpatialPolygons")
@@ -97,11 +97,12 @@ fmaTolko <- function(ml, runName, dataDir, canProvs) {
                                  useSAcrs = TRUE,
                                  filename2 = file.path(dataDirTolko, "Tolko_AB_S_SR.shp"),
                                  overwrite = TRUE)
+    #plot(tolko_ab_s_sr, add = TRUE)
 
     ml <- mapAdd(tolko_ab_s_sr, ml, isStudyArea = TRUE, layerName = "Tolko AB South SR",
                  useSAcrs = TRUE, poly = TRUE, studyArea = NULL, # don't crop/mask to studyArea(ml, 2)
                  columnNameForLabels = "NSN", filename2 = NULL)
-  } else if (grepl("tolko_SK", runName)) {
+  } else if (grepl("Tolko_SK|tolko_SK", runName)) {
     ## reportingPolygons
     tolko_sk <- tolko[1, ]
     tolko_sk.sp <- as(tolko_sk, "SpatialPolygons")
@@ -132,6 +133,7 @@ fmaTolko <- function(ml, runName, dataDir, canProvs) {
                                useSAcrs = TRUE,
                                filename2 = file.path(dataDirTolko, "Tolko_SK_SR.shp"),
                                overwrite = TRUE)
+    #plot(tolko_sk_sr, add = TRUE)
 
     ml <- mapAdd(tolko_sk_sr, ml, isStudyArea = TRUE, layerName = "Tolko SK SR",
                  useSAcrs = TRUE, poly = TRUE, studyArea = NULL, # don't crop/mask to studyArea(ml, 2)

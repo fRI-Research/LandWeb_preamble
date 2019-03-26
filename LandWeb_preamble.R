@@ -76,8 +76,10 @@ Init <- function(sim) {
                url = "https://drive.google.com/file/d/1nTFOcrdMf1hIsxd_yNCSTr8RrYNHHwuc/view?usp=sharing",
                columnNameForLabels = "Name", isStudyArea = FALSE, filename2 = NULL)
 
+  ## Rename some polygons:
+  ## - DMI is now Mercer (MPR)
   ids <- grep("Daishowa-Marubeni International Ltd", ml$`FMA Boundaries Updated`$Name)
-  newNames <- c("Mercer Peace River Pulp Ltd. (East)", "Mercer Peace River Pulp Ltd. (West)") ## DMI is now Mercer (MPR)
+  newNames <- c("Mercer Peace River Pulp Ltd. (East)", "Mercer Peace River Pulp Ltd. (West)")
   ml$`FMA Boundaries Updated`$Name[ids] <- newNames
   ml$`FMA Boundaries Updated`$shinyLabel[ids] <- newNames
 
@@ -106,10 +108,28 @@ Init <- function(sim) {
     ml <- fmaANC(ml, P(sim)$runName, dataDir, sim$canProvs)
   } else if (grepl("DMI|MPR", P(sim)$runName)) {
     ml <- fmaDMI(ml, P(sim)$runName, dataDir, sim$canProvs)
+  } else if (grepl("Edson", P(sim)$runName)) {
+    ml <- fmaEdsonFP(ml, P(sim)$runName, dataDir, sim$canProvs)
+  } else if (grepl("FMANWT", P(sim)$runName)) {
+    ml <- fmaNWT(ml, P(sim)$runName, dataDir, sim$canProvs)
   } else if (grepl("LP", P(sim)$runName)) {
     ml <- fmaLP(ml, P(sim)$runName, dataDir, sim$canProvs)
-  } else if (grepl("tolko", P(sim)$runName)) {
+  } else if (grepl("Manning", P(sim)$runName)) {
+    ml <- fmaManning(ml, P(sim)$runName, dataDir, sim$canProvs)
+  } else if (grepl("MillarWestern", P(sim)$runName)) {
+    ml <- fmaMillarWestern(ml, P(sim)$runName, dataDir, sim$canProvs)
+  } else if (grepl("Mistik", P(sim)$runName)) {
+    ml <- fmaMistik(ml, P(sim)$runName, dataDir, sim$canProvs)
+  } else if (grepl("Sundre", P(sim)$runName)) {
+    ml <- fmaSundreFP(ml, P(sim)$runName, dataDir, sim$canProvs)
+  } else if (grepl("Tolko|tolko", P(sim)$runName)) {
     ml <- fmaTolko(ml, P(sim)$runName, dataDir, sim$canProvs)
+  } else if (grepl("Vanderwell", P(sim)$runName)) {
+    ml <- fmaVanderwell(ml, P(sim)$runName, dataDir, sim$canProvs)
+  } else if (grepl("WeyCo", P(sim)$runName)) {
+    ml <- fmaWeyco(ml, P(sim)$runName, dataDir, sim$canProvs)
+  } else if (grepl("WestFraser|BlueRidge", P(sim)$runName)) {
+    ml <- fmaWestFraser(ml, P(sim)$runName, dataDir, sim$canProvs)
   } else {
     # Make a random small study area
     seed <- 863

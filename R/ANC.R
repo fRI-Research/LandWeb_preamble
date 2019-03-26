@@ -1,6 +1,5 @@
 fmaANC <- function(ml, runName, dataDir, canProvs) {
-  dataDirANC <- file.path(dataDir, "ANC")
-  if (!dir.exists(dataDirANC)) dir.create(dataDirANC)
+  dataDirANC <- file.path(dataDir, "ANC") %>% checkPath(create = TRUE)
 
   alberta <- canProvs[canProvs$NAME_1 %in% c("Alberta"), ]
   anc <- ml$`FMA Boundaries Updated`[grepl("ANC", ml$`FMA Boundaries Updated`$Name), ]
@@ -43,7 +42,7 @@ fmaANC <- function(ml, runName, dataDir, canProvs) {
                         useSAcrs = TRUE,
                         filename2 = file.path(dataDirANC, "ANC_SR.shp"),
                         overwrite = TRUE)
-  #plot(anc_sr)
+  #plot(anc_sr, add = TRUE)
 
   ml <- mapAdd(anc_sr, ml, isStudyArea = TRUE, layerName = "ANC SR",
                useSAcrs = TRUE, poly = TRUE, studyArea = NULL, # don't crop/mask to studyArea(ml, 2)

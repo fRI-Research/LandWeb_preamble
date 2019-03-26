@@ -1,6 +1,5 @@
 fmaDMI <- function(ml, runName, dataDir, canProvs) {
-  dataDirDMI <- file.path(dataDir, "DMI")
-  if (!dir.exists(dataDirDMI)) dir.create(dataDirDMI)
+  dataDirDMI <- file.path(dataDir, "DMI") %>% checkPath(create = TRUE)
 
   ## There are 3 parts to the DMI FMA: an East and two West areas (North and South)
 
@@ -73,6 +72,7 @@ fmaDMI <- function(ml, runName, dataDir, canProvs) {
                         studyArea = amc::outerBuffer(dmi.full, 50000), ## 50 km buffer
                         useSAcrs = TRUE,
                         filename2 = file.path(dataDirDMI, "DMI_SR.shp"))
+  #plot(dmi.sr, add = TRUE)
 
   ## studyArea shouldn't use analysisGroup because it's not a reportingPolygon
   ml <- mapAdd(dmi.sr, ml, layerName = "DMI AB SR Full", isStudyArea = TRUE,
