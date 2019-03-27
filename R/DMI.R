@@ -3,21 +3,18 @@ fmaDMI <- function(ml, runName, dataDir, canProvs) {
 
   ## There are 3 parts to the DMI FMA: an East and two West areas (North and South)
 
-  dmi <- ml$`FMA Boundaries Updated`[grepl("Mercer Peace River",
-                                           ml$`FMA Boundaries Updated`$Name), ]
+  dmi <- extractFMA(ml, "Mercer Peace River")
   dmi.sp <- as(dmi, "SpatialPolygons")
   #plot(dmi[, "Name"], main = "DMI full", col = "lightblue")
 
   dmi.full <- maptools::unionSpatialPolygons(dmi, rep(1, 2))
   shapefile(dmi.full, filename = file.path(dataDirDMI, "DMI_Full.shp"), overwrite = TRUE)
 
-  dmi.e <- ml$`FMA Boundaries Updated`[grepl("Mercer Peace River.*East",
-                                             ml$`FMA Boundaries Updated`$Name), ]
+  dmi.e <- extractFMA(ml, "Mercer Peace River.*East")
   #plot(dmi.e, col = "purple", add = TRUE)
   shapefile(dmi.e, filename = file.path(dataDirDMI, "DMI_East.shp"), overwrite = TRUE)
 
-  dmi.w <- ml$`FMA Boundaries Updated`[grepl("Mercer Peace River.*West",
-                                             ml$`FMA Boundaries Updated`$Name), ]
+  dmi.w <- extractFMA(ml, "Mercer Peace River.*West")
   shapefile(dmi.w, filename = file.path(dataDirDMI, "DMI_West.shp"), overwrite = TRUE)
 
   dmi.nw <- disaggregate(dmi.w)[2, ]

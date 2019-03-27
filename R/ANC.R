@@ -2,7 +2,7 @@ fmaANC <- function(ml, runName, dataDir, canProvs) {
   dataDirANC <- file.path(dataDir, "ANC") %>% checkPath(create = TRUE)
 
   alberta <- canProvs[canProvs$NAME_1 %in% c("Alberta"), ]
-  anc <- ml$`FMA Boundaries Updated`[grepl("ANC", ml$`FMA Boundaries Updated`$Name), ]
+  anc <- extractFMA(ml, "ANC")
   anc.sp <- as(anc, "SpatialPolygons")
   #plot(spTransform(alberta, crs(anc)))
   #plot(anc, col = "lightblue", add = TRUE)

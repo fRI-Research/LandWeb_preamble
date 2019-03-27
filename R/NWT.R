@@ -3,9 +3,8 @@ fmaNWT <- function(ml, runName, dataDir, canProvs) {
 
 
   ## reportingPolygons
-  nwt <- canProvs[canProvs$NAME_1 == "Northwest Territories", ]
-  fmanwt <- ml$`FMA Boundaries Updated`[grepl("Fort Resolution",
-                                              ml$`FMA Boundaries Updated`$Name), ]
+  nwt <- canProvs[canProvs$NAME_1 %in% c("Northwest Territories"), ]
+  fmanwt <- extractFMA(ml, "Fort Resolution")
   #plot(spTransform(nwt, crs(fmanwt)))
   #plot(fmanwt[, "Name"], main = "NWT FMAs", col = "lightblue", add = TRUE)
 

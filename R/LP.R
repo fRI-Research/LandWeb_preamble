@@ -4,8 +4,7 @@ fmaLP <- function(ml, runName, dataDir, canProvs) {
   ## There are 3 parts to the LP FMA: 2 in BC and one in MB.
   manitoba <- canProvs[canProvs$NAME_1 %in% c("Manitoba"), ]
   west <- canProvs[canProvs$NAME_1 %in% c("British Columbia", "Alberta", "Saskatchewan"), ]
-  lp <- ml$`FMA Boundaries Updated`[grepl("Fort St\\. John|Dawson Creek|Mountain",
-                                          ml$`FMA Boundaries Updated`$Name), ]
+  lp <- extractFMA(ml, "Fort St\\. John|Dawson Creek|Mountain")
   #plot(spTransform(west, crs(lp)))
   #plot(spTransform(manitoba, crs(lp)), add = TRUE)
   #plot(lp[, "Name"], main = "LP full", col = "lightblue", add = TRUE)
@@ -14,8 +13,7 @@ fmaLP <- function(ml, runName, dataDir, canProvs) {
 
   if (grepl("LP_BC", runName)) {
     ## reportingPolygons
-    lp_bc <- ml$`FMA Boundaries Updated`[grepl("Fort St\\. John|Dawson Creek",
-                                               ml$`FMA Boundaries Updated`$Name), ]
+    lp_bc <- extractFMA(ml, "Fort St\\. John|Dawson Creek")
     lp_bc.sp <- as(lp_bc, "SpatialPolygons")
     #plot(lp_bc, col = "purple", add = TRUE)
     shapefile(lp_bc, filename = file.path(dataDirLP, "LP_BC.shp"), overwrite = TRUE)
@@ -49,7 +47,7 @@ fmaLP <- function(ml, runName, dataDir, canProvs) {
                  columnNameForLabels = "NSN", filename2 = NULL)
   } else if (grepl("LP_MB", runName)) {
     ## reportingPolygons
-    lp_mb <- ml$`FMA Boundaries Updated`[grepl("Mountain", ml$`FMA Boundaries Updated`$Name), ]
+    lp_mb <- extractFMA(ml, "Mountain")
     lp_mb.sp <- as(lp_mb, "SpatialPolygons")
     #plot(lp_mb, col = "purple", add = TRUE)
     shapefile(lp_mb, filename = file.path(dataDirLP, "LP_MB.shp"), overwrite = TRUE)

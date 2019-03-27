@@ -2,10 +2,7 @@ fmaMillarWestern <- function(ml, runName, dataDir, canProvs) {
   dataDirMillarWestern <- file.path(dataDir, "MillarWestern") %>% checkPath(create = TRUE)
 
   ab <- canProvs[canProvs$NAME_1 == "Alberta", ]
-  mw <- ml$`FMA Boundaries Updated`[grepl("Millar Western", ml$`FMA Boundaries Updated`$Name), ]
-  #plot(spTransform(ab, crs(mw)))
-  #plot(mw[, "Name"], main = "Millar Western full", col = "lightblue", add = TRUE)
-
+  mw <- extractFMA(ml, "Millar Western")
   mw.sp <- as(mw, "SpatialPolygons")
 
   shapefile(mw, filename = file.path(dataDirMillarWestern, "Millar_Western.shp"), overwrite = TRUE)

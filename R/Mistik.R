@@ -4,7 +4,7 @@ fmaMistik <- function(ml, runName, dataDir, canProvs) {
 
   ## reportingPolygons
   absk <- canProvs[canProvs$NAME_1 %in% c("Alberta", "Saskatchewan"), ]
-  mistik <- ml$`FMA Boundaries Updated`[grepl("Mistik", ml$`FMA Boundaries Updated`$Name), ]
+  mistik <- extractFMA(ml, "Mistik")
   #plot(spTransform(absk, crs(mistik)))
   #plot(mistik[, "Name"], main = "Mistik full", col = "lightblue", add = TRUE)
 

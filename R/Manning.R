@@ -2,7 +2,7 @@ fmaManning <- function(ml, runName, dataDir, canProvs) {
   dataDirManning <- file.path(dataDir, "Manning") %>% checkPath(create = TRUE)
 
   ## reportingPolygons
-  manning <- ml$`FMA Boundaries Updated`[grepl("Manning", ml$`FMA Boundaries Updated`$Name), ]
+  manning <- extractFMA(ml, "Manning")
   #plot(manning, main = "Manning", col = "lightblue")
   manning.sp <- as(manning, "SpatialPolygons")
   shapefile(manning, filename = file.path(dataDirManning, "Manning_full.shp"), overwrite = TRUE)

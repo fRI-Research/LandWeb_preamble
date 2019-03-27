@@ -3,8 +3,7 @@ fmaSundreFP <- function(ml, runName, dataDir, canProvs) {
 
   ## There are 3 parts to the SundreFP FMA: 2 in BC and one in MB.
   ab <- canProvs[canProvs$NAME_1 == "Alberta", ]
-  sundre <- ml$`FMA Boundaries Updated`[grepl("Sundre Forest Products Inc.",
-                                          ml$`FMA Boundaries Updated`$Name), ]
+  sundre <- extractFMA(ml, "Sundre Forest Products Inc.")
   sundre.sp <- as(sundre, "SpatialPolygons")
   #plot(spTransform(ab, crs(sundre)))
   #plot(sundre[, "Name"], main = "SundreFP full", col = "lightblue", add = TRUE)

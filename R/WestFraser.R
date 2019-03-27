@@ -5,8 +5,7 @@ fmaWestFraser <- function(ml, runName, dataDir, canProvs) {
   ## - also includes Tolko_AB_S
   ## - also includes Blue Ridge
   ab <- canProvs[canProvs$NAME_1 == "Alberta", ]
-  wf <- ml$`FMA Boundaries Updated`[grepl("West Fraser|Blue Ridge",
-                                          ml$`FMA Boundaries Updated`$Name), ]
+  wf <- extractFMA(ml, "West Fraser|Blue Ridge")
   #plot(spTransform(ab, crs(wf)))
   #plot(wf[, "Name"], main = "WestFraser full", col = "lightblue", add = TRUE)
 

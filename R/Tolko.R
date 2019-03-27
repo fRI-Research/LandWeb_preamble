@@ -3,8 +3,7 @@ fmaTolko <- function(ml, runName, dataDir, canProvs) {
 
   ## There are 3 parts to the Tolko FMA in AB and one in SK
   west <- canProvs[canProvs$NAME_1 %in% c("British Columbia", "Alberta", "Saskatchewan"), ]
-  tolko <- ml$`FMA Boundaries Updated`[grepl("Tolko|Meadow Lake OSB",
-                                             ml$`FMA Boundaries Updated`$Name), ]
+  tolko <- extractFMA(ml, "Tolko|Meadow Lake OSB")
   #plot(spTransform(west, crs(tolko)), main = "Tolko full")
   #plot(tolko[, "Name"], col = "lightblue", add = TRUE)
 

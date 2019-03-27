@@ -5,8 +5,7 @@ fmaVanderwell <- function(ml, runName, dataDir, canProvs) {
   ## - one shared vith Tolko/WestFraser (Tolko_AB_S)
   ## - the other is just south of the first
   ab <- canProvs[canProvs$NAME_1 == "Alberta", ]
-  vanderwell <- ml$`FMA Boundaries Updated`[grepl("Vanderwell Contractors",
-                                          ml$`FMA Boundaries Updated`$Name), ]
+  vanderwell <- extractFMA(ml, "Vanderwell Contractors")
   vanderwell.sp <- as(vanderwell, "SpatialPolygons")
   #plot(spTransform(ab, crs(vanderwell)))
   #plot(vanderwell[, "Name"], main = "Vanderwell full", col = "lightblue", add = TRUE)

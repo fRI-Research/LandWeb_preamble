@@ -1,7 +1,7 @@
 fmaEdsonFP <- function(ml, runName, dataDir, canProvs) {
   dataDirEdsonFP <- file.path(dataDir, "EdsonFP") %>% checkPath(create = TRUE)
 
-  edson <- ml$`FMA Boundaries Updated`[grepl("Edson", ml$`FMA Boundaries Updated`$Name), ]
+  edson <- extractFMA(ml, "Edson")
   #plot(edson, main = "EdsonFP", col = "lightblue")
   edson.sp <- as(edson, "SpatialPolygons")
 

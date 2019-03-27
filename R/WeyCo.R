@@ -3,8 +3,7 @@ fmaWeyCo <- function(ml, runName, dataDir, canProvs) {
 
   ## There are 3 parts to the WeyCo FMA: 2 in BC and one in MB.
   absk <- canProvs[canProvs$NAME_1 %in% c("Alberta", "Saskatchewan"), ]
-  weyco <- ml$`FMA Boundaries Updated`[grepl("Weyerhaeuser|Pasquia-Porcupine",
-                                          ml$`FMA Boundaries Updated`$Name), ]
+  weyco <- extractFMA(ml, "Weyerhaeuser|Pasquia-Porcupine")
   #plot(spTransform(absk, crs(weyco)))
   #plot(weyco[, "Name"], main = "WeyCo full", col = "lightblue", add = TRUE)
 
@@ -12,8 +11,7 @@ fmaWeyCo <- function(ml, runName, dataDir, canProvs) {
 
   if (grepl("WeyCo_GP", runName)) {
     ## reportingPolygons
-    weyco_gp <- ml$`FMA Boundaries Updated`[grepl("Weyerhaeuser Company Limited \\(Grande Prairie\\)",
-                                                  ml$`FMA Boundaries Updated`$Name), ]
+    weyco_gp <- extractFMA(ml, "Weyerhaeuser Company Limited \\(Grande Prairie\\)")
     weyco_gp.sp <- as(weyco_gp, "SpatialPolygons")
     #plot(weyco_gp, col = "purple", add = TRUE)
     shapefile(weyco_gp, filename = file.path(dataDirWeyCo, "WeyCo_GP.shp"), overwrite = TRUE)
@@ -47,8 +45,7 @@ fmaWeyCo <- function(ml, runName, dataDir, canProvs) {
                  columnNameForLabels = "NSN", filename2 = NULL)
   } else if (grepl("WeyCo_PT|WeyCo_Pembina", runName)) {
     ## reportingPolygons
-    weyco_pt <- ml$`FMA Boundaries Updated`[grepl("Weyerhaeuser Company Limited \\(Pembina Timberland\\)",
-                                                  ml$`FMA Boundaries Updated`$Name), ]
+    weyco_pt <- extractFMA(ml, "Weyerhaeuser Company Limited \\(Pembina Timberland\\)")
     weyco_pt.sp <- as(weyco_pt, "SpatialPolygons")
     #plot(weyco_pt, col = "purple", add = TRUE)
     shapefile(weyco_pt, filename = file.path(dataDirWeyCo, "WeyCo_PT.shp"), overwrite = TRUE)
@@ -82,8 +79,7 @@ fmaWeyCo <- function(ml, runName, dataDir, canProvs) {
                  columnNameForLabels = "NSN", filename2 = NULL)
   } else if (grepl("WeyCo_SK", runName)) {
     ## reportingPolygons
-    weyco_sk <- ml$`FMA Boundaries Updated`[grepl("Pasquia-Porcupine",
-                                                  ml$`FMA Boundaries Updated`$Name), ]
+    weyco_sk <- extractFMA(ml, "Pasquia-Porcupine")
     weyco_sk.sp <- as(weyco_sk, "SpatialPolygons")
     #plot(weyco_sk, col = "purple", add = TRUE)
     shapefile(weyco_sk, filename = file.path(dataDirWeyCo, "WeyCo_SK.shp"), overwrite = TRUE)
