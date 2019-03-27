@@ -76,8 +76,8 @@ Init <- function(sim) {
                url = "https://drive.google.com/file/d/1nTFOcrdMf1hIsxd_yNCSTr8RrYNHHwuc/view?usp=sharing",
                columnNameForLabels = "Name", isStudyArea = FALSE, filename2 = NULL)
 
-  ## Rename some polygons:
-  ## - DMI is now Mercer (MPR)
+  ### Rename some polygons:
+  ###   - DMI is now Mercer (MPR)
   ids <- grep("Daishowa-Marubeni International Ltd", ml$`FMA Boundaries Updated`$Name)
   newNames <- c("Mercer Peace River Pulp Ltd. (East)", "Mercer Peace River Pulp Ltd. (West)")
   ml$`FMA Boundaries Updated`$Name[ids] <- newNames
@@ -242,8 +242,7 @@ Init <- function(sim) {
   ##########################################################
 
   ## flammability map shouldn't be masked (no gaps!);
-  #    NAs outside the buffered study & snow/rock/ice area
-  #    the only values we want NA
+  #    NAs outside the buffered study & snow/rock/ice area are the only values we want NA
   #    use the LCC flammability map to fill in NA / nodata values
 
   # No data class is 5 -- these will be filled in by LCC2005 layer
