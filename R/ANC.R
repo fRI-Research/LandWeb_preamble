@@ -1,12 +1,9 @@
 fmaANC <- function(ml, runName, dataDir, canProvs) {
   dataDirANC <- file.path(dataDir, "ANC") %>% checkPath(create = TRUE)
 
-  alberta <- canProvs[canProvs$NAME_1 %in% c("Alberta"), ]
+  ab <- canProvs[canProvs$NAME_1 == "Alberta", ]
   anc <- extractFMA(ml, "ANC")
   anc.sp <- as(anc, "SpatialPolygons")
-  #plot(spTransform(alberta, crs(anc)))
-  #plot(anc, col = "lightblue", add = TRUE)
-
   shapefile(anc, filename = file.path(dataDirANC, "ANC.shp"), overwrite = TRUE)
 
   ## reportingPolygons
@@ -14,13 +11,10 @@ fmaANC <- function(ml, runName, dataDir, canProvs) {
                           studyArea = anc.sp, useSAcrs = TRUE,
                           filename2 = file.path(dataDirANC, "ANC_ANSR.shp"),
                           overwrite = TRUE)
-  #plot(anc.ansr, add = TRUE)
-
   anc.caribou <- postProcess(ml$`Boreal Caribou Ranges`,
                              studyArea = anc.sp, useSAcrs = TRUE,
                              filename2 = file.path(dataDirANC, "ANC_caribou.shp"),
                              overwrite = TRUE)
-  #plot(anc.caribou, col = "magenta", add = TRUE)
 
   ml <- mapAdd(anc, ml, layerName = "ANC", useSAcrs = TRUE, poly = TRUE,
                analysisGroupReportingPolygon = "ANC", isStudyArea = TRUE,
@@ -42,11 +36,13 @@ fmaANC <- function(ml, runName, dataDir, canProvs) {
                         useSAcrs = TRUE,
                         filename2 = file.path(dataDirANC, "ANC_SR.shp"),
                         overwrite = TRUE)
-  #plot(anc_sr, add = TRUE)
 
   ml <- mapAdd(anc_sr, ml, isStudyArea = TRUE, layerName = "ANC SR",
                useSAcrs = TRUE, poly = TRUE, studyArea = NULL, # don't crop/mask to studyArea(ml, 2)
                columnNameForLabels = "NSN", filename2 = NULL)
+  plotFMA(anc, provs = ab, caribou = anc.caribou, xsr = anc_sr, title = "ANC",
+          png = file.path(dataDirANC, "ANC.png"))
+  #plotFMA(anc, provs = ab, caribou = anc.caribou, xsr = anc_sr, title = "ANC", png = NULL)
 
   return(ml)
 }

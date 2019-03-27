@@ -1,22 +1,16 @@
 fmaMistik <- function(ml, runName, dataDir, canProvs) {
   dataDirMistik <- file.path(dataDir, "Mistik") %>% checkPath(create = TRUE)
 
-
   ## reportingPolygons
   absk <- canProvs[canProvs$NAME_1 %in% c("Alberta", "Saskatchewan"), ]
   mistik <- extractFMA(ml, "Mistik")
-  #plot(spTransform(absk, crs(mistik)))
-  #plot(mistik[, "Name"], main = "Mistik full", col = "lightblue", add = TRUE)
-
   mistik.sp <- as(mistik, "SpatialPolygons")
-
   shapefile(mistik, filename = file.path(dataDirMistik, "Mistik.shp"), overwrite = TRUE)
 
   mistik.caribou <- postProcess(ml$`Boreal Caribou Ranges`,
                                 studyArea = mistik.sp, useSAcrs = TRUE,
                                 filename2 = file.path(dataDirMistik, "Mistik_caribou.shp"),
                                 overwrite = TRUE)
-  #plot(mistik.caribou, col = "magenta", add = TRUE)
 
   ml <- mapAdd(mistik, ml, layerName = "Mistik", useSAcrs = TRUE, poly = TRUE,
                analysisGroupReportingPolygon = "Mistik", isStudyArea = TRUE,
@@ -34,11 +28,15 @@ fmaMistik <- function(ml, runName, dataDir, canProvs) {
                           useSAcrs = TRUE,
                           filename2 = file.path(dataDirMistik, "Mistik_SR.shp"),
                           overwrite = TRUE)
-  #plot(mistik_sr)
 
   ml <- mapAdd(mistik_sr, ml, isStudyArea = TRUE, layerName = "Mistik SR",
                useSAcrs = TRUE, poly = TRUE, studyArea = NULL, # don't crop/mask to studyArea(ml, 2)
                columnNameForLabels = "NSN", filename2 = NULL)
+
+  plotFMA(mistik, provs = absk, caribou = mistik.caribou, xsr = mistik_sr, title = "Mistik",
+          png = file.path(dataDirMistik, "Mistik.png"))
+  #plotFMA(mistik, provs = absk, caribou = mistik.caribou, xsr = mistik_sr,
+  #        title = "Mistik", png = NULL)
 
   return(ml)
 }

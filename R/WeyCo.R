@@ -1,26 +1,22 @@
 fmaWeyCo <- function(ml, runName, dataDir, canProvs) {
   dataDirWeyCo <- file.path(dataDir, "WeyCo") %>% checkPath(create = TRUE)
 
-  ## There are 3 parts to the WeyCo FMA: 2 in BC and one in MB.
+  ## There are 3 parts to the WeyCo FMA: two in AB and one in SK
   absk <- canProvs[canProvs$NAME_1 %in% c("Alberta", "Saskatchewan"), ]
   weyco <- extractFMA(ml, "Weyerhaeuser|Pasquia-Porcupine")
-  #plot(spTransform(absk, crs(weyco)))
-  #plot(weyco[, "Name"], main = "WeyCo full", col = "lightblue", add = TRUE)
-
   shapefile(weyco, filename = file.path(dataDirWeyCo, "WeyCo_full.shp"), overwrite = TRUE)
 
   if (grepl("WeyCo_GP", runName)) {
     ## reportingPolygons
     weyco_gp <- extractFMA(ml, "Weyerhaeuser Company Limited \\(Grande Prairie\\)")
     weyco_gp.sp <- as(weyco_gp, "SpatialPolygons")
-    #plot(weyco_gp, col = "purple", add = TRUE)
     shapefile(weyco_gp, filename = file.path(dataDirWeyCo, "WeyCo_GP.shp"), overwrite = TRUE)
 
     weyco_gp.ansr <- postProcess(ml$`Alberta Natural Subregions`,
                                  studyArea = weyco_gp.sp, useSAcrs = TRUE,
                                  filename2 = file.path(dataDirWeyCo, "WeyCo_GP_ANSR.shp"),
                                  overwrite = TRUE)
-    #plot(weyco_gp.ansr, add = TRUE)
+    ## NOTE: no caribou areas intersect with this FMA
 
     ml <- mapAdd(weyco_gp, ml, layerName = "WeyCo GP", useSAcrs = TRUE, poly = TRUE,
                  analysisGroupReportingPolygon = "WeyCo GP", isStudyArea = TRUE,
@@ -38,23 +34,27 @@ fmaWeyCo <- function(ml, runName, dataDir, canProvs) {
                                useSAcrs = TRUE,
                                filename2 = file.path(dataDirWeyCo, "WeyCo_GP_SR.shp"),
                                overwrite = TRUE)
-    #plot(weyco_gp_sr)
 
     ml <- mapAdd(weyco_gp_sr, ml, isStudyArea = TRUE, layerName = "WeyCo GP SR",
                  useSAcrs = TRUE, poly = TRUE, studyArea = NULL, # don't crop/mask to studyArea(ml, 2)
                  columnNameForLabels = "NSN", filename2 = NULL)
+
+    plotFMA(weyco_gp, provs = absk, caribou = NULL, xsr = weyco_gp_sr,
+            title = "Weyerhaeuser Company Limited (Grande Prairie)",
+            png = file.path(dataDirWeyCo, "WeyCo_GP.png"))
+    #plotFMA(weyco_gp, provs = absk, caribou = NULL, xsr = weyco_gp_sr,
+    #        title = "Weyerhaeuser Company Limited (Grande Prairie)", png = NULL)
   } else if (grepl("WeyCo_PT|WeyCo_Pembina", runName)) {
     ## reportingPolygons
     weyco_pt <- extractFMA(ml, "Weyerhaeuser Company Limited \\(Pembina Timberland\\)")
     weyco_pt.sp <- as(weyco_pt, "SpatialPolygons")
-    #plot(weyco_pt, col = "purple", add = TRUE)
     shapefile(weyco_pt, filename = file.path(dataDirWeyCo, "WeyCo_PT.shp"), overwrite = TRUE)
 
     weyco_pt.ansr <- postProcess(ml$`Alberta Natural Subregions`,
                                  studyArea = weyco_pt.sp, useSAcrs = TRUE,
                                  filename2 = file.path(dataDirWeyCo, "WeyCo_PT_ANSR.shp"),
                                  overwrite = TRUE)
-    #plot(weyco_pt.ansr, add = TRUE)
+    ## NOTE: no caribou areas intersect with this FMA
 
     ml <- mapAdd(weyco_pt, ml, layerName = "WeyCo PT", useSAcrs = TRUE, poly = TRUE,
                  analysisGroupReportingPolygon = "WeyCo PT", isStudyArea = TRUE,
@@ -72,23 +72,26 @@ fmaWeyCo <- function(ml, runName, dataDir, canProvs) {
                                useSAcrs = TRUE,
                                filename2 = file.path(dataDirWeyCo, "WeyCo_PT_SR.shp"),
                                overwrite = TRUE)
-    #plot(weyco_pt_sr)
 
     ml <- mapAdd(weyco_pt_sr, ml, isStudyArea = TRUE, layerName = "WeyCo PT SR",
                  useSAcrs = TRUE, poly = TRUE, studyArea = NULL, # don't crop/mask to studyArea(ml, 2)
                  columnNameForLabels = "NSN", filename2 = NULL)
+
+    plotFMA(weyco_pt, provs = absk, caribou = NULL, xsr = weyco_pt_sr,
+            title = "Weyerhaeuser Company Limited (Pembina Timberland)",
+            png = file.path(dataDirWeyCo, "WeyCo_PT.png"))
+    #plotFMA(weyco_pt, provs = absk, caribou = NULL, xsr = weyco_pt_sr,
+    #        title = "Weyerhaeuser Company Limited (Pembina Timberland)", png = NULL)
   } else if (grepl("WeyCo_SK", runName)) {
     ## reportingPolygons
     weyco_sk <- extractFMA(ml, "Pasquia-Porcupine")
     weyco_sk.sp <- as(weyco_sk, "SpatialPolygons")
-    #plot(weyco_sk, col = "purple", add = TRUE)
     shapefile(weyco_sk, filename = file.path(dataDirWeyCo, "WeyCo_SK.shp"), overwrite = TRUE)
 
     weyco_sk.caribou <- postProcess(ml$`Boreal Caribou Ranges`,
                                     studyArea = weyco_sk.sp, useSAcrs = TRUE,
                                     filename2 = file.path(dataDirWeyCo, "WeyCo_SK_Caribou.shp"),
                                     overwrite = TRUE)
-    #plot(weyco_sk.caribou, add = TRUE)
 
     ml <- mapAdd(weyco_sk, ml, layerName = "WeyCo SK", useSAcrs = TRUE, poly = TRUE,
                  analysisGroupReportingPolygon = "WeyCo SK", isStudyArea = TRUE,
@@ -106,11 +109,16 @@ fmaWeyCo <- function(ml, runName, dataDir, canProvs) {
                                useSAcrs = TRUE,
                                filename2 = file.path(dataDirWeyCo, "WeyCo_SK_SR.shp"),
                                overwrite = TRUE)
-    #plot(weyco_sk_sr)
 
     ml <- mapAdd(weyco_sk_sr, ml, isStudyArea = TRUE, layerName = "WeyCo SK SR",
                  useSAcrs = TRUE, poly = TRUE, studyArea = NULL, # don't crop/mask to studyArea(ml, 2)
                  columnNameForLabels = "NSN", filename2 = NULL)
+
+    plotFMA(weyco_sk, provs = absk, caribou = weyco_sk.caribou, xsr = weyco_sk_sr,
+            title = "Weyerhaeuser Company Limited (Pasquia-Porcupine)",
+            png = file.path(dataDirWeyCo, "WeyCo_SK.png"))
+    #plotFMA(weyco_sk, provs = absk, caribou = weyco_sk.caribou, xsr = weyco_sk_sr,
+    #        title = "Weyerhaeuser Company Limited (Pasquia-Porcupine)", png = NULL)
   }
 
   return(ml)

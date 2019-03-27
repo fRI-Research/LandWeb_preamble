@@ -1,19 +1,16 @@
 fmaEdsonFP <- function(ml, runName, dataDir, canProvs) {
   dataDirEdsonFP <- file.path(dataDir, "EdsonFP") %>% checkPath(create = TRUE)
 
+  ab <- canProvs[canProvs$NAME_1 == "Alberta", ]
   edson <- extractFMA(ml, "Edson")
-  #plot(edson, main = "EdsonFP", col = "lightblue")
   edson.sp <- as(edson, "SpatialPolygons")
-
-  shapefile(edson, filename = file.path(dataDirEdsonFP, "EdsonFP_full.shp"), overwrite = TRUE)
+  shapefile(edson, filename = file.path(dataDirEdsonFP, "EdsonFP.shp"), overwrite = TRUE)
 
   ## reportingPolygons
   edson.ansr <- postProcess(ml$`Alberta Natural Subregions`,
                             studyArea = edson.sp, useSAcrs = TRUE,
                             filename2 = file.path(dataDirEdsonFP, "EdsonFP_ANSR.shp"),
                             overwrite = TRUE)
-  #plot(edson.ansr,  add = TRUE)
-
   ## NOTE: no caribou ranges intersect with this FMA
 
   ml <- mapAdd(edson, ml, layerName = "EdsonFP", useSAcrs = TRUE, poly = TRUE,
@@ -32,11 +29,14 @@ fmaEdsonFP <- function(ml, runName, dataDir, canProvs) {
                           useSAcrs = TRUE,
                           filename2 = file.path(dataDirEdsonFP, "EdsonFP_SR.shp"),
                           overwrite = TRUE)
-  #plot(edson_sr)
 
   ml <- mapAdd(edson_sr, ml, isStudyArea = TRUE, layerName = "EdsonFP SR",
                useSAcrs = TRUE, poly = TRUE, studyArea = NULL, # don't crop/mask to studyArea(ml, 2)
                columnNameForLabels = "NSN", filename2 = NULL)
+
+  plotFMA(edson, provs = ab, caribou = edson.caribou, xsr = edson_sr,
+          title = "EdsonFP", png = file.path(dataDirEdsonFP, "EdsonFP.png"))
+  #plotFMA(edson, provs = ab, caribou = edson.caribou, xsr = edson_sr, title = "EdsonFP", png = NULL)
 
   return(ml)
 }

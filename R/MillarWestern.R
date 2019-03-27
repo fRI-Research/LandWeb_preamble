@@ -2,7 +2,7 @@ fmaMillarWestern <- function(ml, runName, dataDir, canProvs) {
   dataDirMillarWestern <- file.path(dataDir, "MillarWestern") %>% checkPath(create = TRUE)
 
   ab <- canProvs[canProvs$NAME_1 == "Alberta", ]
-  mw <- extractFMA(ml, "Millar Western")
+  mw <- extractFMA(ml, "Millar Western Forest Products")
   mw.sp <- as(mw, "SpatialPolygons")
 
   shapefile(mw, filename = file.path(dataDirMillarWestern, "Millar_Western.shp"), overwrite = TRUE)
@@ -12,13 +12,10 @@ fmaMillarWestern <- function(ml, runName, dataDir, canProvs) {
                           studyArea = mw.sp, useSAcrs = TRUE,
                           filename2 = file.path(dataDirMillarWestern, "Millar_Western_ANSR.shp"),
                           overwrite = TRUE)
-  #plot(mw.ansr, add = TRUE)
-
   mw.caribou <- postProcess(ml$`Boreal Caribou Ranges`,
                                studyArea = mw.sp, useSAcrs = TRUE,
                                filename2 = file.path(dataDirMillarWestern, "Millar_Western_caribou.shp"),
                                overwrite = TRUE)
-  #plot(mw.caribou, col = "magenta", add = TRUE)
 
   ml <- mapAdd(mw, ml, layerName = "Millar Western", useSAcrs = TRUE, poly = TRUE,
                analysisGroupReportingPolygon = "Millar Western", isStudyArea = TRUE,
@@ -40,11 +37,14 @@ fmaMillarWestern <- function(ml, runName, dataDir, canProvs) {
                           useSAcrs = TRUE,
                           filename2 = file.path(dataDirMillarWestern, "Millar_Western_SR.shp"),
                           overwrite = TRUE)
-  #plot(mw_sr)
 
   ml <- mapAdd(mw_sr, ml, isStudyArea = TRUE, layerName = "Millar Western SR",
                useSAcrs = TRUE, poly = TRUE, studyArea = NULL, # don't crop/mask to studyArea(ml, 2)
                columnNameForLabels = "NSN", filename2 = NULL)
+
+  plotFMA(mw, provs = ab, caribou = mw.caribou, xsr = mw_sr, title = "Millar Western",
+          png = file.path(dataDirMillarWestern, "Millar_Western.png"))
+  #plotFMA(mw, provs = ab, caribou = mw.caribou, xsr = mw_sr, title = "Millar Western", png = NULL)
 
   return(ml)
 }

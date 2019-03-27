@@ -1,22 +1,16 @@
 fmaNWT <- function(ml, runName, dataDir, canProvs) {
   dataDirFMANWT <- file.path(dataDir, "FMANWT") %>% checkPath(create = TRUE)
 
-
-  ## reportingPolygons
   nwt <- canProvs[canProvs$NAME_1 %in% c("Northwest Territories"), ]
   fmanwt <- extractFMA(ml, "Fort Resolution")
-  #plot(spTransform(nwt, crs(fmanwt)))
-  #plot(fmanwt[, "Name"], main = "NWT FMAs", col = "lightblue", add = TRUE)
-
   fmanwt.sp <- as(fmanwt, "SpatialPolygons")
-
   shapefile(fmanwt, filename = file.path(dataDirFMANWT, "FMANWT.shp"), overwrite = TRUE)
 
+  ## reportingPolygons
   fmanwt.caribou <- postProcess(ml$`Boreal Caribou Ranges`,
                                 studyArea = fmanwt.sp, useSAcrs = TRUE,
                                 filename2 = file.path(dataDirFMANWT, "FMANWT_caribou.shp"),
                                 overwrite = TRUE)
-  #plot(fmanwt.caribou, col = "magenta", add = TRUE)
 
   ml <- mapAdd(fmanwt, ml, layerName = "FMANWT", useSAcrs = TRUE, poly = TRUE,
                analysisGroupReportingPolygon = "FMANWT", isStudyArea = TRUE,
@@ -34,11 +28,15 @@ fmaNWT <- function(ml, runName, dataDir, canProvs) {
                           useSAcrs = TRUE,
                           filename2 = file.path(dataDirFMANWT, "FMANWT_SR.shp"),
                           overwrite = TRUE)
-  #plot(fmanwt_sr, add = TRUE)
 
   ml <- mapAdd(fmanwt_sr, ml, isStudyArea = TRUE, layerName = "FMANWT SR",
                useSAcrs = TRUE, poly = TRUE, studyArea = NULL, # don't crop/mask to studyArea(ml, 2)
                columnNameForLabels = "NSN", filename2 = NULL)
+
+  plotFMA(fmanwt, provs = nwt, caribou = fmanwt.caribou, xsr = fmanwt_sr,
+          title = "Fort Resolution", png = file.path(dataDirFMANWT, "FMA_NWT.png"))
+  #plotFMA(fmanwt, provs = nwt, caribou = fmanwt.caribou, xsr = fmanwt_sr,
+  #        title = "Fort Resolution", png = NULL)
 
   return(ml)
 }

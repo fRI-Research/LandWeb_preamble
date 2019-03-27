@@ -7,9 +7,6 @@ fmaVanderwell <- function(ml, runName, dataDir, canProvs) {
   ab <- canProvs[canProvs$NAME_1 == "Alberta", ]
   vanderwell <- extractFMA(ml, "Vanderwell Contractors")
   vanderwell.sp <- as(vanderwell, "SpatialPolygons")
-  #plot(spTransform(ab, crs(vanderwell)))
-  #plot(vanderwell[, "Name"], main = "Vanderwell full", col = "lightblue", add = TRUE)
-
   shapefile(vanderwell, filename = file.path(dataDirVanderwell, "Vanderwell_full.shp"), overwrite = TRUE)
 
   ## reportingPolygons
@@ -17,12 +14,10 @@ fmaVanderwell <- function(ml, runName, dataDir, canProvs) {
                                  studyArea = vanderwell.sp, useSAcrs = TRUE,
                                  filename2 = file.path(dataDirVanderwell, "Vanderwell_ANSR.shp"),
                                  overwrite = TRUE)
-  #plot(vanderwell.ansr, col = "magenta", add = TRUE)
   vanderwell.caribou <- postProcess(ml$`Boreal Caribou Ranges`,
                                     studyArea = vanderwell.sp, useSAcrs = TRUE,
                                     filename2 = file.path(dataDirVanderwell, "Vanderwell_caribou.shp"),
                                     overwrite = TRUE)
-  #plot(vanderwell.caribou, col = "magenta", add = TRUE)
 
   ml <- mapAdd(vanderwell, ml, layerName = "Vanderwell", useSAcrs = TRUE, poly = TRUE,
                analysisGroupReportingPolygon = "Vanderwell", isStudyArea = TRUE,
@@ -44,11 +39,16 @@ fmaVanderwell <- function(ml, runName, dataDir, canProvs) {
                           useSAcrs = TRUE,
                           filename2 = file.path(dataDirVanderwell, "Vanderwell_SR.shp"),
                           overwrite = TRUE)
-  #plot(vanderwell_sr)
 
   ml <- mapAdd(vanderwell_sr, ml, isStudyArea = TRUE, layerName = "Vanderwell SR",
                useSAcrs = TRUE, poly = TRUE, studyArea = NULL, # don't crop/mask to studyArea(ml, 2)
                columnNameForLabels = "NSN", filename2 = NULL)
+
+  plotFMA(vanderwell, provs = ab, caribou = vanderwell.caribou, xsr = vanderwell_sr,
+          title = "Vanderwell Contractors",
+          png = file.path(dataDirVanderwell, "Vanderwell.png"))
+  #plotFMA(vanderwell, provs = ab, caribou = vanderwell.caribou, xsr = vanderwell_sr,
+  #        title = "Vanderwell Contractors", png = NULL)
 
   return(ml)
 }

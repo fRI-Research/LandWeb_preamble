@@ -1,23 +1,20 @@
 fmaManning <- function(ml, runName, dataDir, canProvs) {
   dataDirManning <- file.path(dataDir, "Manning") %>% checkPath(create = TRUE)
 
-  ## reportingPolygons
+  ab <- canProvs[canProvs$NAME_1 == "Alberta", ]
   manning <- extractFMA(ml, "Manning")
-  #plot(manning, main = "Manning", col = "lightblue")
   manning.sp <- as(manning, "SpatialPolygons")
   shapefile(manning, filename = file.path(dataDirManning, "Manning_full.shp"), overwrite = TRUE)
 
+  ## reportingPolygons
   manning.ansr <- postProcess(ml$`Alberta Natural Subregions`,
                               studyArea = manning.sp, useSAcrs = TRUE,
                               filename2 = file.path(dataDirManning, "Manning_ANSR.shp"),
                               overwrite = TRUE)
-  #plot(manning.ansr, add = TRUE)
-
   manning.caribou <- postProcess(ml$`Boreal Caribou Ranges`,
                                  studyArea = manning.sp, useSAcrs = TRUE,
                                  filename2 = file.path(dataDirManning, "Manning_caribou.shp"),
                                  overwrite = TRUE)
-  #plot(manning.caribou, col = "magenta", add = TRUE)
 
   ml <- mapAdd(manning, ml, layerName = "Manning", useSAcrs = TRUE, poly = TRUE,
                analysisGroupReportingPolygon = "Manning", isStudyArea = TRUE,
@@ -35,15 +32,18 @@ fmaManning <- function(ml, runName, dataDir, canProvs) {
 
   ## studyArea shouldn't use analysisGroup because it's not a reportingPolygon
   manning_sr <- postProcess(ml$`LandWeb Study Area`,
-                          studyArea = amc::outerBuffer(manning, 50000), # 50 km buffer
-                          useSAcrs = TRUE,
-                          filename2 = file.path(dataDirManning, "Manning_SR.shp"),
-                          overwrite = TRUE)
-  #plot(manning_sr)
+                            studyArea = amc::outerBuffer(manning, 50000), # 50 km buffer
+                            useSAcrs = TRUE,
+                            filename2 = file.path(dataDirManning, "Manning_SR.shp"),
+                            overwrite = TRUE)
 
   ml <- mapAdd(manning_sr, ml, isStudyArea = TRUE, layerName = "Manning SR",
                useSAcrs = TRUE, poly = TRUE, studyArea = NULL, # don't crop/mask to studyArea(ml, 2)
                columnNameForLabels = "NSN", filename2 = NULL)
+  plotFMA(manning, provs = ab, caribou = manning.caribou, xsr = manning_sr,
+          title = "Manning", png = file.path(dataDirManning, "Manning.png"))
+  #plotFMA(manning, provs = ab, caribou = manning.caribou, xsr = manning_sr,
+  #        title = "Manning", png = NULL)
 
   return(ml)
 }

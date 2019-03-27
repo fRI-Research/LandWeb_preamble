@@ -5,9 +5,6 @@ fmaSundreFP <- function(ml, runName, dataDir, canProvs) {
   ab <- canProvs[canProvs$NAME_1 == "Alberta", ]
   sundre <- extractFMA(ml, "Sundre Forest Products Inc.")
   sundre.sp <- as(sundre, "SpatialPolygons")
-  #plot(spTransform(ab, crs(sundre)))
-  #plot(sundre[, "Name"], main = "SundreFP full", col = "lightblue", add = TRUE)
-
   shapefile(sundre, filename = file.path(dataDirSundreFP, "SundreFP.shp"), overwrite = TRUE)
 
   ## reportingPolygons
@@ -15,7 +12,6 @@ fmaSundreFP <- function(ml, runName, dataDir, canProvs) {
                              studyArea = sundre.sp, useSAcrs = TRUE,
                              filename2 = file.path(dataDirSundreFP, "SundreFP_ANSR"),
                              overwrite = TRUE)
-  #plot(sundre.ansr, col = "magenta", add = TRUE)
 
   ml <- mapAdd(sundre, ml, layerName = "SundreFP", useSAcrs = TRUE, poly = TRUE,
                analysisGroupReportingPolygon = "SundreFP", isStudyArea = TRUE,
@@ -33,11 +29,15 @@ fmaSundreFP <- function(ml, runName, dataDir, canProvs) {
                           useSAcrs = TRUE,
                           filename2 = file.path(dataDirSundreFP, "SundreFP_SR.shp"),
                           overwrite = TRUE)
-  #plot(sundre_sr)
 
   ml <- mapAdd(sundre_sr, ml, isStudyArea = TRUE, layerName = "SundreFP SR",
                useSAcrs = TRUE, poly = TRUE, studyArea = NULL, # don't crop/mask to studyArea(ml, 2)
                columnNameForLabels = "NSN", filename2 = NULL)
+
+  plotFMA(sundre, provs = ab, caribou = sundre.caribou, xsr = sundre_sr,
+          title = "Sundre Forest Products", png = file.path(dataDirSundreFP, "SundreFP.png"))
+  #plotFMA(sundre, provs = ab, caribou = sundre.caribou, xsr = sundre_sr,
+  #        title = "Sundre Forest Products", png = NULL)
 
   return(ml)
 }
