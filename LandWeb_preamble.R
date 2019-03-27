@@ -112,6 +112,8 @@ Init <- function(sim) {
     ml <- fmaEdsonFP(ml, P(sim)$runName, dataDir, sim$canProvs)
   } else if (grepl("FMANWT", P(sim)$runName)) {
     ml <- fmaNWT(ml, P(sim)$runName, dataDir, sim$canProvs)
+  } else if (grepl("LandWeb", P(sim)$runName)) {
+    ml <- fmaLP(ml, P(sim)$runName, file.path("inputs", "LandWeb"), sim$canProvs)
   } else if (grepl("LP", P(sim)$runName)) {
     ml <- fmaLP(ml, P(sim)$runName, dataDir, sim$canProvs)
   } else if (grepl("Manning", P(sim)$runName)) {

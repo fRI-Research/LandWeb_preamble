@@ -32,10 +32,22 @@ extractFMA <- function(ml, name) {
 #' @export
 #' @importFrom graphics dev.off png
 #' @importFrom sp crs plot.SpatialPointsDataFrame spTransform
+#' @rdname plotFMA
 plotFMA <- function(x, provs, caribou = NULL, xsr = NULL, title = NULL, png = NULL) {
   if (!is.null(png)) png(filename = png, width = 1200, height = 800)
   plot(spTransform(provs, crs(x)))
   plot(x[, "Name"], main = title, col = "lightblue", add = TRUE)
+  if (!is.null(caribou)) plot(caribou, col = "magenta", add = TRUE)
+  if (!is.null(xsr)) plot(xsr, add = TRUE)
+  if (!is.null(png)) dev.off()
+}
+
+#' @export
+#' @rdname plotFMA
+plotLandWeb <- function(x, provs, caribou = NULL, xsr = NULL, title = NULL, png = NULL) {
+  if (!is.null(png)) png(filename = png, width = 1800, height = 1200)
+  plot(spTransform(provs, crs(x)))
+  plot(x, main = title, col = "orange", add = TRUE)
   if (!is.null(caribou)) plot(caribou, col = "magenta", add = TRUE)
   if (!is.null(xsr)) plot(xsr, add = TRUE)
   if (!is.null(png)) dev.off()
