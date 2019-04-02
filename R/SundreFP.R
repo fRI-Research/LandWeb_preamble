@@ -1,4 +1,4 @@
-fmaSundreFP <- function(ml, runName, dataDir, canProvs) {
+fmaSundreFP <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
   dataDirSundreFP <- file.path(dataDir, "SundreFP") %>% checkPath(create = TRUE)
 
   ## There are 3 parts to the SundreFP FMA: 2 in BC and one in MB.
@@ -14,7 +14,7 @@ fmaSundreFP <- function(ml, runName, dataDir, canProvs) {
                              overwrite = TRUE)
 
   ml <- mapAdd(sundre, ml, layerName = "SundreFP", useSAcrs = TRUE, poly = TRUE,
-               analysisGroupReportingPolygon = "SundreFP", isStudyArea = TRUE,
+               analysisGroupReportingPolygon = "SundreFP", isStudyArea = isTRUE(asStudyArea),
                columnNameForLabels = "Name", filename2 = NULL)
   ml <- mapAdd(sundre.ansr, ml, layerName = "SundreFP ANSR", useSAcrs = TRUE, poly = TRUE,
                analysisGroupReportingPolygon = "SundreFP ANSR",
@@ -30,14 +30,16 @@ fmaSundreFP <- function(ml, runName, dataDir, canProvs) {
                           filename2 = file.path(dataDirSundreFP, "SundreFP_SR.shp"),
                           overwrite = TRUE)
 
-  ml <- mapAdd(sundre_sr, ml, isStudyArea = TRUE, layerName = "SundreFP SR",
-               useSAcrs = TRUE, poly = TRUE, studyArea = NULL, # don't crop/mask to studyArea(ml, 2)
-               columnNameForLabels = "NSN", filename2 = NULL)
-
-  plotFMA(sundre, provs = ab, caribou = sundre.caribou, xsr = sundre_sr,
+  plotFMA(sundre, provs = ab, caribou = NULL, xsr = sundre_sr,
           title = "Sundre Forest Products", png = file.path(dataDirSundreFP, "SundreFP.png"))
   #plotFMA(sundre, provs = ab, caribou = sundre.caribou, xsr = sundre_sr,
   #        title = "Sundre Forest Products", png = NULL)
+
+  if (isTRUE(asStudyArea)) {
+    ml <- mapAdd(sundre_sr, ml, isStudyArea = TRUE, layerName = "SundreFP SR",
+                 useSAcrs = TRUE, poly = TRUE, studyArea = NULL, # don't crop/mask to studyArea(ml, 2)
+                 columnNameForLabels = "NSN", filename2 = NULL)
+  }
 
   return(ml)
 }

@@ -1,4 +1,4 @@
-fmaTolko <- function(ml, runName, dataDir, canProvs) {
+fmaTolko <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
   dataDirTolko <- file.path(dataDir, "Tolko") %>% checkPath(create = TRUE)
 
   ## There are 3 parts to the Tolko FMA in AB and one in SK
@@ -7,7 +7,7 @@ fmaTolko <- function(ml, runName, dataDir, canProvs) {
   tolko.full <- maptools::unionSpatialPolygons(tolko, rep(1, 5))
   shapefile(tolko.full, filename = file.path(dataDirTolko, "Tolko_Full.shp"), overwrite = TRUE)
 
-  if (grepl("Tolko_AB_N|tolko_AB_N", runName)) {
+  if (grepl("LandWeb|Tolko_AB_N|tolko_AB_N", runName)) {
     ## reporting polygons
     tolko_ab_n <- tolko[4, ]
     tolko_ab_n.sp <- as(tolko_ab_n, "SpatialPolygons")
@@ -23,7 +23,7 @@ fmaTolko <- function(ml, runName, dataDir, canProvs) {
                                       overwrite = TRUE)
 
     ml <- mapAdd(tolko_ab_n, ml, layerName = "Tolko AB North", useSAcrs = TRUE, poly = TRUE,
-                 analysisGroupReportingPolygon = "Tolko AB North", isStudyArea = TRUE,
+                 analysisGroupReportingPolygon = "Tolko AB North", isStudyArea = isTRUE(asStudyArea),
                  columnNameForLabels = "Name", filename2 = NULL)
     ml <- mapAdd(tolko_ab_n.ansr, ml, layerName = "Tolko AB North ANSR", useSAcrs = TRUE, poly = TRUE,
                  analysisGroupReportingPolygon = "Tolko AB North ANSR",
@@ -43,15 +43,17 @@ fmaTolko <- function(ml, runName, dataDir, canProvs) {
                                  filename2 = file.path(dataDirTolko, "Tolko_AB_N_SR.shp"),
                                  overwrite = TRUE)
 
-    ml <- mapAdd(tolko_ab_n_sr, ml, isStudyArea = TRUE, layerName = "Tolko AB North SR",
-                 useSAcrs = TRUE, poly = TRUE, studyArea = NULL, # don't crop/mask to studyArea(ml, 2)
-                 columnNameForLabels = "NSN", filename2 = NULL)
-
     plotFMA(tolko_ab_n, provs = bcabsk, caribou = tolko_ab_n.caribou, xsr = tolko_ab_n_sr,
             title = "Tolko AB N", png = file.path(dataDirTolko, "Tolko_AB_N.png"))
     #plotFMA(tolko_ab_n, provs = bcabsk, caribou = tolko_ab_n.caribou, xsr = tolko_ab_n_sr,
     #        title = "Tolko AB N", png = NULL)
-  } else if (grepl("Tolko_AB_S|tolko_AB_S", runName)) {
+
+    if (isTRUE(asStudyArea)) {
+      ml <- mapAdd(tolko_ab_n_sr, ml, isStudyArea = TRUE, layerName = "Tolko AB North SR",
+                   useSAcrs = TRUE, poly = TRUE, studyArea = NULL, # don't crop/mask to studyArea(ml, 2)
+                   columnNameForLabels = "NSN", filename2 = NULL)
+    }
+  } else if (grepl("LandWeb|Tolko_AB_S|tolko_AB_S", runName)) {
     ## reportingPolygons
     tolko_ab_s <- tolko[c(2, 3, 5), ]
     tolko_ab_s.sp <- as(tolko_ab_s, "SpatialPolygons")
@@ -67,7 +69,7 @@ fmaTolko <- function(ml, runName, dataDir, canProvs) {
                                       overwrite = TRUE)
 
     ml <- mapAdd(tolko_ab_s, ml, layerName = "Tolko AB South", useSAcrs = TRUE, poly = TRUE,
-                 analysisGroupReportingPolygon = "Tolko AB South", isStudyArea = TRUE,
+                 analysisGroupReportingPolygon = "Tolko AB South", isStudyArea = isTRUE(asStudyArea),
                  columnNameForLabels = "Name", filename2 = NULL)
     ml <- mapAdd(tolko_ab_s.ansr, ml, layerName = "Tolko AB South ANSR", useSAcrs = TRUE, poly = TRUE,
                  analysisGroupReportingPolygon = "Tolko AB South ANSR",
@@ -87,15 +89,17 @@ fmaTolko <- function(ml, runName, dataDir, canProvs) {
                                  filename2 = file.path(dataDirTolko, "Tolko_AB_S_SR.shp"),
                                  overwrite = TRUE)
 
-    ml <- mapAdd(tolko_ab_s_sr, ml, isStudyArea = TRUE, layerName = "Tolko AB South SR",
-                 useSAcrs = TRUE, poly = TRUE, studyArea = NULL, # don't crop/mask to studyArea(ml, 2)
-                 columnNameForLabels = "NSN", filename2 = NULL)
-
     plotFMA(tolko_ab_s, provs = bcabsk, caribou = tolko_ab_s.caribou, xsr = tolko_ab_s_sr,
             title = "Tolko AB S", png = file.path(dataDirTolko, "Tolko_AB_S.png"))
     #plotFMA(tolko_ab_s, provs = bcabsk, caribou = tolko_ab_s.caribou, xsr = tolko_ab_s_sr,
     #        title = "Tolko AB S", png = NULL)
-  } else if (grepl("Tolko_SK|tolko_SK", runName)) {
+
+    if (isTRUE(asStudyArea)) {
+      ml <- mapAdd(tolko_ab_s_sr, ml, isStudyArea = TRUE, layerName = "Tolko AB South SR",
+                   useSAcrs = TRUE, poly = TRUE, studyArea = NULL, # don't crop/mask to studyArea(ml, 2)
+                   columnNameForLabels = "NSN", filename2 = NULL)
+    }
+  } else if (grepl("LandWeb|Tolko_SK|tolko_SK", runName)) {
     ## reportingPolygons
     tolko_sk <- tolko[1, ]
     tolko_sk.sp <- as(tolko_sk, "SpatialPolygons")
@@ -107,7 +111,7 @@ fmaTolko <- function(ml, runName, dataDir, canProvs) {
                                     overwrite = TRUE)
 
     ml <- mapAdd(tolko_sk, ml, layerName = "Tolko SK", useSAcrs = TRUE, poly = TRUE,
-                 analysisGroupReportingPolygon = "Tolko SK", isStudyArea = TRUE,
+                 analysisGroupReportingPolygon = "Tolko SK", isStudyArea = isTRUE(asStudyArea),
                  columnNameForLabels = "Name", filename2 = NULL)
     ml <- mapAdd(tolko_sk.caribou, ml, layerName = "Tolko SK Caribou", useSAcrs = TRUE, poly = TRUE,
                  analysisGroupReportingPolygon = "Tolko SK Caribou",
@@ -123,14 +127,16 @@ fmaTolko <- function(ml, runName, dataDir, canProvs) {
                                filename2 = file.path(dataDirTolko, "Tolko_SK_SR.shp"),
                                overwrite = TRUE)
 
-    ml <- mapAdd(tolko_sk_sr, ml, isStudyArea = TRUE, layerName = "Tolko SK SR",
-                 useSAcrs = TRUE, poly = TRUE, studyArea = NULL, # don't crop/mask to studyArea(ml, 2)
-                 columnNameForLabels = "NSN", filename2 = NULL)
-
     plotFMA(tolko_sk, provs = bcabsk, caribou = tolko_sk.caribou, xsr = tolko_sk_sr,
             title = "Tolko AB SK", png = file.path(dataDirTolko, "Tolko_SK.png"))
     #plotFMA(tolko_sk, provs = bcabsk, caribou = tolko_sk.caribou, xsr = tolko_sk_sr,
     #        title = "Tolko AB SK", png = NULL)
+
+    if (isTRUE(asStudyArea)) {
+      ml <- mapAdd(tolko_sk_sr, ml, isStudyArea = TRUE, layerName = "Tolko SK SR",
+                   useSAcrs = TRUE, poly = TRUE, studyArea = NULL, # don't crop/mask to studyArea(ml, 2)
+                   columnNameForLabels = "NSN", filename2 = NULL)
+    }
   }
 
   return(ml)

@@ -1,4 +1,4 @@
-fmaVanderwell <- function(ml, runName, dataDir, canProvs) {
+fmaVanderwell <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
   dataDirVanderwell <- file.path(dataDir, "Vanderwell") %>% checkPath(create = TRUE)
 
   ## NOTE: Vanderwell has 2 FMAS (close enough we can run all together):
@@ -20,7 +20,7 @@ fmaVanderwell <- function(ml, runName, dataDir, canProvs) {
                                     overwrite = TRUE)
 
   ml <- mapAdd(vanderwell, ml, layerName = "Vanderwell", useSAcrs = TRUE, poly = TRUE,
-               analysisGroupReportingPolygon = "Vanderwell", isStudyArea = TRUE,
+               analysisGroupReportingPolygon = "Vanderwell", isStudyArea = isTRUE(asStudyArea),
                columnNameForLabels = "Name", filename2 = NULL)
   ml <- mapAdd(vanderwell.ansr, ml, layerName = "Vanderwell ANSR", useSAcrs = TRUE, poly = TRUE,
                analysisGroupReportingPolygon = "Vanderwell ANSR",
@@ -40,15 +40,17 @@ fmaVanderwell <- function(ml, runName, dataDir, canProvs) {
                           filename2 = file.path(dataDirVanderwell, "Vanderwell_SR.shp"),
                           overwrite = TRUE)
 
-  ml <- mapAdd(vanderwell_sr, ml, isStudyArea = TRUE, layerName = "Vanderwell SR",
-               useSAcrs = TRUE, poly = TRUE, studyArea = NULL, # don't crop/mask to studyArea(ml, 2)
-               columnNameForLabels = "NSN", filename2 = NULL)
-
   plotFMA(vanderwell, provs = ab, caribou = vanderwell.caribou, xsr = vanderwell_sr,
           title = "Vanderwell Contractors",
           png = file.path(dataDirVanderwell, "Vanderwell.png"))
   #plotFMA(vanderwell, provs = ab, caribou = vanderwell.caribou, xsr = vanderwell_sr,
   #        title = "Vanderwell Contractors", png = NULL)
+
+  if (isTRUE(asStudyArea)) {
+    ml <- mapAdd(vanderwell_sr, ml, isStudyArea = TRUE, layerName = "Vanderwell SR",
+                 useSAcrs = TRUE, poly = TRUE, studyArea = NULL, # don't crop/mask to studyArea(ml, 2)
+                 columnNameForLabels = "NSN", filename2 = NULL)
+  }
 
   return(ml)
 }

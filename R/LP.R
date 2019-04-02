@@ -1,4 +1,4 @@
-fmaLP <- function(ml, runName, dataDir, canProvs) {
+fmaLP <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
   dataDirLP <- file.path(dataDir, "LP") %>% checkPath(create = TRUE)
 
   ## There are 3 parts to the LP FMA: 2 in BC and one in MB.
@@ -7,7 +7,7 @@ fmaLP <- function(ml, runName, dataDir, canProvs) {
   lp <- extractFMA(ml, "Fort St\\. John|Dawson Creek|Mountain")
   shapefile(lp, filename = file.path(dataDirLP, "LP_full.shp"), overwrite = TRUE)
 
-  if (grepl("LP_BC", runName)) {
+  if (grepl("LandWeb|LP_BC", runName)) {
     ## reportingPolygons
     lp_bc <- extractFMA(ml, "Fort St\\. John|Dawson Creek")
     lp_bc.sp <- as(lp_bc, "SpatialPolygons")
@@ -19,7 +19,7 @@ fmaLP <- function(ml, runName, dataDir, canProvs) {
                                  overwrite = TRUE)
 
     ml <- mapAdd(lp_bc, ml, layerName = "LP BC", useSAcrs = TRUE, poly = TRUE,
-                 analysisGroupReportingPolygon = "LP BC", isStudyArea = TRUE,
+                 analysisGroupReportingPolygon = "LP BC", isStudyArea = isTRUE(asStudyArea),
                  columnNameForLabels = "Name", filename2 = NULL)
     ml <- mapAdd(lp_bc.caribou, ml, layerName = "LP BC Caribou", useSAcrs = TRUE, poly = TRUE,
                  analysisGroupReportingPolygon = "LP BC Caribou",
@@ -35,14 +35,16 @@ fmaLP <- function(ml, runName, dataDir, canProvs) {
                             filename2 = file.path(dataDirLP, "LP_BC_SR.shp"),
                             overwrite = TRUE)
 
-    ml <- mapAdd(lp_bc_sr, ml, isStudyArea = TRUE, layerName = "LP BC SR",
-                 useSAcrs = TRUE, poly = TRUE, studyArea = NULL, # don't crop/mask to studyArea(ml, 2)
-                 columnNameForLabels = "NSN", filename2 = NULL)
-
     plotFMA(lp_bc, provs = west, caribou = lp_bc.caribou, xsr = lp_bc_sr, title = "LP BC",
             png = file.path(dataDirLP, "LP_BC.png"))
     #plotFMA(lp_bc, provs = west, caribou = lp_bc.caribou, xsr = lp_bc_sr, title = "LP BC", png = NULL)
-  } else if (grepl("LP_MB", runName)) {
+
+    if (isTRUE(asStudyArea)) {
+      ml <- mapAdd(lp_bc_sr, ml, isStudyArea = TRUE, layerName = "LP BC SR",
+                   useSAcrs = TRUE, poly = TRUE, studyArea = NULL, # don't crop/mask to studyArea(ml, 2)
+                   columnNameForLabels = "NSN", filename2 = NULL)
+    }
+  } else if (grepl("LandWeb|LP_MB", runName)) {
     ## reportingPolygons
     lp_mb <- extractFMA(ml, "Mountain")
     lp_mb.sp <- as(lp_mb, "SpatialPolygons")
@@ -54,7 +56,7 @@ fmaLP <- function(ml, runName, dataDir, canProvs) {
                                  overwrite = TRUE)
 
     ml <- mapAdd(lp_mb, ml, layerName = "LP MB", useSAcrs = TRUE, poly = TRUE,
-                 analysisGroupReportingPolygon = "LP MB", isStudyArea = TRUE,
+                 analysisGroupReportingPolygon = "LP MB", isStudyArea = isTRUE(asStudyArea),
                  columnNameForLabels = "Name", filename2 = NULL)
     ml <- mapAdd(lp_mb.caribou, ml, layerName = "LP MB Caribou", useSAcrs = TRUE, poly = TRUE,
                  analysisGroupReportingPolygon = "LP MB Caribou",
@@ -70,13 +72,14 @@ fmaLP <- function(ml, runName, dataDir, canProvs) {
                             filename2 = file.path(dataDirLP, "LP_MB_SR.shp"),
                             overwrite = TRUE)
 
-    ml <- mapAdd(lp_mb_sr, ml, isStudyArea = TRUE, layerName = "LP MB SR",
-                 useSAcrs = TRUE, poly = TRUE, studyArea = NULL, # don't crop/mask to studyArea(ml, 2)
-                 columnNameForLabels = "NSN", filename2 = NULL)
-
     plotFMA(lp_mb, provs = west, caribou = lp_mb.caribou, xsr = lp_mb_sr, title = "LP MB",
             png = file.path(dataDirLP, "LP_MB.png"))
     #plotFMA(lp_mb, provs = west, caribou = lp_mb.caribou, xsr = lp_mb_sr, title = "LP MB", png = NULL)
+    if (isTRUE(asStudyArea)) {
+      ml <- mapAdd(lp_mb_sr, ml, isStudyArea = TRUE, layerName = "LP MB SR",
+                   useSAcrs = TRUE, poly = TRUE, studyArea = NULL, # don't crop/mask to studyArea(ml, 2)
+                   columnNameForLabels = "NSN", filename2 = NULL)
+    }
   }
 
   return(ml)

@@ -1,4 +1,4 @@
-fmaManning <- function(ml, runName, dataDir, canProvs) {
+fmaManning <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
   dataDirManning <- file.path(dataDir, "Manning") %>% checkPath(create = TRUE)
 
   ab <- canProvs[canProvs$NAME_1 == "Alberta", ]
@@ -17,7 +17,7 @@ fmaManning <- function(ml, runName, dataDir, canProvs) {
                                  overwrite = TRUE)
 
   ml <- mapAdd(manning, ml, layerName = "Manning", useSAcrs = TRUE, poly = TRUE,
-               analysisGroupReportingPolygon = "Manning", isStudyArea = TRUE,
+               analysisGroupReportingPolygon = "Manning", isStudyArea = isTRUE(asStudyArea),
                columnNameForLabels = "Name", filename2 = NULL)
   ml <- mapAdd(manning.ansr, ml, layerName = "Manning ANSR", useSAcrs = TRUE, poly = TRUE,
                analysisGroupReportingPolygon = "Manning ANSR",
@@ -37,13 +37,16 @@ fmaManning <- function(ml, runName, dataDir, canProvs) {
                             filename2 = file.path(dataDirManning, "Manning_SR.shp"),
                             overwrite = TRUE)
 
-  ml <- mapAdd(manning_sr, ml, isStudyArea = TRUE, layerName = "Manning SR",
-               useSAcrs = TRUE, poly = TRUE, studyArea = NULL, # don't crop/mask to studyArea(ml, 2)
-               columnNameForLabels = "NSN", filename2 = NULL)
   plotFMA(manning, provs = ab, caribou = manning.caribou, xsr = manning_sr,
           title = "Manning", png = file.path(dataDirManning, "Manning.png"))
   #plotFMA(manning, provs = ab, caribou = manning.caribou, xsr = manning_sr,
   #        title = "Manning", png = NULL)
+
+  if (isTRUE(asStudyArea)) {
+    ml <- mapAdd(manning_sr, ml, isStudyArea = TRUE, layerName = "Manning SR",
+                 useSAcrs = TRUE, poly = TRUE, studyArea = NULL, # don't crop/mask to studyArea(ml, 2)
+                 columnNameForLabels = "NSN", filename2 = NULL)
+  }
 
   return(ml)
 }

@@ -1,4 +1,4 @@
-fmaWestFraser <- function(ml, runName, dataDir, canProvs) {
+fmaWestFraser <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
   dataDirWestFraser <- file.path(dataDir, "WestFraser") %>% checkPath(create = TRUE)
 
   ## There are multiple parts to the WestFraser FMAs:
@@ -11,7 +11,7 @@ fmaWestFraser <- function(ml, runName, dataDir, canProvs) {
 
   shapefile(wf, filename = file.path(dataDirWestFraser, "WestFraser_full.shp"), overwrite = TRUE)
 
-  if (grepl("BlueRidge", runName)) {
+  if (grepl("LandWeb|BlueRidge", runName)) {
     ## reportingPolygons
     wf_br <- wf[grepl("Blue Ridge", wf$Name), ] ## first subpolygon
     wf_br.sp <- as(wf_br, "SpatialPolygons")
@@ -27,7 +27,7 @@ fmaWestFraser <- function(ml, runName, dataDir, canProvs) {
     ## NOTE: no intersecting caribou areas
 
     ml <- mapAdd(wf_br, ml, layerName = "West Fraser Blue Ridge", useSAcrs = TRUE, poly = TRUE,
-                 analysisGroupReportingPolygon = "West Fraser Blue Ridge", isStudyArea = TRUE,
+                 analysisGroupReportingPolygon = "West Fraser Blue Ridge", isStudyArea = isTRUE(asStudyArea),
                  columnNameForLabels = "Name", filename2 = NULL)
     ml <- mapAdd(wf_br.ansr, ml, layerName = "West Fraser Blue Ridge ANSR", useSAcrs = TRUE, poly = TRUE,
                  analysisGroupReportingPolygon = "West Fraser Blue Ridge ANSR",
@@ -44,10 +44,12 @@ fmaWestFraser <- function(ml, runName, dataDir, canProvs) {
                            overwrite = TRUE)
     #plot(wf_br_sr, add = TRUE)
 
-    ml <- mapAdd(wf_br_sr, ml, isStudyArea = TRUE, layerName = "West Fraser Blue Ridge SR",
-                 useSAcrs = TRUE, poly = TRUE, studyArea = NULL, # don't crop/mask to studyArea(ml, 2)
-                 columnNameForLabels = "NSN", filename2 = NULL)
-  } else if (grepl("WestFraser_N", runName)) {
+    if (isTRUE(asStudyArea)) {
+      ml <- mapAdd(wf_br_sr, ml, isStudyArea = TRUE, layerName = "West Fraser Blue Ridge SR",
+                   useSAcrs = TRUE, poly = TRUE, studyArea = NULL, # don't crop/mask to studyArea(ml, 2)
+                   columnNameForLabels = "NSN", filename2 = NULL)
+    }
+  } else if (grepl("LandWeb|WestFraser_N", runName)) {
     ## reportingPolygons
     wf_n <- wf[c(2:3, 6), ]
     wf_n.sp <- as(wf_n, "SpatialPolygons")
@@ -67,7 +69,7 @@ fmaWestFraser <- function(ml, runName, dataDir, canProvs) {
     #plot(wf_n.caribou, col = "magenta", add = TRUE)
 
     ml <- mapAdd(wf_n, ml, layerName = "West Fraser N", useSAcrs = TRUE, poly = TRUE,
-                 analysisGroupReportingPolygon = "West Fraser N", isStudyArea = TRUE,
+                 analysisGroupReportingPolygon = "West Fraser N", isStudyArea = isTRUE(asStudyArea),
                  columnNameForLabels = "Name", filename2 = NULL)
     ml <- mapAdd(wf_n.ansr, ml, layerName = "West Fraser N ANSR", useSAcrs = TRUE, poly = TRUE,
                  analysisGroupReportingPolygon = "West Fraser N ANSR",
@@ -88,10 +90,12 @@ fmaWestFraser <- function(ml, runName, dataDir, canProvs) {
                             overwrite = TRUE)
     #plot(wf_n_sr, add = TRUE)
 
-    ml <- mapAdd(wf_n_sr, ml, isStudyArea = TRUE, layerName = "West Fraser N SR",
-                 useSAcrs = TRUE, poly = TRUE, studyArea = NULL, # don't crop/mask to studyArea(ml, 2)
-                 columnNameForLabels = "NSN", filename2 = NULL)
-  } else if (grepl("WestFraser_S", runName)) {
+    if (isTRUE(asStudyArea)) {
+      ml <- mapAdd(wf_n_sr, ml, isStudyArea = TRUE, layerName = "West Fraser N SR",
+                   useSAcrs = TRUE, poly = TRUE, studyArea = NULL, # don't crop/mask to studyArea(ml, 2)
+                   columnNameForLabels = "NSN", filename2 = NULL)
+    }
+  } else if (grepl("LandWeb|WestFraser_S", runName)) {
     ## reportingPolygons
     wf_s <- wf[3:4,]
     wf_s.sp <- as(wf_s, "SpatialPolygons")
@@ -111,7 +115,7 @@ fmaWestFraser <- function(ml, runName, dataDir, canProvs) {
     #plot(wf_s.caribou, col = "magenta", add = TRUE)
 
     ml <- mapAdd(wf_s, ml, layerName = "West Fraser S", useSAcrs = TRUE, poly = TRUE,
-                 analysisGroupReportingPolygon = "West Fraser S", isStudyArea = TRUE,
+                 analysisGroupReportingPolygon = "West Fraser S", isStudyArea = isTRUE(asStudyArea),
                  columnNameForLabels = "Name", filename2 = NULL)
     ml <- mapAdd(wf_s.ansr, ml, layerName = "West Fraser S ANSR", useSAcrs = TRUE, poly = TRUE,
                  analysisGroupReportingPolygon = "West Fraser S ANSR",
@@ -132,9 +136,11 @@ fmaWestFraser <- function(ml, runName, dataDir, canProvs) {
                            overwrite = TRUE)
     #plot(wf_s_sr, add = TRUE)
 
-    ml <- mapAdd(wf_s_sr, ml, isStudyArea = TRUE, layerName = "West Fraser S SR",
-                 useSAcrs = TRUE, poly = TRUE, studyArea = NULL, # don't crop/mask to studyArea(ml, 2)
-                 columnNameForLabels = "NSN", filename2 = NULL)
+    if (isTRUE(asStudyArea)) {
+      ml <- mapAdd(wf_s_sr, ml, isStudyArea = TRUE, layerName = "West Fraser S SR",
+                   useSAcrs = TRUE, poly = TRUE, studyArea = NULL, # don't crop/mask to studyArea(ml, 2)
+                   columnNameForLabels = "NSN", filename2 = NULL)
+    }
   } ## TODO: add "All" option
 
   return(ml)

@@ -1,4 +1,4 @@
-fmaMillarWestern <- function(ml, runName, dataDir, canProvs) {
+fmaMillarWestern <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
   dataDirMillarWestern <- file.path(dataDir, "MillarWestern") %>% checkPath(create = TRUE)
 
   ab <- canProvs[canProvs$NAME_1 == "Alberta", ]
@@ -18,7 +18,7 @@ fmaMillarWestern <- function(ml, runName, dataDir, canProvs) {
                                overwrite = TRUE)
 
   ml <- mapAdd(mw, ml, layerName = "Millar Western", useSAcrs = TRUE, poly = TRUE,
-               analysisGroupReportingPolygon = "Millar Western", isStudyArea = TRUE,
+               analysisGroupReportingPolygon = "Millar Western", isStudyArea = isTRUE(asStudyArea),
                columnNameForLabels = "Name", filename2 = NULL)
   ml <- mapAdd(mw.ansr, ml, layerName = "Millar Western ANSR", useSAcrs = TRUE, poly = TRUE,
                analysisGroupReportingPolygon = "Millar Western ANSR",
@@ -38,13 +38,15 @@ fmaMillarWestern <- function(ml, runName, dataDir, canProvs) {
                           filename2 = file.path(dataDirMillarWestern, "Millar_Western_SR.shp"),
                           overwrite = TRUE)
 
-  ml <- mapAdd(mw_sr, ml, isStudyArea = TRUE, layerName = "Millar Western SR",
-               useSAcrs = TRUE, poly = TRUE, studyArea = NULL, # don't crop/mask to studyArea(ml, 2)
-               columnNameForLabels = "NSN", filename2 = NULL)
-
   plotFMA(mw, provs = ab, caribou = mw.caribou, xsr = mw_sr, title = "Millar Western",
           png = file.path(dataDirMillarWestern, "Millar_Western.png"))
   #plotFMA(mw, provs = ab, caribou = mw.caribou, xsr = mw_sr, title = "Millar Western", png = NULL)
+
+  if (isTRUE(asStudyArea)) {
+    ml <- mapAdd(mw_sr, ml, isStudyArea = TRUE, layerName = "Millar Western SR",
+                 useSAcrs = TRUE, poly = TRUE, studyArea = NULL, # don't crop/mask to studyArea(ml, 2)
+                 columnNameForLabels = "NSN", filename2 = NULL)
+  }
 
   return(ml)
 }

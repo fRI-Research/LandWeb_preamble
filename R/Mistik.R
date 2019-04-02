@@ -1,4 +1,4 @@
-fmaMistik <- function(ml, runName, dataDir, canProvs) {
+fmaMistik <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
   dataDirMistik <- file.path(dataDir, "Mistik") %>% checkPath(create = TRUE)
 
   ## reportingPolygons
@@ -13,7 +13,7 @@ fmaMistik <- function(ml, runName, dataDir, canProvs) {
                                 overwrite = TRUE)
 
   ml <- mapAdd(mistik, ml, layerName = "Mistik", useSAcrs = TRUE, poly = TRUE,
-               analysisGroupReportingPolygon = "Mistik", isStudyArea = TRUE,
+               analysisGroupReportingPolygon = "Mistik", isStudyArea = isTRUE(asStudyArea),
                columnNameForLabels = "Name", filename2 = NULL)
   ml <- mapAdd(mistik.caribou, ml, layerName = "Mistik Caribou", useSAcrs = TRUE, poly = TRUE,
                analysisGroupReportingPolygon = "Mistik Caribou",
@@ -29,14 +29,16 @@ fmaMistik <- function(ml, runName, dataDir, canProvs) {
                           filename2 = file.path(dataDirMistik, "Mistik_SR.shp"),
                           overwrite = TRUE)
 
-  ml <- mapAdd(mistik_sr, ml, isStudyArea = TRUE, layerName = "Mistik SR",
-               useSAcrs = TRUE, poly = TRUE, studyArea = NULL, # don't crop/mask to studyArea(ml, 2)
-               columnNameForLabels = "NSN", filename2 = NULL)
-
   plotFMA(mistik, provs = absk, caribou = mistik.caribou, xsr = mistik_sr, title = "Mistik",
           png = file.path(dataDirMistik, "Mistik.png"))
   #plotFMA(mistik, provs = absk, caribou = mistik.caribou, xsr = mistik_sr,
   #        title = "Mistik", png = NULL)
+
+  if (isTRUE(asStudyArea)) {
+    ml <- mapAdd(mistik_sr, ml, isStudyArea = TRUE, layerName = "Mistik SR",
+                 useSAcrs = TRUE, poly = TRUE, studyArea = NULL, # don't crop/mask to studyArea(ml, 2)
+                 columnNameForLabels = "NSN", filename2 = NULL)
+  }
 
   return(ml)
 }

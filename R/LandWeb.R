@@ -1,4 +1,4 @@
-allLandWeb <- function(ml, runName, dataDir, canProvs) {
+allLandWeb <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
   dataDirLandWeb <- file.path(dataDir, "FULL") %>% checkPath(create = TRUE)
 
   ## LandWeb area extends a bit into Yukon, Nunavut, Ontario, but not relevant here
@@ -24,8 +24,6 @@ allLandWeb <- function(ml, runName, dataDir, canProvs) {
                           filename2 = file.path(dataDirLandWeb, "LandWeb_provinces.shp"),
                           overwrite = TRUE)
 
-  ## TODO: add each FMA
-
   ml <- mapAdd(lw, ml, layerName = "LandWeb", useSAcrs = TRUE, poly = TRUE,
                analysisGroupReportingPolygon = "LandWeb", isStudyArea = TRUE,
                columnNameForLabels = "Name", filename2 = NULL)
@@ -34,21 +32,34 @@ allLandWeb <- function(ml, runName, dataDir, canProvs) {
                columnNameForLabels = "Name", filename2 = NULL)
   ml <- mapAdd(lw.provs, ml, layerName = "LandWeb Provinces", useSAcrs = TRUE, poly = TRUE,
                analysisGroupReportingPolygon = "LandWeb Provinces",
-               columnNameForLabels = "Name1", filename2 = NULL)
+               columnNameForLabels = "NAME_1", filename2 = NULL)
 
-  ## TODO: workaround problematic intersect() that changes Name to Name.1 and Name.2
-  names(ml$`LandWeb Caribou`) <- gsub("[.]1", "", names(ml$`LandWeb Caribou`))
+  ml <- fmaANC(ml, runName, dataDir, canProvs, asStudyArea = FALSE)
+  ml <- fmaDMI(ml, runName, dataDir, canProvs, asStudyArea = FALSE)
+  ml <- fmaEdsonFP(ml, runName, dataDir, canProvs, asStudyArea = FALSE)
+  ml <- fmaLP(ml, runName, dataDir, canProvs, asStudyArea = FALSE)
+  ml <- fmaManning(ml, runName, dataDir, canProvs, asStudyArea = FALSE)
+  ml <- fmaMillarWestern(ml, runName, dataDir, canProvs, asStudyArea = FALSE)
+  ml <- fmaMistik(ml, runName, dataDir, canProvs, asStudyArea = FALSE)
+  ml <- fmaNWT(ml, runName, dataDir, canProvs, asStudyArea = FALSE)
+  ml <- fmaSundreFP(ml, runName, dataDir, canProvs, asStudyArea = FALSE)
+  ml <- fmaTolko(ml, runName, dataDir, canProvs, asStudyArea = FALSE)
+  ml <- fmaVanderwell(ml, runName, dataDir, canProvs, asStudyArea = FALSE)
+  ml <- fmaWeyCo(ml, runName, dataDir, canProvs, asStudyArea = FALSE)
+  ml <- fmaWestFraser(ml, runName, dataDir, canProvs, asStudyArea = FALSE)
 
-  ## studyArea shouldn't use analysisGroup because it's not a reportingPolygon
   lw_sr <- postProcess(ml$`LandWeb Study Area`,
-                       studyArea = amc::outerBuffer(lw, 50000), # 50 km buffer ## TODO: don't need buffered area!
+                       studyArea = lw, ## NOTE: don't need buffered area
                        useSAcrs = TRUE,
                        filename2 = file.path(dataDirLandWeb, "LandWeb_SR.shp"),
                        overwrite = TRUE)
 
-  ml <- mapAdd(lw_sr, ml, isStudyArea = TRUE, layerName = "LandWeb SR",
-               useSAcrs = TRUE, poly = TRUE, studyArea = NULL, # don't crop/mask to studyArea(ml, 2)
-               columnNameForLabels = "NSN", filename2 = NULL)
+  if (isTRUE(asStudyArea)) {
+    ## studyArea shouldn't use analysisGroup because it's not a reportingPolygon
+    ml <- mapAdd(lw_sr, ml, isStudyArea = TRUE, layerName = "LandWeb SR",
+                 useSAcrs = TRUE, poly = TRUE, studyArea = NULL, # don't crop/mask to studyArea(ml, 2)
+                 columnNameForLabels = "NSN", filename2 = NULL)
+  }
 
   plotLandWeb(lw.provs, provs = provs, caribou = lw.caribou, xsr = NULL,
               title = "LandWeb Study Area", png = file.path(dataDirLandWeb, "LandWeb.png"))

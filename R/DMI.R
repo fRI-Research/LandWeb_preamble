@@ -1,4 +1,4 @@
-fmaDMI <- function(ml, runName, dataDir, canProvs) {
+fmaDMI <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
   dataDirDMI <- file.path(dataDir, "DMI") %>% checkPath(create = TRUE)
 
   ## There are 3 parts to the DMI FMA: an East and two West areas (North and South)
@@ -29,7 +29,7 @@ fmaDMI <- function(ml, runName, dataDir, canProvs) {
                              filename2 = file.path(dataDirDMI, "DMI_caribou.shp"))
 
   ml <- mapAdd(dmi, ml, layerName = "DMI Full", useSAcrs = TRUE, poly = TRUE,
-               analysisGroupReportingPolygon = "DMI Full", isStudyArea = TRUE,
+               analysisGroupReportingPolygon = "DMI Full", isStudyArea = isTRUE(asStudyArea),
                columnNameForLabels = "Name", filename2 = NULL)
   ml <- mapAdd(dmi.ansr, ml, layerName = "DMI ANSR", useSAcrs = TRUE, poly = TRUE,
                analysisGroupReportingPolygon = "DMI ANSR",
@@ -57,15 +57,16 @@ fmaDMI <- function(ml, runName, dataDir, canProvs) {
                         useSAcrs = TRUE,
                         filename2 = file.path(dataDirDMI, "DMI_SR.shp"))
 
-  ## studyArea shouldn't use analysisGroup because it's not a reportingPolygon
-  ml <- mapAdd(dmi_sr, ml, layerName = "DMI AB SR Full", isStudyArea = TRUE,
-               useSAcrs = TRUE, poly = TRUE, studyArea = NULL, # don't crop/mask to studyArea(ml, 2)
-               columnNameForLabels = "NSN", filename2 = NULL)
-
   plotFMA(dmi, provs = ab, caribou = dmi.caribou, xsr = dmi_sr,
           title = "Mercer Peace River Pulp Ltd.", png = file.path(dataDirDMI, "DMI.png"))
   #plotFMA(dmi, provs = ab, caribou = dmi.caribou, xsr = dmi_sr,
   #        title = "Mercer Peace River Pulp Ltd.", png = NULL)
+
+  if (isTRUE(asStudyArea)) {
+    ml <- mapAdd(dmi_sr, ml, layerName = "DMI AB SR Full", isStudyArea = TRUE,
+                 useSAcrs = TRUE, poly = TRUE, studyArea = NULL, # don't crop/mask to studyArea(ml, 2)
+                 columnNameForLabels = "NSN", filename2 = NULL)
+  }
 
   return(ml)
 }

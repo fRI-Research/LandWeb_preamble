@@ -1,4 +1,4 @@
-fmaANC <- function(ml, runName, dataDir, canProvs) {
+fmaANC <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
   dataDirANC <- file.path(dataDir, "ANC") %>% checkPath(create = TRUE)
 
   ab <- canProvs[canProvs$NAME_1 == "Alberta", ]
@@ -17,7 +17,7 @@ fmaANC <- function(ml, runName, dataDir, canProvs) {
                              overwrite = TRUE)
 
   ml <- mapAdd(anc, ml, layerName = "ANC", useSAcrs = TRUE, poly = TRUE,
-               analysisGroupReportingPolygon = "ANC", isStudyArea = TRUE,
+               analysisGroupReportingPolygon = "ANC", isStudyArea = isTRUE(asStudyArea),
                columnNameForLabels = "Name", filename2 = NULL)
   ml <- mapAdd(anc.ansr, ml, layerName = "ANC ANSR", useSAcrs = TRUE, poly = TRUE,
                analysisGroupReportingPolygon = "ANC ANSR",
@@ -37,12 +37,15 @@ fmaANC <- function(ml, runName, dataDir, canProvs) {
                         filename2 = file.path(dataDirANC, "ANC_SR.shp"),
                         overwrite = TRUE)
 
-  ml <- mapAdd(anc_sr, ml, isStudyArea = TRUE, layerName = "ANC SR",
-               useSAcrs = TRUE, poly = TRUE, studyArea = NULL, # don't crop/mask to studyArea(ml, 2)
-               columnNameForLabels = "NSN", filename2 = NULL)
   plotFMA(anc, provs = ab, caribou = anc.caribou, xsr = anc_sr, title = "ANC",
           png = file.path(dataDirANC, "ANC.png"))
   #plotFMA(anc, provs = ab, caribou = anc.caribou, xsr = anc_sr, title = "ANC", png = NULL)
+
+  if (isTRUE(asStudyArea)) {
+    ml <- mapAdd(anc_sr, ml, isStudyArea = TRUE, layerName = "ANC SR",
+                 useSAcrs = TRUE, poly = TRUE, studyArea = NULL, # don't crop/mask to studyArea(ml, 2)
+                 columnNameForLabels = "NSN", filename2 = NULL)
+  }
 
   return(ml)
 }

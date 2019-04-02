@@ -1,4 +1,4 @@
-fmaEdsonFP <- function(ml, runName, dataDir, canProvs) {
+fmaEdsonFP <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
   dataDirEdsonFP <- file.path(dataDir, "EdsonFP") %>% checkPath(create = TRUE)
 
   ab <- canProvs[canProvs$NAME_1 == "Alberta", ]
@@ -14,7 +14,7 @@ fmaEdsonFP <- function(ml, runName, dataDir, canProvs) {
   ## NOTE: no caribou ranges intersect with this FMA
 
   ml <- mapAdd(edson, ml, layerName = "EdsonFP", useSAcrs = TRUE, poly = TRUE,
-               analysisGroupReportingPolygon = "EdsonFP", isStudyArea = TRUE,
+               analysisGroupReportingPolygon = "EdsonFP", isStudyArea = isTRUE(asStudyArea),
                columnNameForLabels = "Name", filename2 = NULL)
   ml <- mapAdd(edson.ansr, ml, layerName = "EdsonFP ANSR", useSAcrs = TRUE, poly = TRUE,
                analysisGroupReportingPolygon = "EdsonFP ANSR",
@@ -30,13 +30,15 @@ fmaEdsonFP <- function(ml, runName, dataDir, canProvs) {
                           filename2 = file.path(dataDirEdsonFP, "EdsonFP_SR.shp"),
                           overwrite = TRUE)
 
-  ml <- mapAdd(edson_sr, ml, isStudyArea = TRUE, layerName = "EdsonFP SR",
-               useSAcrs = TRUE, poly = TRUE, studyArea = NULL, # don't crop/mask to studyArea(ml, 2)
-               columnNameForLabels = "NSN", filename2 = NULL)
-
-  plotFMA(edson, provs = ab, caribou = edson.caribou, xsr = edson_sr,
+  plotFMA(edson, provs = ab, caribou = NULL, xsr = edson_sr,
           title = "EdsonFP", png = file.path(dataDirEdsonFP, "EdsonFP.png"))
   #plotFMA(edson, provs = ab, caribou = edson.caribou, xsr = edson_sr, title = "EdsonFP", png = NULL)
+
+  if (isTRUE(asStudyArea)) {
+    ml <- mapAdd(edson_sr, ml, isStudyArea = TRUE, layerName = "EdsonFP SR",
+                 useSAcrs = TRUE, poly = TRUE, studyArea = NULL, # don't crop/mask to studyArea(ml, 2)
+                 columnNameForLabels = "NSN", filename2 = NULL)
+  }
 
   return(ml)
 }

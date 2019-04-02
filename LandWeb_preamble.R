@@ -13,12 +13,12 @@ defineModule(sim, list(
   timeunit = "year",
   citation = list("citation.bib"),
   documentation = list("README.txt", "LandWeb_preamble.Rmd"),
-  reqdPkgs = list("achubaty/amc", "fasterize", "magrittr", "maptools",
+  reqdPkgs = list("achubaty/amc", "dplyr", "fasterize", "ggplot2",
                   "PredictiveEcology/LandR@development",
-                  "PredictiveEcology/map@development",
+                  "magrittr", "PredictiveEcology/map@development", "maptools",
                   "PredictiveEcology/pemisc@development",
                   "raster", "RColorBrewer", "reproducible", "rgeos",
-                  "sf", "sp", "SpaDES.tools"),
+                  "scales", "sf", "sp", "SpaDES.tools"),
   parameters = rbind(
     defineParameter("minFRI", "numeric", 40, 0, 200, "The value of fire return interval below which, pixels will be changed to NA, i.e., ignored"),
     defineParameter("runName", "character", NA, NA, NA, "A description for run; this will form the basis of cache path and output path"),
@@ -105,33 +105,33 @@ Init <- function(sim) {
   dataDir <- file.path("inputs", "FMA_Boundaries")
 
   if (grepl("ANC", P(sim)$runName)) {
-    ml <- fmaANC(ml, P(sim)$runName, dataDir, sim$canProvs)
+    ml <- fmaANC(ml, P(sim)$runName, dataDir, sim$canProvs, asStudyArea = TRUE)
   } else if (grepl("DMI|MPR", P(sim)$runName)) {
-    ml <- fmaDMI(ml, P(sim)$runName, dataDir, sim$canProvs)
+    ml <- fmaDMI(ml, P(sim)$runName, dataDir, sim$canProvs, asStudyArea = TRUE)
   } else if (grepl("Edson", P(sim)$runName)) {
-    ml <- fmaEdsonFP(ml, P(sim)$runName, dataDir, sim$canProvs)
+    ml <- fmaEdsonFP(ml, P(sim)$runName, dataDir, sim$canProvs, asStudyArea = TRUE)
   } else if (grepl("FMANWT", P(sim)$runName)) {
-    ml <- fmaNWT(ml, P(sim)$runName, dataDir, sim$canProvs)
+    ml <- fmaNWT(ml, P(sim)$runName, dataDir, sim$canProvs, asStudyArea = TRUE)
   } else if (grepl("LandWeb", P(sim)$runName)) {
-    ml <- fmaLP(ml, P(sim)$runName, file.path("inputs", "LandWeb"), sim$canProvs)
+    ml <- allLandWeb(ml, P(sim)$runName, file.path("inputs", "LandWeb"), sim$canProvs, asStudyArea = TRUE)
   } else if (grepl("LP", P(sim)$runName)) {
-    ml <- fmaLP(ml, P(sim)$runName, dataDir, sim$canProvs)
+    ml <- fmaLP(ml, P(sim)$runName, dataDir, sim$canProvs, asStudyArea = TRUE)
   } else if (grepl("Manning", P(sim)$runName)) {
-    ml <- fmaManning(ml, P(sim)$runName, dataDir, sim$canProvs)
+    ml <- fmaManning(ml, P(sim)$runName, dataDir, sim$canProvs, asStudyArea = TRUE)
   } else if (grepl("MillarWestern", P(sim)$runName)) {
-    ml <- fmaMillarWestern(ml, P(sim)$runName, dataDir, sim$canProvs)
+    ml <- fmaMillarWestern(ml, P(sim)$runName, dataDir, sim$canProvs, asStudyArea = TRUE)
   } else if (grepl("Mistik", P(sim)$runName)) {
-    ml <- fmaMistik(ml, P(sim)$runName, dataDir, sim$canProvs)
+    ml <- fmaMistik(ml, P(sim)$runName, dataDir, sim$canProvs, asStudyArea = TRUE)
   } else if (grepl("Sundre", P(sim)$runName)) {
-    ml <- fmaSundreFP(ml, P(sim)$runName, dataDir, sim$canProvs)
+    ml <- fmaSundreFP(ml, P(sim)$runName, dataDir, sim$canProvs, asStudyArea = TRUE)
   } else if (grepl("Tolko|tolko", P(sim)$runName)) {
-    ml <- fmaTolko(ml, P(sim)$runName, dataDir, sim$canProvs)
+    ml <- fmaTolko(ml, P(sim)$runName, dataDir, sim$canProvs, asStudyArea = TRUE)
   } else if (grepl("Vanderwell", P(sim)$runName)) {
-    ml <- fmaVanderwell(ml, P(sim)$runName, dataDir, sim$canProvs)
+    ml <- fmaVanderwell(ml, P(sim)$runName, dataDir, sim$canProvs, asStudyArea = TRUE)
   } else if (grepl("WeyCo", P(sim)$runName)) {
-    ml <- fmaWeyco(ml, P(sim)$runName, dataDir, sim$canProvs)
+    ml <- fmaWeyCo(ml, P(sim)$runName, dataDir, sim$canProvs, asStudyArea = TRUE)
   } else if (grepl("WestFraser|BlueRidge", P(sim)$runName)) {
-    ml <- fmaWestFraser(ml, P(sim)$runName, dataDir, sim$canProvs)
+    ml <- fmaWestFraser(ml, P(sim)$runName, dataDir, sim$canProvs, asStudyArea = TRUE)
   } else {
     # Make a random small study area
     seed <- 863
