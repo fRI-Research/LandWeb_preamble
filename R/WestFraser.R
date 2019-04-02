@@ -6,24 +6,18 @@ fmaWestFraser <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
   ## - also includes Blue Ridge
   ab <- canProvs[canProvs$NAME_1 == "Alberta", ]
   wf <- extractFMA(ml, "West Fraser|Blue Ridge")
-  #plot(spTransform(ab, crs(wf)))
-  #plot(wf[, "Name"], main = "WestFraser full", col = "lightblue", add = TRUE)
-
   shapefile(wf, filename = file.path(dataDirWestFraser, "WestFraser_full.shp"), overwrite = TRUE)
 
   if (grepl("LandWeb|BlueRidge", runName)) {
     ## reportingPolygons
     wf_br <- wf[grepl("Blue Ridge", wf$Name), ] ## first subpolygon
     wf_br.sp <- as(wf_br, "SpatialPolygons")
-    #plot(wf_br, col = "blue", add = TRUE)
     shapefile(wf_br, filename = file.path(dataDirWestFraser, "WestFraser_BlueRidge.shp"), overwrite = TRUE)
 
     wf_br.ansr <- postProcess(ml$`Alberta Natural Subregions`,
                              studyArea = wf_br.sp, useSAcrs = TRUE,
                              filename2 = file.path(dataDirWestFraser, "WestFraser_BlueRidge_ANSR"),
                              overwrite = TRUE)
-    #plot(wf_br.ansr, col = "magenta", add = TRUE)
-
     ## NOTE: no intersecting caribou areas
 
     ml <- mapAdd(wf_br, ml, layerName = "West Fraser Blue Ridge", useSAcrs = TRUE, poly = TRUE,
@@ -42,33 +36,33 @@ fmaWestFraser <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
                            useSAcrs = TRUE,
                            filename2 = file.path(dataDirWestFraser, "WestFraser_BlueRidge_SR.shp"),
                            overwrite = TRUE)
-    #plot(wf_br_sr, add = TRUE)
 
     if (isTRUE(asStudyArea)) {
       ml <- mapAdd(wf_br_sr, ml, isStudyArea = TRUE, layerName = "West Fraser Blue Ridge SR",
                    useSAcrs = TRUE, poly = TRUE, studyArea = NULL, # don't crop/mask to studyArea(ml, 2)
                    columnNameForLabels = "NSN", filename2 = NULL)
     }
+
+    plotFMA(wf_br, provs = ab, caribou = NULL, xsr = wf_br_sr, title = "West Fraser Blue Ridge",
+            png = file.path(dataDirWestFraser, "WestFraser_BR.png"))
+    # plotFMA(wf_br, provs = ab, caribou = NULL, xsr = wf_br_sr,
+    #         title = "West Fraser Blue Ridge", png = NULL)
   }
 
   if (grepl("LandWeb|WestFraser_N", runName)) {
     ## reportingPolygons
     wf_n <- wf[c(2:3, 6), ]
     wf_n.sp <- as(wf_n, "SpatialPolygons")
-    #plot(wf_n, col = "purple", add = TRUE)
     shapefile(wf_n, filename = file.path(dataDirWestFraser, "WestFraser_N.shp"), overwrite = TRUE)
 
     wf_n.ansr <- postProcess(ml$`Alberta Natural Subregions`,
                              studyArea = wf_n.sp, useSAcrs = TRUE,
                              filename2 = file.path(dataDirWestFraser, "WestFraser_N_ANSR"),
                              overwrite = TRUE)
-    #plot(wf_n.ansr, col = "magenta", add = TRUE)
-
     wf_n.caribou <- postProcess(ml$`Boreal Caribou Ranges`,
                                  studyArea = wf_n.sp, useSAcrs = TRUE,
                                  filename2 = file.path(dataDirWestFraser, "WestFraser_N_caribou.shp"),
                                  overwrite = TRUE)
-    #plot(wf_n.caribou, col = "magenta", add = TRUE)
 
     ml <- mapAdd(wf_n, ml, layerName = "West Fraser N", useSAcrs = TRUE, poly = TRUE,
                  analysisGroupReportingPolygon = "West Fraser N", isStudyArea = isTRUE(asStudyArea),
@@ -90,33 +84,33 @@ fmaWestFraser <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
                             useSAcrs = TRUE,
                             filename2 = file.path(dataDirWestFraser, "WestFraser_N_SR.shp"),
                             overwrite = TRUE)
-    #plot(wf_n_sr, add = TRUE)
 
     if (isTRUE(asStudyArea)) {
       ml <- mapAdd(wf_n_sr, ml, isStudyArea = TRUE, layerName = "West Fraser N SR",
                    useSAcrs = TRUE, poly = TRUE, studyArea = NULL, # don't crop/mask to studyArea(ml, 2)
                    columnNameForLabels = "NSN", filename2 = NULL)
     }
+
+    plotFMA(wf_n, provs = ab, caribou = NULL, xsr = wf_n_sr, title = "West Fraser North",
+            png = file.path(dataDirWestFraser, "WestFraser_N.png"))
+    # plotFMA(wf_n, provs = ab, caribou = NULL, xsr = wf_s_sr,
+    #         title = "West Fraser North", png = NULL)
   }
 
   if (grepl("LandWeb|WestFraser_S", runName)) {
     ## reportingPolygons
-    wf_s <- wf[3:4,]
+    wf_s <- wf[4:5,]
     wf_s.sp <- as(wf_s, "SpatialPolygons")
-    #plot(wf_s, col = "orange", add = TRUE)
     shapefile(wf_s, filename = file.path(dataDirWestFraser, "WestFraser_S.shp"), overwrite = TRUE)
 
     wf_s.ansr <- postProcess(ml$`Alberta Natural Subregions`,
                              studyArea = wf_s.sp, useSAcrs = TRUE,
                              filename2 = file.path(dataDirWestFraser, "WestFraser_S_ANSR"),
                              overwrite = TRUE)
-    #plot(wf_s.ansr, col = "magenta", add = TRUE)
-
     wf_s.caribou <- postProcess(ml$`Boreal Caribou Ranges`,
                                 studyArea = wf_s.sp, useSAcrs = TRUE,
                                 filename2 = file.path(dataDirWestFraser, "WestFraser_S_caribou.shp"),
                                 overwrite = TRUE)
-    #plot(wf_s.caribou, col = "magenta", add = TRUE)
 
     ml <- mapAdd(wf_s, ml, layerName = "West Fraser S", useSAcrs = TRUE, poly = TRUE,
                  analysisGroupReportingPolygon = "West Fraser S", isStudyArea = isTRUE(asStudyArea),
@@ -138,13 +132,18 @@ fmaWestFraser <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
                            useSAcrs = TRUE,
                            filename2 = file.path(dataDirWestFraser, "WestFraser_S_SR.shp"),
                            overwrite = TRUE)
-    #plot(wf_s_sr, add = TRUE)
 
     if (isTRUE(asStudyArea)) {
       ml <- mapAdd(wf_s_sr, ml, isStudyArea = TRUE, layerName = "West Fraser S SR",
                    useSAcrs = TRUE, poly = TRUE, studyArea = NULL, # don't crop/mask to studyArea(ml, 2)
                    columnNameForLabels = "NSN", filename2 = NULL)
     }
+
+    plotFMA(wf_s, provs = ab, caribou = NULL, xsr = wf_s_sr, title = "West Fraser South",
+            png = file.path(dataDirWestFraser, "WestFraser_S.png"))
+    # plotFMA(wf_s, provs = ab, caribou = NULL, xsr = wf_s_sr,
+    #         title = "West Fraser South", png = NULL)
+
   } ## TODO: add "All" option
 
   return(ml)
