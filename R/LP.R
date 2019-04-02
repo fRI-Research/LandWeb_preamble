@@ -44,7 +44,9 @@ fmaLP <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
                    useSAcrs = TRUE, poly = TRUE, studyArea = NULL, # don't crop/mask to studyArea(ml, 2)
                    columnNameForLabels = "NSN", filename2 = NULL)
     }
-  } else if (grepl("LandWeb|LP_MB", runName)) {
+  }
+
+  if (grepl("LandWeb|LP_MB", runName)) {
     ## reportingPolygons
     lp_mb <- extractFMA(ml, "Mountain")
     lp_mb.sp <- as(lp_mb, "SpatialPolygons")

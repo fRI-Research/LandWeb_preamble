@@ -49,7 +49,9 @@ fmaWestFraser <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
                    useSAcrs = TRUE, poly = TRUE, studyArea = NULL, # don't crop/mask to studyArea(ml, 2)
                    columnNameForLabels = "NSN", filename2 = NULL)
     }
-  } else if (grepl("LandWeb|WestFraser_N", runName)) {
+  }
+
+  if (grepl("LandWeb|WestFraser_N", runName)) {
     ## reportingPolygons
     wf_n <- wf[c(2:3, 6), ]
     wf_n.sp <- as(wf_n, "SpatialPolygons")
@@ -95,7 +97,9 @@ fmaWestFraser <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
                    useSAcrs = TRUE, poly = TRUE, studyArea = NULL, # don't crop/mask to studyArea(ml, 2)
                    columnNameForLabels = "NSN", filename2 = NULL)
     }
-  } else if (grepl("LandWeb|WestFraser_S", runName)) {
+  }
+
+  if (grepl("LandWeb|WestFraser_S", runName)) {
     ## reportingPolygons
     wf_s <- wf[3:4,]
     wf_s.sp <- as(wf_s, "SpatialPolygons")

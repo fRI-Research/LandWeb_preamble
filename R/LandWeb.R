@@ -47,8 +47,8 @@ allLandWeb <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
   ml <- fmaSundreFP(ml, runName, dataDir, canProvs, asStudyArea = FALSE)
   ml <- fmaTolko(ml, runName, dataDir, canProvs, asStudyArea = FALSE)
   ml <- fmaVanderwell(ml, runName, dataDir, canProvs, asStudyArea = FALSE)
-  ml <- fmaWeyCo(ml, runName, dataDir, canProvs, asStudyArea = FALSE)
   ml <- fmaWestFraser(ml, runName, dataDir, canProvs, asStudyArea = FALSE)
+  ml <- fmaWeyCo(ml, runName, dataDir, canProvs, asStudyArea = FALSE)
 
   if (isTRUE(asStudyArea)) {
     ## studyArea shouldn't use analysisGroup because it's not a reportingPolygon

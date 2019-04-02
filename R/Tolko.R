@@ -53,7 +53,9 @@ fmaTolko <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
                    useSAcrs = TRUE, poly = TRUE, studyArea = NULL, # don't crop/mask to studyArea(ml, 2)
                    columnNameForLabels = "NSN", filename2 = NULL)
     }
-  } else if (grepl("LandWeb|Tolko_AB_S|tolko_AB_S", runName)) {
+  }
+
+  if (grepl("LandWeb|Tolko_AB_S|tolko_AB_S", runName)) {
     ## reportingPolygons
     tolko_ab_s <- tolko[c(2, 3, 5), ]
     tolko_ab_s.sp <- as(tolko_ab_s, "SpatialPolygons")
@@ -99,7 +101,9 @@ fmaTolko <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
                    useSAcrs = TRUE, poly = TRUE, studyArea = NULL, # don't crop/mask to studyArea(ml, 2)
                    columnNameForLabels = "NSN", filename2 = NULL)
     }
-  } else if (grepl("LandWeb|Tolko_SK|tolko_SK", runName)) {
+  }
+
+  if (grepl("LandWeb|Tolko_SK|tolko_SK", runName)) {
     ## reportingPolygons
     tolko_sk <- tolko[1, ]
     tolko_sk.sp <- as(tolko_sk, "SpatialPolygons")

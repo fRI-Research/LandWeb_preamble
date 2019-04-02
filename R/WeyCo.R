@@ -46,7 +46,9 @@ fmaWeyCo <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
                    useSAcrs = TRUE, poly = TRUE, studyArea = NULL, # don't crop/mask to studyArea(ml, 2)
                    columnNameForLabels = "NSN", filename2 = NULL)
     }
-  } else if (grepl("LandWeb|WeyCo_PT|WeyCo_Pembina", runName)) {
+  }
+
+  if (grepl("LandWeb|WeyCo_PT|WeyCo_Pembina", runName)) {
     ## reportingPolygons
     weyco_pt <- extractFMA(ml, "Weyerhaeuser Company Limited \\(Pembina Timberland\\)")
     weyco_pt.sp <- as(weyco_pt, "SpatialPolygons")
@@ -86,7 +88,9 @@ fmaWeyCo <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
                    useSAcrs = TRUE, poly = TRUE, studyArea = NULL, # don't crop/mask to studyArea(ml, 2)
                    columnNameForLabels = "NSN", filename2 = NULL)
     }
-  } else if (grepl("LandWeb|WeyCo_SK", runName)) {
+  }
+
+  if (grepl("LandWeb|WeyCo_SK", runName)) {
     ## reportingPolygons
     weyco_sk <- extractFMA(ml, "Pasquia-Porcupine")
     weyco_sk.sp <- as(weyco_sk, "SpatialPolygons")
