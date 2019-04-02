@@ -26,7 +26,9 @@ allLandWeb <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
 
   ml <- mapAdd(lw, ml, layerName = "LandWeb", useSAcrs = TRUE, poly = TRUE,
                analysisGroupReportingPolygon = "LandWeb", isStudyArea = TRUE,
-               columnNameForLabels = "Name", filename2 = NULL)
+               columnNameForLabels = "Name", filename2 = NULL) ## TODO: losing a polygon in NWT
+  ml$LandWeb <- lw ## TODO: workaround the problem with lost NWT poly
+
   ml <- mapAdd(lw.caribou, ml, layerName = "LandWeb Caribou", useSAcrs = TRUE, poly = TRUE,
                analysisGroupReportingPolygon = "LandWeb Caribou",
                columnNameForLabels = "Name", filename2 = NULL)
@@ -48,15 +50,9 @@ allLandWeb <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
   ml <- fmaWeyCo(ml, runName, dataDir, canProvs, asStudyArea = FALSE)
   ml <- fmaWestFraser(ml, runName, dataDir, canProvs, asStudyArea = FALSE)
 
-  lw_sr <- postProcess(ml$`LandWeb Study Area`,
-                       studyArea = lw, ## NOTE: don't need buffered area
-                       useSAcrs = TRUE,
-                       filename2 = file.path(dataDirLandWeb, "LandWeb_SR.shp"),
-                       overwrite = TRUE)
-
   if (isTRUE(asStudyArea)) {
     ## studyArea shouldn't use analysisGroup because it's not a reportingPolygon
-    ml <- mapAdd(lw_sr, ml, isStudyArea = TRUE, layerName = "LandWeb SR",
+    ml <- mapAdd(lw, ml, isStudyArea = TRUE, layerName = "LandWeb SR",
                  useSAcrs = TRUE, poly = TRUE, studyArea = NULL, # don't crop/mask to studyArea(ml, 2)
                  columnNameForLabels = "NSN", filename2 = NULL)
   }
