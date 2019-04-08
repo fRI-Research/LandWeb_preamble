@@ -277,32 +277,16 @@ Init <- function(sim) {
   ml <- mapAdd(rstFireReturnInterval, layerName = "fireReturnInterval", filename2 = NULL,
                map = ml, leaflet = FALSE, maskWithRTM = FALSE)
 
-  #fireReturnInterval <- factorValues2(ml$fireReturnInterval,
-  #                                    ml$fireReturnInterval[],
-  #                                    att = "fireReturnInterval")
-
   if (grepl("doubleFRI", P(sim)$runName))
     ml$fireReturnInterval <- 2 * ml$fireReturnInterval
-
-  #ml$fireReturnInterval <- raster(ml$fireReturnInterval) # blank out values for new, non-factor version
-  #ml$fireReturnInterval[] <- fireReturnInterval
-  # ml@metadata[layerName == "LCC2005", rasterToMatch := NA]
 
   sim$studyArea <- studyArea(ml, 3)
   sim$studyAreaLarge <- studyArea(ml, 1)
   sim$studyAreaReporting <- studyArea(ml, 2)
   sim$rasterToMatch <- rasterToMatch(ml)
-  #sim$rasterToMatch[sim$nonTreePixels] <- NA
-
   sim$fireReturnInterval <- ml$fireReturnInterval # no NAing here because this needs only
-
   sim$LCC2005 <- ml$LCC2005
-  #sim$LCC2005[sim$nonTreePixels] <- NA
-  #LCC2005 <- sim$LCC2005
-  #LCC2005[sim$nonTreePixels] <- NA
-
   sim[[TSFLayerName]] <- ml[[TSFLayerName]]
-
   sim$rasterToMatchReporting <- postProcess(rasterToMatch(ml),
                                             studyArea = studyArea(ml, 2),
                                             filename2 = NULL) # this is the small one
