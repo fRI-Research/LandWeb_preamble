@@ -22,6 +22,8 @@ defineModule(sim, list(
   parameters = rbind(
     defineParameter("minFRI", "numeric", 40, 0, 200, "The value of fire return interval below which, pixels will be changed to NA, i.e., ignored"),
     defineParameter("runName", "character", NA, NA, NA, "A description for run; this will form the basis of cache path and output path"),
+    defineParameter("treeClassesLCC", "numeric", c(1:15, 20, 32, 34:35), 0, 40,
+                    "The classes in the LCC2005 layer that are considered 'trees' from the perspective of LandR-Biomass"),
     defineParameter(".plotInitialTime", "numeric", NA, NA, NA, "This describes the simulation time at which the first plot event should occur"),
     defineParameter(".plotInterval", "numeric", NA, NA, NA, "This describes the simulation time interval between plot events"),
     defineParameter(".saveInitialTime", "numeric", NA, NA, NA, "This describes the simulation time at which the first save event should occur"),
@@ -38,6 +40,7 @@ defineModule(sim, list(
     createsOutput("LandTypeCC", "RasterLayer", desc = NA),
     createsOutput("LCC2005", "RasterLayer", desc = NA),
     createsOutput("ml", "map", desc = NA),
+    createsOutput("LCC", "RasterLayer", desc = "A key output fromt this module: it is the result of LandR::overlayLCCs on LCC2005 and LandTypeCC"),
     createsOutput("nonTreePixels", "integer", desc = NA),
     createsOutput("rasterToMatch", "RasterLayer", desc = NA),
     createsOutput("rasterToMatchReporting", "RasterLayer", desc = NA),
@@ -180,22 +183,45 @@ Init <- function(sim) {
   # 5 is no Data ... this is currently cropland -- will be treated as grassland for fires
   treeClassesCC <- c(0, 1, 2)
   nontreeClassesCC <- c(3, 4)
-  treePixelsTF <- sim$LandTypeCC[] %in% treeClassesCC
-  #nonTreePixels <- sim$LandTypeCC[] %in% nontreeClassesCC
-
-  treeClassesLCC <- c(1:15, 34:35)
-  treePixelsLCCTF <- ml$LCC2005[] %in% treeClassesLCC
-
+  treePixelsCCTF <- sim$LandTypeCC[] %in% treeClassesCC
   LandTypeCCNA <- is.na(sim$LandTypeCC[])
-  noDataPixels <- LandTypeCCNA | sim$LandTypeCC[] == 5
-  noDataPixelsLCC <- is.na(ml$LCC2005[]) | ml$LCC2005[] == 0
+  noDataPixelsCC <- LandTypeCCNA | (sim$LandTypeCC[] == 5)
+  treePixelsCC <- which(treePixelsCCTF)
 
-  treePixels <- which(treePixelsTF)
-  treePixelsLCCTF[!noDataPixels] <- NA
+  uniqueLCCClasses <- na.omit(unique(ml$LCC2005[]))
+  nontreeClassesLCC <- sort(uniqueLCCClasses[!uniqueLCCClasses %in% P(sim)$treeClassesLCC])
+  sim$LCC <- overlayLCCs(list(CC = sim$LandTypeCC, LCC2005 = ml$LCC2005),
+                         forestedList = list(CC = 0, LCC2005 = P(sim)$treeClassesLCC),
+                         outputLayer = "LCC2005",
+                         NAcondition = "CC == 0",
+                         NNcondition = "CC == 1 & LCC2005 == 0",
+                         classesToReplace = nontreeClassesLCC,
+                         availableERC_by_Sp = NULL)
+
+  # P(sim)$treeClassesLCC <- c(1:15, 20, 32, 34:35)
+  treePixelsLCCTF <- sim$LCC[] %in% P(sim)$treeClassesLCC
+  noDataPixelsLCC <- is.na(sim$LCC[]) | sim$LCC[] == 0
+
+  treePixelsLCCTF[noDataPixelsCC] <- NA
   treePixelsLCC <- which(treePixelsLCCTF)
 
-  treePixelsCombined <- unique(c(treePixels, treePixelsLCC))
-  nonTreePixels <- seq(ncell(ml$LCC2005))
+  if (FALSE) {# This is old... used LCC2005 directly, instead of the updated LCC
+    treePixelsLCCTF <- ml$LCC2005[] %in% P(sim)$treeClassesLCC
+
+    noDataPixelsLCC <- is.na(ml$LCC2005[]) | ml$LCC2005[] == 0
+    dt <- data.table(CC = treePixelsCCTF, LCC = treePixelsLCCTF,
+                     LandTypeCC = sim$LandTypeCC[],
+                     LCC2005 = ml$LCC2005[])
+    setkey(dt, LCC2005)
+    dt1 <- dt[, list(sumCC = sum(CC), sumLCC = sum(LCC, na.rm = TRUE)), by = c("LCC2005", "LandTypeCC")]
+    dt1[ , LCCSaysForested:= LCC2005 %in% P(sim)$treeClassesLCC]
+    dt1[ LandTypeCC == 0, list(NumPixelsCCSaysForested = sum(sumCC)), by = LCCSaysForested]
+    dt1[ LandTypeCC %in% 1:5, list(NumPixelsCCSaysForested = sum(sumCC)), by = LCCSaysForested]
+
+  }
+
+  treePixelsCombined <- unique(treePixelsLCC)
+  nonTreePixels <- seq(ncell(sim$LCC))
   nonTreePixels <- nonTreePixels[!nonTreePixels %in% treePixelsCombined]
 
   sim$nonTreePixels <- nonTreePixels
@@ -231,7 +257,7 @@ Init <- function(sim) {
                        datatype = "INT2U",
                        filename2 = NULL, overwrite = TRUE,
                        userTags = c("stable", currentModule(sim)))
-  ml[[TSFLayerName]][noDataPixels] <- standAgeMap[noDataPixels]
+  ml[[TSFLayerName]][noDataPixelsCC] <- standAgeMap[noDataPixelsCC]
   ml[[TSFLayerName]][sim$nonTreePixels] <- NA
 
   ##########################################################
