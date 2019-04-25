@@ -22,7 +22,7 @@ defineModule(sim, list(
   parameters = rbind(
     defineParameter("minFRI", "numeric", 40, 0, 200, "The value of fire return interval below which, pixels will be changed to NA, i.e., ignored"),
     defineParameter("runName", "character", NA, NA, NA, "A description for run; this will form the basis of cache path and output path"),
-    defineParameter("treeClassesLCC", "numeric", c(1:15, 20, 32, 34:35), 0, 40,
+    defineParameter("treeClassesLCC", "numeric", c(1:15, 20, 32, 34:36), 0, 39,
                     "The classes in the LCC2005 layer that are considered 'trees' from the perspective of LandR-Biomass"),
     defineParameter(".plotInitialTime", "numeric", NA, NA, NA, "This describes the simulation time at which the first plot event should occur"),
     defineParameter(".plotInterval", "numeric", NA, NA, NA, "This describes the simulation time interval between plot events"),
@@ -190,12 +190,24 @@ Init <- function(sim) {
 
   uniqueLCCClasses <- na.omit(unique(ml$LCC2005[]))
   nontreeClassesLCC <- sort(uniqueLCCClasses[!uniqueLCCClasses %in% P(sim)$treeClassesLCC])
+browser()
+  ## for each LCC2005 + CC class combo, define which LCC2005 code should be used
+  ## remember, setting a pixel to NA will omit it entirely (i.e., non-vegetated)
+  remapDT <- as.data.table(expand.grid(LCC2005 = c(NA_integer_, sort(uniqueLCCClasses)),
+                                       CC = c(NA_integer_, 0:5)))
+  remapDT[LCC2005 == 0, newLCC := NA_integer_]
+  remapDT[is.na(CC) | CC == 5, newLCC := LCC2005]
+  remapDT[CC == 4, newLCC := NA_integer_]
+  remapDT[CC %in% 0:3, newLCC := LCC2005]
+  remapDT[is.na(LCC2005) & CC %in% 0:2, newLCC := 99] ## reclassification needed
+
   sim$LCC <- overlayLCCs(list(CC = sim$LandTypeCC, LCC2005 = ml$LCC2005),
                          forestedList = list(CC = 0, LCC2005 = P(sim)$treeClassesLCC),
                          outputLayer = "LCC2005",
-                         NAcondition = "CC == 0",
-                         NNcondition = "CC == 1 & LCC2005 == 0",
-                         classesToReplace = nontreeClassesLCC,
+                         #NAcondition = "LCC2005 == 0",
+                         #NNcondition = "CC == 1 & LCC2005 == 0",
+                         remapTable = remapDT,
+                         classesToReplace = c(nontreeClassesLCC, 99),
                          availableERC_by_Sp = NULL)
 
   # P(sim)$treeClassesLCC <- c(1:15, 20, 32, 34:35)
@@ -204,21 +216,6 @@ Init <- function(sim) {
 
   treePixelsLCCTF[noDataPixelsCC] <- NA
   treePixelsLCC <- which(treePixelsLCCTF)
-
-  if (FALSE) {# This is old... used LCC2005 directly, instead of the updated LCC
-    treePixelsLCCTF <- ml$LCC2005[] %in% P(sim)$treeClassesLCC
-
-    noDataPixelsLCC <- is.na(ml$LCC2005[]) | ml$LCC2005[] == 0
-    dt <- data.table(CC = treePixelsCCTF, LCC = treePixelsLCCTF,
-                     LandTypeCC = sim$LandTypeCC[],
-                     LCC2005 = ml$LCC2005[])
-    setkey(dt, LCC2005)
-    dt1 <- dt[, list(sumCC = sum(CC), sumLCC = sum(LCC, na.rm = TRUE)), by = c("LCC2005", "LandTypeCC")]
-    dt1[ , LCCSaysForested:= LCC2005 %in% P(sim)$treeClassesLCC]
-    dt1[ LandTypeCC == 0, list(NumPixelsCCSaysForested = sum(sumCC)), by = LCCSaysForested]
-    dt1[ LandTypeCC %in% 1:5, list(NumPixelsCCSaysForested = sum(sumCC)), by = LCCSaysForested]
-
-  }
 
   treePixelsCombined <- unique(treePixelsLCC)
   nonTreePixels <- seq(ncell(sim$LCC))
@@ -309,9 +306,9 @@ Init <- function(sim) {
   sim$studyArea <- studyArea(ml, 3)
   sim$studyAreaLarge <- studyArea(ml, 1)
   sim$studyAreaReporting <- studyArea(ml, 2)
-  sim$rasterToMatch <- rasterToMatch(ml)
+  sim$rasterToMatch <- sim$LCC #rasterToMatch(ml)
   sim$fireReturnInterval <- ml$fireReturnInterval # no NAing here because this needs only
-  sim$LCC2005 <- ml$LCC2005
+  sim$LCC2005 <- sim$LCC #ml$LCC2005
   sim[[TSFLayerName]] <- ml[[TSFLayerName]]
   sim$rasterToMatchReporting <- postProcess(rasterToMatch(ml),
                                             studyArea = studyArea(ml, 2),
