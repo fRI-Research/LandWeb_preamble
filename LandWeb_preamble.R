@@ -24,6 +24,8 @@ defineModule(sim, list(
     defineParameter("runName", "character", NA, NA, NA, "A description for run; this will form the basis of cache path and output path"),
     defineParameter("treeClassesLCC", "numeric", c(1:15, 20, 32, 34:36), 0, 39,
                     "The classes in the LCC2005 layer that are considered 'trees' from the perspective of LandR-Biomass"),
+    defineParameter("treeClassesToReplace", "numeric", c(34:36), 0, 39,
+                    "The transient classes in the LCC2005 layer that will become 'trees' from the perspective of LandR-Biomass (e.g., burned)"),
     defineParameter(".plotInitialTime", "numeric", NA, NA, NA, "This describes the simulation time at which the first plot event should occur"),
     defineParameter(".plotInterval", "numeric", NA, NA, NA, "This describes the simulation time interval between plot events"),
     defineParameter(".saveInitialTime", "numeric", NA, NA, NA, "This describes the simulation time at which the first save event should occur"),
@@ -190,7 +192,7 @@ Init <- function(sim) {
 
   uniqueLCCClasses <- na.omit(unique(ml$LCC2005[]))
   nontreeClassesLCC <- sort(uniqueLCCClasses[!uniqueLCCClasses %in% P(sim)$treeClassesLCC])
-browser()
+
   ## for each LCC2005 + CC class combo, define which LCC2005 code should be used
   ## remember, setting a pixel to NA will omit it entirely (i.e., non-vegetated)
   remapDT <- as.data.table(expand.grid(LCC2005 = c(NA_integer_, sort(uniqueLCCClasses)),
@@ -200,6 +202,7 @@ browser()
   remapDT[CC == 4, newLCC := NA_integer_]
   remapDT[CC %in% 0:3, newLCC := LCC2005]
   remapDT[is.na(LCC2005) & CC %in% 0:2, newLCC := 99] ## reclassification needed
+  remapDT[LCC2005 %in% P(sim)$treeClassesToReplace, newLCC := 99] ## reclassification needed
 
   sim$LCC <- overlayLCCs(list(CC = sim$LandTypeCC, LCC2005 = ml$LCC2005),
                          forestedList = list(CC = 0, LCC2005 = P(sim)$treeClassesLCC),
@@ -207,19 +210,11 @@ browser()
                          #NAcondition = "LCC2005 == 0",
                          #NNcondition = "CC == 1 & LCC2005 == 0",
                          remapTable = remapDT,
-                         classesToReplace = c(nontreeClassesLCC, 99),
+                         classesToReplace = 99,
                          availableERC_by_Sp = NULL)
 
-  # P(sim)$treeClassesLCC <- c(1:15, 20, 32, 34:35)
-  treePixelsLCCTF <- sim$LCC[] %in% P(sim)$treeClassesLCC
-  noDataPixelsLCC <- is.na(sim$LCC[]) | sim$LCC[] == 0
-
-  treePixelsLCCTF[noDataPixelsCC] <- NA
-  treePixelsLCC <- which(treePixelsLCCTF)
-
-  treePixelsCombined <- unique(treePixelsLCC)
-  nonTreePixels <- seq(ncell(sim$LCC))
-  nonTreePixels <- nonTreePixels[!nonTreePixels %in% treePixelsCombined]
+  treePixelsLCC <- which(sim$LCC[] %in% P(sim)$treeClassesLCC)
+  nonTreePixels <- which(sim$LCC[] %in% nontreeClassesLCC)
 
   sim$nonTreePixels <- nonTreePixels
 
