@@ -210,7 +210,7 @@ Init <- function(sim) {
                          #NAcondition = "LCC2005 == 0",
                          #NNcondition = "CC == 1 & LCC2005 == 0",
                          remapTable = remapDT,
-                         classesToReplace = 99,
+                         classesToReplace = c(P(sim)$treeClassesToReplace, 99),
                          availableERC_by_Sp = NULL)
 
   treePixelsLCC <- which(sim$LCC[] %in% P(sim)$treeClassesLCC)
