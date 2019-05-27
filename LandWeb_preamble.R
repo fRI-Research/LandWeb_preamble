@@ -290,13 +290,15 @@ Init <- function(sim) {
   rstFireReturnInterval <- fasterize::fasterize(sf::st_as_sf(studyArea(ml)),
                                                 raster = rasterToMatch(ml),
                                                 field = "fireReturnInterval")
-  #rtm <- rasterToMatch(studyArea(ml), rasterToMatch = rasterToMatch(ml))
-  #rstFireReturnInterval <- Cache(postProcess, rtm, maskvalue = 0L, filename2 = NULL)
+
+  if (!is.integer(rstFireReturnInterval[]))
+    rstFireReturnInterval[] <- as.integer(rstFireReturnInterval[])
+
   ml <- mapAdd(rstFireReturnInterval, layerName = "fireReturnInterval", filename2 = NULL,
                map = ml, leaflet = FALSE, maskWithRTM = FALSE)
 
   if (grepl("doubleFRI", P(sim)$runName))
-    ml$fireReturnInterval <- 2 * ml$fireReturnInterval
+    ml$fireReturnInterval <- 2L * ml$fireReturnInterval
 
   sim$studyArea <- studyArea(ml, 3)
   sim$studyAreaLarge <- studyArea(ml, 1)
