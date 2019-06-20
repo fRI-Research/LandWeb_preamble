@@ -94,10 +94,22 @@ Init <- function(sim) {
                url = "https://drive.google.com/file/d/1mCEynahKnFkStJUJC8ho5ndRD41olz9F/view?usp=sharing",
                columnNameForLabels = "Name", isStudyArea = FALSE, filename2 = NULL)
 
-  ## Boreal Caribou Ranges
-  ml <- mapAdd(map = ml, layerName = "Boreal Caribou Ranges",
+  ## Caribou Ranges
+  # ml <- mapAdd(map = ml, layerName = "Boreal Caribou Ranges",
+  #              useSAcrs = TRUE, poly = TRUE, overwrite = TRUE,
+  #              url = "https://drive.google.com/file/d/1PYLou8J1wcrme7Z2tx1wtA4GvaWnU1Jy/view?usp=sharing",
+  #              columnNameForLabels = "Name", isStudyArea = FALSE, filename2 = NULL)
+  # ml <- mapAdd(map = ml, layerName = "AB Caribou Ranges",
+  #              useSAcrs = TRUE, poly = TRUE, overwrite = TRUE,
+  #              url = "https://extranet.gov.ab.ca/srd/geodiscover/srd_pub/LAT/FWDSensitivity/CaribouRange.zip",
+  #              columnNameForLabels = "SUBUNIT", isStudyArea = FALSE, filename2 = NULL) ## untested
+  # ml <- mapAdd(map = ml, layerName = "BC Caribou Ranges",
+  #              useSAcrs = TRUE, poly = TRUE, overwrite = TRUE,
+  #              url = "https://drive.google.com/file/d/1uqEVID74y4enPMee2w3axBcR1agw_kMT/view?usp=sharing",
+  #              columnNameForLabels = "HERD_NAME", isStudyArea = FALSE, filename2 = NULL) ## untested
+  ml <- mapAdd(map = ml, layerName = "LandWeb Caribou Ranges",
                useSAcrs = TRUE, poly = TRUE, overwrite = TRUE,
-               url = "https://drive.google.com/file/d/1PYLou8J1wcrme7Z2tx1wtA4GvaWnU1Jy/view?usp=sharing",
+               url = "https://drive.google.com/file/d/1mrsxIJfdP-XxEZkO6vs2J6lYbGry67A2/view?usp=sharing",
                columnNameForLabels = "Name", isStudyArea = FALSE, filename2 = NULL)
 
   ## Provincial Boundaries

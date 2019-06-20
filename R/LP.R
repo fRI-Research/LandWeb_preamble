@@ -13,7 +13,7 @@ fmaLP <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
     lp_bc.sp <- as(lp_bc, "SpatialPolygons")
     shapefile(lp_bc, filename = file.path(dataDirLP, "LP_BC.shp"), overwrite = TRUE)
 
-    lp_bc.caribou <- postProcess(ml$`Boreal Caribou Ranges`,
+    lp_bc.caribou <- postProcess(ml$`LandWeb Caribou Ranges`,
                                  studyArea = lp_bc.sp, useSAcrs = TRUE,
                                  filename2 = file.path(dataDirLP, "LP_BC_caribou.shp"),
                                  overwrite = TRUE)
@@ -52,7 +52,7 @@ fmaLP <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
     lp_mb.sp <- as(lp_mb, "SpatialPolygons")
     shapefile(lp_mb, filename = file.path(dataDirLP, "LP_MB.shp"), overwrite = TRUE)
 
-    lp_mb.caribou <- postProcess(ml$`Boreal Caribou Ranges`,
+    lp_mb.caribou <- postProcess(ml$`LandWeb Caribou Ranges`,
                                  studyArea = lp_mb.sp, useSAcrs = TRUE,
                                  filename2 = file.path(dataDirLP, "LP_MB_caribou.shp"),
                                  overwrite = TRUE)

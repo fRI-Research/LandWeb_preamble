@@ -14,7 +14,7 @@ fmaVanderwell <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
                                  studyArea = vanderwell.sp, useSAcrs = TRUE,
                                  filename2 = file.path(dataDirVanderwell, "Vanderwell_ANSR.shp"),
                                  overwrite = TRUE)
-  vanderwell.caribou <- postProcess(ml$`Boreal Caribou Ranges`,
+  vanderwell.caribou <- postProcess(ml$`LandWeb Caribou Ranges`,
                                     studyArea = vanderwell.sp, useSAcrs = TRUE,
                                     filename2 = file.path(dataDirVanderwell, "Vanderwell_caribou.shp"),
                                     overwrite = TRUE)

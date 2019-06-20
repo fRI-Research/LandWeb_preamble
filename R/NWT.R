@@ -7,7 +7,7 @@ fmaNWT <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
   shapefile(fmanwt, filename = file.path(dataDirFMANWT, "FMANWT.shp"), overwrite = TRUE)
 
   ## reportingPolygons
-  fmanwt.caribou <- postProcess(ml$`Boreal Caribou Ranges`,
+  fmanwt.caribou <- postProcess(ml$`LandWeb Caribou Ranges`,
                                 studyArea = fmanwt.sp, useSAcrs = TRUE,
                                 filename2 = file.path(dataDirFMANWT, "FMANWT_caribou.shp"),
                                 overwrite = TRUE)

@@ -96,7 +96,7 @@ fmaWeyCo <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
     weyco_sk.sp <- as(weyco_sk, "SpatialPolygons")
     shapefile(weyco_sk, filename = file.path(dataDirWeyCo, "WeyCo_SK.shp"), overwrite = TRUE)
 
-    weyco_sk.caribou <- postProcess(ml$`Boreal Caribou Ranges`,
+    weyco_sk.caribou <- postProcess(ml$`LandWeb Caribou Ranges`,
                                     studyArea = weyco_sk.sp, useSAcrs = TRUE,
                                     filename2 = file.path(dataDirWeyCo, "WeyCo_SK_Caribou.shp"),
                                     overwrite = TRUE)

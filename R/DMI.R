@@ -24,7 +24,7 @@ fmaDMI <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
   dmi.ansr <- postProcess(ml$`Alberta Natural Subregions`,
                           studyArea = dmi.sp, useSAcrs = TRUE,
                           filename2 = file.path(dataDirDMI, "DMI_ANSR.shp"))
-  dmi.caribou <- postProcess(ml$`Boreal Caribou Ranges`,
+  dmi.caribou <- postProcess(ml$`LandWeb Caribou Ranges`,
                              studyArea = dmi.sp, useSAcrs = TRUE,
                              filename2 = file.path(dataDirDMI, "DMI_caribou.shp"))
 

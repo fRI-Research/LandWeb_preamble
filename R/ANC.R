@@ -11,10 +11,13 @@ fmaANC <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
                           studyArea = anc.sp, useSAcrs = TRUE,
                           filename2 = file.path(dataDirANC, "ANC_ANSR.shp"),
                           overwrite = TRUE)
-  anc.caribou <- postProcess(ml$`Boreal Caribou Ranges`,
+  anc.caribou <- postProcess(ml$`LandWeb Caribou Ranges`,
                              studyArea = anc.sp, useSAcrs = TRUE,
                              filename2 = file.path(dataDirANC, "ANC_caribou.shp"),
                              overwrite = TRUE)
+  anc.caribou.joined <- SpatialPolygonsDataFrame(aggregate(anc.caribou),
+                                                 data.frame(Name = "A La Peche & Little Smoky",
+                                                            shinyLabel = "A La Peche & Little Smoky"))
 
   ml <- mapAdd(anc, ml, layerName = "ANC", useSAcrs = TRUE, poly = TRUE,
                analysisGroupReportingPolygon = "ANC", isStudyArea = isTRUE(asStudyArea),
@@ -25,10 +28,14 @@ fmaANC <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
   ml <- mapAdd(anc.caribou, ml, layerName = "ANC Caribou", useSAcrs = TRUE, poly = TRUE,
                analysisGroupReportingPolygon = "ANC Caribou",
                columnNameForLabels = "Name", filename2 = NULL)
+  ml <- mapAdd(anc.caribou.joined, ml, layerName = "ANC Caribou Joined", useSAcrs = TRUE, poly = TRUE,
+               analysisGroupReportingPolygon = "ANC Caribou Joined",
+               columnNameForLabels = "Name", filename2 = NULL)
 
   ## TODO: workaround problematic intersect() that changes Name to Name.1 and Name.2
   names(ml$`ANC ANSR`) <- gsub("[.]1", "", names(ml$`ANC ANSR`))
   names(ml$`ANC Caribou`) <- gsub("[.]1", "", names(ml$`ANC Caribou`))
+  names(ml$`ANC Caribou Joined`) <- gsub("[.]1", "", names(ml$`ANC Caribou Joined`))
 
   ## studyArea shouldn't use analysisGroup because it's not a reportingPolygon
   anc_sr <- postProcess(ml$`LandWeb Study Area`,

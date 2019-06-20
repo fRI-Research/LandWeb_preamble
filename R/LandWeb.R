@@ -15,7 +15,7 @@ allLandWeb <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
   lw.sp <- as(lw, "SpatialPolygons")
 
   ## reportingPolygons
-  lw.caribou <- postProcess(ml$`Boreal Caribou Ranges`,
+  lw.caribou <- postProcess(ml$`LandWeb Caribou Ranges`,
                             studyArea = lw.sp, useSAcrs = TRUE,
                             filename2 = file.path(dataDirLandWeb, "LandWeb_caribou.shp"),
                             overwrite = TRUE)

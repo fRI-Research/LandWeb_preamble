@@ -7,7 +7,7 @@ fmaMistik <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
   mistik.sp <- as(mistik, "SpatialPolygons")
   shapefile(mistik, filename = file.path(dataDirMistik, "Mistik.shp"), overwrite = TRUE)
 
-  mistik.caribou <- postProcess(ml$`Boreal Caribou Ranges`,
+  mistik.caribou <- postProcess(ml$`LandWeb Caribou Ranges`,
                                 studyArea = mistik.sp, useSAcrs = TRUE,
                                 filename2 = file.path(dataDirMistik, "Mistik_caribou.shp"),
                                 overwrite = TRUE)

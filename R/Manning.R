@@ -11,7 +11,7 @@ fmaManning <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
                               studyArea = manning.sp, useSAcrs = TRUE,
                               filename2 = file.path(dataDirManning, "Manning_ANSR.shp"),
                               overwrite = TRUE)
-  manning.caribou <- postProcess(ml$`Boreal Caribou Ranges`,
+  manning.caribou <- postProcess(ml$`LandWeb Caribou Ranges`,
                                  studyArea = manning.sp, useSAcrs = TRUE,
                                  filename2 = file.path(dataDirManning, "Manning_caribou.shp"),
                                  overwrite = TRUE)

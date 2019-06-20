@@ -59,7 +59,7 @@ fmaWestFraser <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
                              studyArea = wf_n.sp, useSAcrs = TRUE,
                              filename2 = file.path(dataDirWestFraser, "WestFraser_N_ANSR"),
                              overwrite = TRUE)
-    wf_n.caribou <- postProcess(ml$`Boreal Caribou Ranges`,
+    wf_n.caribou <- postProcess(ml$`LandWeb Caribou Ranges`,
                                  studyArea = wf_n.sp, useSAcrs = TRUE,
                                  filename2 = file.path(dataDirWestFraser, "WestFraser_N_caribou.shp"),
                                  overwrite = TRUE)
@@ -107,7 +107,7 @@ fmaWestFraser <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
                              studyArea = wf_s.sp, useSAcrs = TRUE,
                              filename2 = file.path(dataDirWestFraser, "WestFraser_S_ANSR"),
                              overwrite = TRUE)
-    wf_s.caribou <- postProcess(ml$`Boreal Caribou Ranges`,
+    wf_s.caribou <- postProcess(ml$`LandWeb Caribou Ranges`,
                                 studyArea = wf_s.sp, useSAcrs = TRUE,
                                 filename2 = file.path(dataDirWestFraser, "WestFraser_S_caribou.shp"),
                                 overwrite = TRUE)

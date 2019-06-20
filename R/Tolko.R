@@ -17,7 +17,7 @@ fmaTolko <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
                                    studyArea = tolko_ab_n.sp, useSAcrs = TRUE,
                                    filename2 = file.path(dataDirTolko, "Tolko_AB_N_ANSR.shp"),
                                    overwrite = TRUE)
-    tolko_ab_n.caribou <- postProcess(ml$`Boreal Caribou Ranges`,
+    tolko_ab_n.caribou <- postProcess(ml$`LandWeb Caribou Ranges`,
                                       studyArea = tolko_ab_n.sp, useSAcrs = TRUE,
                                       filename2 = file.path(dataDirTolko, "Tolko_AB_N_caribou.shp"),
                                       overwrite = TRUE)
@@ -65,7 +65,7 @@ fmaTolko <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
                                    studyArea = tolko_ab_s.sp, useSAcrs = TRUE,
                                    filename2 = file.path(dataDirTolko, "Tolko_AB_S_ANSR.shp"),
                                    overwrite = TRUE)
-    tolko_ab_s.caribou <- postProcess(ml$`Boreal Caribou Ranges`,
+    tolko_ab_s.caribou <- postProcess(ml$`LandWeb Caribou Ranges`,
                                       studyArea = tolko_ab_s.sp, useSAcrs = TRUE,
                                       filename2 = file.path(dataDirTolko, "Tolko_AB_S_caribou.shp"),
                                       overwrite = TRUE)
@@ -109,7 +109,7 @@ fmaTolko <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
     tolko_sk.sp <- as(tolko_sk, "SpatialPolygons")
     shapefile(tolko_sk, filename = file.path(dataDirTolko, "Tolko_SK.shp"), overwrite = TRUE)
 
-    tolko_sk.caribou <- postProcess(ml$`Boreal Caribou Ranges`,
+    tolko_sk.caribou <- postProcess(ml$`LandWeb Caribou Ranges`,
                                     studyArea = tolko_sk.sp, useSAcrs = TRUE,
                                     filename2 = file.path(dataDirTolko, "Tolko_SK_caribou.shp"),
                                     overwrite = TRUE)

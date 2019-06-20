@@ -12,7 +12,7 @@ fmaMillarWestern <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE
                           studyArea = mw.sp, useSAcrs = TRUE,
                           filename2 = file.path(dataDirMillarWestern, "Millar_Western_ANSR.shp"),
                           overwrite = TRUE)
-  mw.caribou <- postProcess(ml$`Boreal Caribou Ranges`,
+  mw.caribou <- postProcess(ml$`LandWeb Caribou Ranges`,
                                studyArea = mw.sp, useSAcrs = TRUE,
                                filename2 = file.path(dataDirMillarWestern, "Millar_Western_caribou.shp"),
                                overwrite = TRUE)
