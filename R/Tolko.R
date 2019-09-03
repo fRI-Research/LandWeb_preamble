@@ -6,21 +6,22 @@ fmaTolko <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
   tolko <- extractFMA(ml, "Tolko|Meadow Lake OSB")
   tolko.full <- maptools::unionSpatialPolygons(tolko, rep(1, 5))
   shapefile(tolko.full, filename = file.path(dataDirTolko, "Tolko_Full.shp"), overwrite = TRUE)
-
+browser()
   if (grepl("LandWeb|Tolko_AB_N|tolko_AB_N", runName)) {
     ## reporting polygons
     tolko_ab_n <- tolko[4, ]
-    tolko_ab_n.sp <- as(tolko_ab_n, "SpatialPolygons")
     shapefile(tolko_ab_n, filename = file.path(dataDirTolko, "Tolko_AB_N.shp"), overwrite = TRUE)
 
     tolko_ab_n.ansr <- postProcess(ml$`Alberta Natural Subregions`,
-                                   studyArea = tolko_ab_n.sp, useSAcrs = TRUE,
+                                   studyArea = tolko_ab_n, useSAcrs = TRUE,
                                    filename2 = file.path(dataDirTolko, "Tolko_AB_N_ANSR.shp"),
-                                   overwrite = TRUE)
+                                   overwrite = TRUE) %>%
+      joinReportingPolygons(., tolko_ab_n)
     tolko_ab_n.caribou <- postProcess(ml$`LandWeb Caribou Ranges`,
-                                      studyArea = tolko_ab_n.sp, useSAcrs = TRUE,
+                                      studyArea = tolko_ab_n, useSAcrs = TRUE,
                                       filename2 = file.path(dataDirTolko, "Tolko_AB_N_caribou.shp"),
-                                      overwrite = TRUE)
+                                      overwrite = TRUE) %>%
+      joinReportingPolygons(., tolko_ab_n)
 
     ml <- mapAdd(tolko_ab_n, ml, layerName = "Tolko AB North", useSAcrs = TRUE, poly = TRUE,
                  analysisGroupReportingPolygon = "Tolko AB North", isStudyArea = isTRUE(asStudyArea),
@@ -31,10 +32,6 @@ fmaTolko <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
     ml <- mapAdd(tolko_ab_n.caribou, ml, layerName = "Tolko AB North Caribou", useSAcrs = TRUE, poly = TRUE,
                  analysisGroupReportingPolygon = "Tolko AB North Caribou",
                  columnNameForLabels = "Name", filename2 = NULL)
-
-    ## TODO: workaround problematic intersect() that changes Name to Name.1 and Name.2
-    names(ml$`Tolko AB North ANSR`) <- gsub("[.]1", "", names(ml$`Tolko AB North ANSR`))
-    names(ml$`Tolko AB North Caribou`) <- gsub("[.]1", "", names(ml$`Tolko AB North Caribou`))
 
     ## studyArea shouldn't use analysisGroup because it's not a reportingPolygon
     tolko_ab_n_sr <- postProcess(ml$`LandWeb Study Area`,
@@ -58,17 +55,18 @@ fmaTolko <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
   if (grepl("LandWeb|Tolko_AB_S|tolko_AB_S", runName)) {
     ## reportingPolygons
     tolko_ab_s <- tolko[c(2, 3, 5), ]
-    tolko_ab_s.sp <- as(tolko_ab_s, "SpatialPolygons")
     shapefile(tolko_ab_s, filename = file.path(dataDirTolko, "Tolko_AB_S.shp"), overwrite = TRUE)
 
     tolko_ab_s.ansr <- postProcess(ml$`Alberta Natural Subregions`,
-                                   studyArea = tolko_ab_s.sp, useSAcrs = TRUE,
+                                   studyArea = tolko_ab_s, useSAcrs = TRUE,
                                    filename2 = file.path(dataDirTolko, "Tolko_AB_S_ANSR.shp"),
-                                   overwrite = TRUE)
+                                   overwrite = TRUE) %>%
+      joinReportingPolygons(., tolko_ab_s)
     tolko_ab_s.caribou <- postProcess(ml$`LandWeb Caribou Ranges`,
-                                      studyArea = tolko_ab_s.sp, useSAcrs = TRUE,
+                                      studyArea = tolko_ab_s, useSAcrs = TRUE,
                                       filename2 = file.path(dataDirTolko, "Tolko_AB_S_caribou.shp"),
-                                      overwrite = TRUE)
+                                      overwrite = TRUE) %>%
+      joinReportingPolygons(., tolko_ab_s)
 
     ml <- mapAdd(tolko_ab_s, ml, layerName = "Tolko AB South", useSAcrs = TRUE, poly = TRUE,
                  analysisGroupReportingPolygon = "Tolko AB South", isStudyArea = isTRUE(asStudyArea),
@@ -79,10 +77,6 @@ fmaTolko <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
     ml <- mapAdd(tolko_ab_s.caribou, ml, layerName = "Tolko AB South Caribou", useSAcrs = TRUE, poly = TRUE,
                  analysisGroupReportingPolygon = "Tolko AB South Caribou",
                  columnNameForLabels = "Name", filename2 = NULL)
-
-    ## TODO: workaround problematic intersect() that changes Name to Name.1 and Name.2
-    names(ml$`Tolko AB South ANSR`) <- gsub("[.]1", "", names(ml$`Tolko AB South ANSR`))
-    names(ml$`Tolko AB South Caribou`) <- gsub("[.]1", "", names(ml$`Tolko AB South Caribou`))
 
     ## studyArea shouldn't use analysisGroup because it's not a reportingPolygon
     tolko_ab_s_sr <- postProcess(ml$`LandWeb Study Area`,
@@ -106,13 +100,13 @@ fmaTolko <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
   if (grepl("LandWeb|Tolko_SK|tolko_SK", runName)) {
     ## reportingPolygons
     tolko_sk <- tolko[1, ]
-    tolko_sk.sp <- as(tolko_sk, "SpatialPolygons")
     shapefile(tolko_sk, filename = file.path(dataDirTolko, "Tolko_SK.shp"), overwrite = TRUE)
 
     tolko_sk.caribou <- postProcess(ml$`LandWeb Caribou Ranges`,
-                                    studyArea = tolko_sk.sp, useSAcrs = TRUE,
+                                    studyArea = tolko_sk, useSAcrs = TRUE,
                                     filename2 = file.path(dataDirTolko, "Tolko_SK_caribou.shp"),
-                                    overwrite = TRUE)
+                                    overwrite = TRUE) %>%
+      joinReportingPolygons(., tolko_sk)
 
     ml <- mapAdd(tolko_sk, ml, layerName = "Tolko SK", useSAcrs = TRUE, poly = TRUE,
                  analysisGroupReportingPolygon = "Tolko SK", isStudyArea = isTRUE(asStudyArea),
@@ -120,9 +114,6 @@ fmaTolko <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
     ml <- mapAdd(tolko_sk.caribou, ml, layerName = "Tolko SK Caribou", useSAcrs = TRUE, poly = TRUE,
                  analysisGroupReportingPolygon = "Tolko SK Caribou",
                  columnNameForLabels = "Name", filename2 = NULL)
-
-    ## TODO: workaround problematic intersect() that changes Name to Name.1 and Name.2
-    names(ml$`Tolko SK Caribou`) <- gsub("[.]1", "", names(ml$`Tolko SK Caribou`))
 
     ## studyArea shouldn't use analysisGroup because it's not a reportingPolygon
     tolko_sk_sr <- postProcess(ml$`LandWeb Study Area`,

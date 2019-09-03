@@ -6,18 +6,19 @@ fmaVanderwell <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
   ## - the other is just south of the first
   ab <- canProvs[canProvs$NAME_1 == "Alberta", ]
   vanderwell <- extractFMA(ml, "Vanderwell Contractors")
-  vanderwell.sp <- as(vanderwell, "SpatialPolygons")
   shapefile(vanderwell, filename = file.path(dataDirVanderwell, "Vanderwell_full.shp"), overwrite = TRUE)
 
   ## reportingPolygons
   vanderwell.ansr <- postProcess(ml$`Alberta Natural Subregions`,
-                                 studyArea = vanderwell.sp, useSAcrs = TRUE,
+                                 studyArea = vanderwell, useSAcrs = TRUE,
                                  filename2 = file.path(dataDirVanderwell, "Vanderwell_ANSR.shp"),
-                                 overwrite = TRUE)
+                                 overwrite = TRUE) %>%
+    joinReportingPolygons(., vanderwell)
   vanderwell.caribou <- postProcess(ml$`LandWeb Caribou Ranges`,
-                                    studyArea = vanderwell.sp, useSAcrs = TRUE,
+                                    studyArea = vanderwell, useSAcrs = TRUE,
                                     filename2 = file.path(dataDirVanderwell, "Vanderwell_caribou.shp"),
-                                    overwrite = TRUE)
+                                    overwrite = TRUE) %>%
+    joinReportingPolygons(., vanderwell)
 
   ml <- mapAdd(vanderwell, ml, layerName = "Vanderwell", useSAcrs = TRUE, poly = TRUE,
                analysisGroupReportingPolygon = "Vanderwell", isStudyArea = isTRUE(asStudyArea),
@@ -28,10 +29,6 @@ fmaVanderwell <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
   ml <- mapAdd(vanderwell.caribou, ml, layerName = "Vanderwell Caribou", useSAcrs = TRUE, poly = TRUE,
                analysisGroupReportingPolygon = "Vanderwell Caribou",
                columnNameForLabels = "Name", filename2 = NULL)
-
-  ## TODO: workaround problematic intersect() that changes Name to Name.1 and Name.2
-  names(ml$`Vanderwell ANSR`) <- gsub("[.]1", "", names(ml$`Vanderwell ANSR`))
-  names(ml$`Vanderwell Caribou`) <- gsub("[.]1", "", names(ml$`Vanderwell Caribou`))
 
   ## studyArea shouldn't use analysisGroup because it's not a reportingPolygon
   vanderwell_sr <- postProcess(ml$`LandWeb Study Area`,

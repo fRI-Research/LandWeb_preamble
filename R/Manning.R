@@ -3,18 +3,19 @@ fmaManning <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
 
   ab <- canProvs[canProvs$NAME_1 == "Alberta", ]
   manning <- extractFMA(ml, "Manning")
-  manning.sp <- as(manning, "SpatialPolygons")
   shapefile(manning, filename = file.path(dataDirManning, "Manning_full.shp"), overwrite = TRUE)
 
   ## reportingPolygons
   manning.ansr <- postProcess(ml$`Alberta Natural Subregions`,
-                              studyArea = manning.sp, useSAcrs = TRUE,
+                              studyArea = manning, useSAcrs = TRUE,
                               filename2 = file.path(dataDirManning, "Manning_ANSR.shp"),
-                              overwrite = TRUE)
+                              overwrite = TRUE) %>%
+    joinReportingPolygons(., manning)
   manning.caribou <- postProcess(ml$`LandWeb Caribou Ranges`,
-                                 studyArea = manning.sp, useSAcrs = TRUE,
+                                 studyArea = manning, useSAcrs = TRUE,
                                  filename2 = file.path(dataDirManning, "Manning_caribou.shp"),
-                                 overwrite = TRUE)
+                                 overwrite = TRUE) %>%
+    joinReportingPolygons(., manning)
 
   ml <- mapAdd(manning, ml, layerName = "Manning", useSAcrs = TRUE, poly = TRUE,
                analysisGroupReportingPolygon = "Manning", isStudyArea = isTRUE(asStudyArea),
@@ -25,10 +26,6 @@ fmaManning <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
   ml <- mapAdd(manning.caribou, ml, layerName = "Manning Caribou", useSAcrs = TRUE, poly = TRUE,
                analysisGroupReportingPolygon = "Manning Caribou",
                columnNameForLabels = "Name", filename2 = NULL)
-
-  ## TODO: workaround problematic intersect() that changes Name to Name.1 and Name.2
-  names(ml$`Manning ANSR`) <- gsub("[.]1", "", names(ml$`Manning ANSR`))
-  names(ml$`Manning Caribou`) <- gsub("[.]1", "", names(ml$`Manning Caribou`))
 
   ## studyArea shouldn't use analysisGroup because it's not a reportingPolygon
   manning_sr <- postProcess(ml$`LandWeb Study Area`,

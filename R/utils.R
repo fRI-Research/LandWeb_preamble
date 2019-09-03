@@ -14,6 +14,45 @@ extractFMA <- function(ml, name) {
   ml$`FMA Boundaries Updated`[grepl(name, ml$`FMA Boundaries Updated`$Name), ]
 }
 
+#' Join reporting polygons and intersect their features
+#'
+#' Join two reporting polygons, preserving thoir featuers;
+#' concantenate the \code{Name.*} fields into a single \code{Name} field;
+#' concantenate the \code{shinyLabel.*} fields into a single \code{shinyLabel} field.
+#' E.g., if \code{x} and \code{y} each contain 2 features, the resulting object will contain 4
+#' features (corresponding to \code{x1.y1}, \code{x1.y2}, \code{x2.y1}, and \code{x2.y2}).
+#'
+#' @param x,y a \code{SpatialPolygonsDataFrame}
+#'
+#' @return a \code{SpatialPolygonsDataFrame}
+#'
+#' @importFrom sf as st_as_sf st_join
+joinReportingPolygons <- function(x, y) {
+  if (is.null(x[["Name"]]) && !is.null(x[["Name.1"]]) && !is.null(x[["Name.2"]]) &&
+      is.null(x[["shinyLabel"]]) && !is.null(x[["shinyLabel.1"]]) && !is.null(x[["shinyLabel.2"]])) {
+    z <- x
+
+    z[["Name"]] <- paste(z[["Name.2"]], z[["Name.1"]])
+    z[["Name.1"]] <- z[["Name.2"]] <- NULL
+
+    z[["shinyLabel"]] <- paste(z[["shinyLabel.2"]], z[["shinyLabel.1"]])
+    z[["shinyLabel.1"]] <- z[["shinyLabel.2"]] <- NULL
+  } else {
+    z <- sf::st_as_sf(x) %>%
+      sf::st_join(., sf::st_as_sf(y))
+
+    z[["Name"]] <- paste(z[["Name.x"]], z[["Name.y"]])
+    z[["Name.x"]] <- z[["Name.y"]] <- NULL
+
+    z[["shinyLabel"]] <- paste(z[["shinyLabel.x"]], z[["shinyLabel.y"]])
+    z[["shinyLabel.x"]] <- z[["shinyLabel.y"]] <- NULL
+
+    z <- as(z, "Spatial")
+  }
+
+  return(z)
+}
+
 #' Plot boudary polygon(s) for forest management areas
 #'
 #' @param x        \code{SpatialPolygons*} object corresponding to the FMA to be plotted

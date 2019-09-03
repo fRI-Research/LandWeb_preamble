@@ -4,7 +4,6 @@ fmaDMI <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
   ## There are 3 parts to the DMI FMA: an East and two West areas (North and South)
   ab <- canProvs[canProvs$NAME_1 == "Alberta", ]
   dmi <- extractFMA(ml, "Mercer Peace River")
-  dmi.sp <- as(dmi, "SpatialPolygons")
   dmi.full <- maptools::unionSpatialPolygons(dmi, rep(1, 2))
   shapefile(dmi.full, filename = file.path(dataDirDMI, "DMI_Full.shp"), overwrite = TRUE)
 
@@ -22,11 +21,14 @@ fmaDMI <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
 
   ## reporting polygons
   dmi.ansr <- postProcess(ml$`Alberta Natural Subregions`,
-                          studyArea = dmi.sp, useSAcrs = TRUE,
-                          filename2 = file.path(dataDirDMI, "DMI_ANSR.shp"))
+                          studyArea = dmi, useSAcrs = TRUE,
+                          filename2 = file.path(dataDirDMI, "DMI_ANSR.shp")) %>%
+    joinReportingPolygons(., dmi)
+
   dmi.caribou <- postProcess(ml$`LandWeb Caribou Ranges`,
-                             studyArea = dmi.sp, useSAcrs = TRUE,
-                             filename2 = file.path(dataDirDMI, "DMI_caribou.shp"))
+                             studyArea = dmi, useSAcrs = TRUE,
+                             filename2 = file.path(dataDirDMI, "DMI_caribou.shp")) %>%
+    joinReportingPolygons(., dmi)
 
   ml <- mapAdd(dmi, ml, layerName = "DMI Full", useSAcrs = TRUE, poly = TRUE,
                analysisGroupReportingPolygon = "DMI Full", isStudyArea = isTRUE(asStudyArea),

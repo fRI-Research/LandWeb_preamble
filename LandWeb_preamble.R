@@ -116,7 +116,7 @@ Init <- function(sim) {
   ## Provincial Boundaries
   ml <- mapAdd(sim$canProvs, map = ml, layerName = "Provincial Boundaries",
                useSAcrs = TRUE, poly = TRUE, overwrite = TRUE,
-               columnNameForLabels = "Name", isStudyArea = FALSE, filename2 = NULL)
+               columnNameForLabels = "NAME_1", isStudyArea = FALSE, filename2 = NULL)
 
   ################################################################################
   ## COMPANY-SPECIFIC STUDY AREAS

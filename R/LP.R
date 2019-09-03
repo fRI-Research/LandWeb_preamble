@@ -10,13 +10,13 @@ fmaLP <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
   if (grepl("LandWeb|LP_BC", runName)) {
     ## reportingPolygons
     lp_bc <- extractFMA(ml, "Fort St\\. John|Dawson Creek")
-    lp_bc.sp <- as(lp_bc, "SpatialPolygons")
     shapefile(lp_bc, filename = file.path(dataDirLP, "LP_BC.shp"), overwrite = TRUE)
 
     lp_bc.caribou <- postProcess(ml$`LandWeb Caribou Ranges`,
-                                 studyArea = lp_bc.sp, useSAcrs = TRUE,
+                                 studyArea = lp_bc, useSAcrs = TRUE,
                                  filename2 = file.path(dataDirLP, "LP_BC_caribou.shp"),
-                                 overwrite = TRUE)
+                                 overwrite = TRUE) %>%
+      joinReportingPolygons(., lp_bc)
 
     ml <- mapAdd(lp_bc, ml, layerName = "LP BC", useSAcrs = TRUE, poly = TRUE,
                  analysisGroupReportingPolygon = "LP BC", isStudyArea = isTRUE(asStudyArea),
@@ -24,9 +24,6 @@ fmaLP <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
     ml <- mapAdd(lp_bc.caribou, ml, layerName = "LP BC Caribou", useSAcrs = TRUE, poly = TRUE,
                  analysisGroupReportingPolygon = "LP BC Caribou",
                  columnNameForLabels = "Name", filename2 = NULL)
-
-    ## TODO: workaround problematic intersect() that changes Name to Name.1 and Name.2
-    names(ml$`LP BC Caribou`) <- gsub("[.]1", "", names(ml$`LP BC Caribou`))
 
     ## studyArea shouldn't use analysisGroup because it's not a reportingPolygon
     lp_bc_sr <- postProcess(ml$`LandWeb Study Area`,
@@ -49,13 +46,13 @@ fmaLP <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
   if (grepl("LandWeb|LP_MB", runName)) {
     ## reportingPolygons
     lp_mb <- extractFMA(ml, "Mountain")
-    lp_mb.sp <- as(lp_mb, "SpatialPolygons")
     shapefile(lp_mb, filename = file.path(dataDirLP, "LP_MB.shp"), overwrite = TRUE)
 
     lp_mb.caribou <- postProcess(ml$`LandWeb Caribou Ranges`,
-                                 studyArea = lp_mb.sp, useSAcrs = TRUE,
+                                 studyArea = lp_mb, useSAcrs = TRUE,
                                  filename2 = file.path(dataDirLP, "LP_MB_caribou.shp"),
-                                 overwrite = TRUE)
+                                 overwrite = TRUE) %>%
+      joinReportingPolygons(., lp_mb)
 
     ml <- mapAdd(lp_mb, ml, layerName = "LP MB", useSAcrs = TRUE, poly = TRUE,
                  analysisGroupReportingPolygon = "LP MB", isStudyArea = isTRUE(asStudyArea),
@@ -63,9 +60,6 @@ fmaLP <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
     ml <- mapAdd(lp_mb.caribou, ml, layerName = "LP MB Caribou", useSAcrs = TRUE, poly = TRUE,
                  analysisGroupReportingPolygon = "LP MB Caribou",
                  columnNameForLabels = "Name", filename2 = NULL)
-
-    ## TODO: workaround problematic intersect() that changes Name to Name.1 and Name.2
-    names(ml$`LP MB Caribou`) <- gsub("[.]1", "", names(ml$`LP MB Caribou`))
 
     ## studyArea shouldn't use analysisGroup because it's not a reportingPolygon
     lp_mb_sr <- postProcess(ml$`LandWeb Study Area`,

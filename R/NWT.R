@@ -3,14 +3,14 @@ fmaNWT <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
 
   nwt <- canProvs[canProvs$NAME_1 %in% c("Northwest Territories"), ]
   fmanwt <- extractFMA(ml, "Fort Resolution")
-  fmanwt.sp <- as(fmanwt, "SpatialPolygons")
   shapefile(fmanwt, filename = file.path(dataDirFMANWT, "FMANWT.shp"), overwrite = TRUE)
 
   ## reportingPolygons
   fmanwt.caribou <- postProcess(ml$`LandWeb Caribou Ranges`,
-                                studyArea = fmanwt.sp, useSAcrs = TRUE,
+                                studyArea = fmanwt, useSAcrs = TRUE,
                                 filename2 = file.path(dataDirFMANWT, "FMANWT_caribou.shp"),
-                                overwrite = TRUE)
+                                overwrite = TRUE) %>%
+    joinReportingPolygons(., fmanwt)
 
   ml <- mapAdd(fmanwt, ml, layerName = "FMANWT", useSAcrs = TRUE, poly = TRUE,
                analysisGroupReportingPolygon = "FMANWT", isStudyArea = isTRUE(asStudyArea),
@@ -18,9 +18,6 @@ fmaNWT <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
   ml <- mapAdd(fmanwt.caribou, ml, layerName = "FMANWT Caribou", useSAcrs = TRUE, poly = TRUE,
                analysisGroupReportingPolygon = "FMANWT Caribou",
                columnNameForLabels = "Name", filename2 = NULL)
-
-  ## TODO: workaround problematic intersect() that changes Name to Name.1 and Name.2
-  names(ml$`FMANWT Caribou`) <- gsub("[.]1", "", names(ml$`FMANWT Caribou`))
 
   ## studyArea shouldn't use analysisGroup because it's not a reportingPolygon
   fmanwt_sr <- postProcess(ml$`LandWeb Study Area`,

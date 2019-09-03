@@ -3,14 +3,14 @@ fmaEdsonFP <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
 
   ab <- canProvs[canProvs$NAME_1 == "Alberta", ]
   edson <- extractFMA(ml, "Edson")
-  edson.sp <- as(edson, "SpatialPolygons")
   shapefile(edson, filename = file.path(dataDirEdsonFP, "EdsonFP.shp"), overwrite = TRUE)
 
   ## reportingPolygons
   edson.ansr <- postProcess(ml$`Alberta Natural Subregions`,
-                            studyArea = edson.sp, useSAcrs = TRUE,
+                            studyArea = edson, useSAcrs = TRUE,
                             filename2 = file.path(dataDirEdsonFP, "EdsonFP_ANSR.shp"),
-                            overwrite = TRUE)
+                            overwrite = TRUE) %>%
+    joinReportingPolygons(., edson)
   ## NOTE: no caribou ranges intersect with this FMA
 
   ml <- mapAdd(edson, ml, layerName = "EdsonFP", useSAcrs = TRUE, poly = TRUE,
@@ -19,9 +19,6 @@ fmaEdsonFP <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
   ml <- mapAdd(edson.ansr, ml, layerName = "EdsonFP ANSR", useSAcrs = TRUE, poly = TRUE,
                analysisGroupReportingPolygon = "EdsonFP ANSR",
                columnNameForLabels = "Name", filename2 = NULL)
-
-  ## TODO: workaround problematic intersect() that changes Name to Name.1 and Name.2
-  names(ml$`EdsonFP ANSR`) <- gsub("[.]1", "", names(ml$`EdsonFP ANSR`))
 
   ## studyArea shouldn't use analysisGroup because it's not a reportingPolygon
   edson_sr <- postProcess(ml$`LandWeb Study Area`,

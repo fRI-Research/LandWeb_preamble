@@ -3,19 +3,20 @@ fmaMillarWestern <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE
 
   ab <- canProvs[canProvs$NAME_1 == "Alberta", ]
   mw <- extractFMA(ml, "Millar Western Forest Products")
-  mw.sp <- as(mw, "SpatialPolygons")
-
   shapefile(mw, filename = file.path(dataDirMillarWestern, "Millar_Western.shp"), overwrite = TRUE)
 
   ## reportingPolygons
   mw.ansr <- postProcess(ml$`Alberta Natural Subregions`,
-                          studyArea = mw.sp, useSAcrs = TRUE,
+                          studyArea = mw, useSAcrs = TRUE,
                           filename2 = file.path(dataDirMillarWestern, "Millar_Western_ANSR.shp"),
-                          overwrite = TRUE)
+                          overwrite = TRUE) %>%
+    joinReportingPolygons(., mw)
+
   mw.caribou <- postProcess(ml$`LandWeb Caribou Ranges`,
-                               studyArea = mw.sp, useSAcrs = TRUE,
+                               studyArea = mw, useSAcrs = TRUE,
                                filename2 = file.path(dataDirMillarWestern, "Millar_Western_caribou.shp"),
-                               overwrite = TRUE)
+                               overwrite = TRUE) %>%
+    joinReportingPolygons(., mw)
 
   ml <- mapAdd(mw, ml, layerName = "Millar Western", useSAcrs = TRUE, poly = TRUE,
                analysisGroupReportingPolygon = "Millar Western", isStudyArea = isTRUE(asStudyArea),
@@ -26,10 +27,6 @@ fmaMillarWestern <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE
   ml <- mapAdd(mw.caribou, ml, layerName = "Millar Western Caribou", useSAcrs = TRUE, poly = TRUE,
                analysisGroupReportingPolygon = "Millar Western Caribou",
                columnNameForLabels = "Name", filename2 = NULL)
-
-  ## TODO: workaround problematic intersect() that changes Name to Name.1 and Name.2
-  names(ml$`Millar Western ANSR`) <- gsub("[.]1", "", names(ml$`Millar Western ANSR`))
-  names(ml$`Millar Western Caribou`) <- gsub("[.]1", "", names(ml$`Millar Western Caribou`))
 
   ## studyArea shouldn't use analysisGroup because it's not a reportingPolygon
   mw_sr <- postProcess(ml$`LandWeb Study Area`,

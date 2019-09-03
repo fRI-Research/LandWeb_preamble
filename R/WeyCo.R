@@ -9,13 +9,13 @@ fmaWeyCo <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
   if (grepl("LandWeb|WeyCo_GP", runName)) {
     ## reportingPolygons
     weyco_gp <- extractFMA(ml, "Weyerhaeuser Company Limited \\(Grande Prairie\\)")
-    weyco_gp.sp <- as(weyco_gp, "SpatialPolygons")
     shapefile(weyco_gp, filename = file.path(dataDirWeyCo, "WeyCo_GP.shp"), overwrite = TRUE)
 
     weyco_gp.ansr <- postProcess(ml$`Alberta Natural Subregions`,
-                                 studyArea = weyco_gp.sp, useSAcrs = TRUE,
+                                 studyArea = weyco_gp, useSAcrs = TRUE,
                                  filename2 = file.path(dataDirWeyCo, "WeyCo_GP_ANSR.shp"),
-                                 overwrite = TRUE)
+                                 overwrite = TRUE) %>%
+      joinReportingPolygons(., weyco_gp)
     ## NOTE: no caribou areas intersect with this FMA
 
     ml <- mapAdd(weyco_gp, ml, layerName = "WeyCo GP", useSAcrs = TRUE, poly = TRUE,
@@ -24,9 +24,6 @@ fmaWeyCo <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
     ml <- mapAdd(weyco_gp.ansr, ml, layerName = "WeyCo GP ANSR", useSAcrs = TRUE, poly = TRUE,
                  analysisGroupReportingPolygon = "WeyCo GP ANSR",
                  columnNameForLabels = "Name", filename2 = NULL)
-
-    ## TODO: workaround problematic intersect() that changes Name to Name.1 and Name.2
-    names(ml$`WeyCo GP ANSR`) <- gsub("[.]1", "", names(ml$`WeyCo GP ANSR`))
 
     ## studyArea shouldn't use analysisGroup because it's not a reportingPolygon
     weyco_gp_sr <- postProcess(ml$`LandWeb Study Area`,
@@ -51,13 +48,13 @@ fmaWeyCo <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
   if (grepl("LandWeb|WeyCo_PT|WeyCo_Pembina", runName)) {
     ## reportingPolygons
     weyco_pt <- extractFMA(ml, "Weyerhaeuser Company Limited \\(Pembina Timberland\\)")
-    weyco_pt.sp <- as(weyco_pt, "SpatialPolygons")
     shapefile(weyco_pt, filename = file.path(dataDirWeyCo, "WeyCo_PT.shp"), overwrite = TRUE)
 
     weyco_pt.ansr <- postProcess(ml$`Alberta Natural Subregions`,
-                                 studyArea = weyco_pt.sp, useSAcrs = TRUE,
+                                 studyArea = weyco_pt, useSAcrs = TRUE,
                                  filename2 = file.path(dataDirWeyCo, "WeyCo_PT_ANSR.shp"),
-                                 overwrite = TRUE)
+                                 overwrite = TRUE) %>%
+      joinReportingPolygons(., weyco_pt)
     ## NOTE: no caribou areas intersect with this FMA
 
     ml <- mapAdd(weyco_pt, ml, layerName = "WeyCo PT", useSAcrs = TRUE, poly = TRUE,
@@ -66,9 +63,6 @@ fmaWeyCo <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
     ml <- mapAdd(weyco_pt.ansr, ml, layerName = "WeyCo PT ANSR", useSAcrs = TRUE, poly = TRUE,
                  analysisGroupReportingPolygon = "WeyCo PT ANSR",
                  columnNameForLabels = "Name", filename2 = NULL)
-
-    ## TODO: workaround problematic intersect() that changes Name to Name.1 and Name.2
-    names(ml$`WeyCo PT ANSR`) <- gsub("[.]1", "", names(ml$`WeyCo PT ANSR`))
 
     ## studyArea shouldn't use analysisGroup because it's not a reportingPolygon
     weyco_pt_sr <- postProcess(ml$`LandWeb Study Area`,
@@ -93,13 +87,13 @@ fmaWeyCo <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
   if (grepl("LandWeb|WeyCo_SK", runName)) {
     ## reportingPolygons
     weyco_sk <- extractFMA(ml, "Pasquia-Porcupine")
-    weyco_sk.sp <- as(weyco_sk, "SpatialPolygons")
     shapefile(weyco_sk, filename = file.path(dataDirWeyCo, "WeyCo_SK.shp"), overwrite = TRUE)
 
     weyco_sk.caribou <- postProcess(ml$`LandWeb Caribou Ranges`,
-                                    studyArea = weyco_sk.sp, useSAcrs = TRUE,
+                                    studyArea = weyco_sk, useSAcrs = TRUE,
                                     filename2 = file.path(dataDirWeyCo, "WeyCo_SK_Caribou.shp"),
-                                    overwrite = TRUE)
+                                    overwrite = TRUE) %>%
+      joinReportingPolygons(., weyco_sk)
 
     ml <- mapAdd(weyco_sk, ml, layerName = "WeyCo SK", useSAcrs = TRUE, poly = TRUE,
                  analysisGroupReportingPolygon = "WeyCo SK", isStudyArea = isTRUE(asStudyArea),
@@ -107,9 +101,6 @@ fmaWeyCo <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
     ml <- mapAdd(weyco_sk.caribou, ml, layerName = "WeyCo SK Caribou", useSAcrs = TRUE, poly = TRUE,
                  analysisGroupReportingPolygon = "WeyCo SK Caribou",
                  columnNameForLabels = "Name", filename2 = NULL)
-
-    ## TODO: workaround problematic intersect() that changes Name to Name.1 and Name.2
-    names(ml$`WeyCo SK Caribou`) <- gsub("[.]1", "", names(ml$`WeyCo SK Caribou`))
 
     ## studyArea shouldn't use analysisGroup because it's not a reportingPolygon
     weyco_sk_sr <- postProcess(ml$`LandWeb Study Area`,

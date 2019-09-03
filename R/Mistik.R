@@ -4,13 +4,13 @@ fmaMistik <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
   ## reportingPolygons
   absk <- canProvs[canProvs$NAME_1 %in% c("Alberta", "Saskatchewan"), ]
   mistik <- extractFMA(ml, "Mistik")
-  mistik.sp <- as(mistik, "SpatialPolygons")
   shapefile(mistik, filename = file.path(dataDirMistik, "Mistik.shp"), overwrite = TRUE)
 
   mistik.caribou <- postProcess(ml$`LandWeb Caribou Ranges`,
-                                studyArea = mistik.sp, useSAcrs = TRUE,
+                                studyArea = mistik, useSAcrs = TRUE,
                                 filename2 = file.path(dataDirMistik, "Mistik_caribou.shp"),
-                                overwrite = TRUE)
+                                overwrite = TRUE) %>%
+    joinReportingPolygons(., mistik)
 
   ml <- mapAdd(mistik, ml, layerName = "Mistik", useSAcrs = TRUE, poly = TRUE,
                analysisGroupReportingPolygon = "Mistik", isStudyArea = isTRUE(asStudyArea),
@@ -18,9 +18,6 @@ fmaMistik <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
   ml <- mapAdd(mistik.caribou, ml, layerName = "Mistik Caribou", useSAcrs = TRUE, poly = TRUE,
                analysisGroupReportingPolygon = "Mistik Caribou",
                columnNameForLabels = "Name", filename2 = NULL)
-
-  ## TODO: workaround problematic intersect() that changes Name to Name.1 and Name.2
-  names(ml$`Mistik Caribou`) <- gsub("[.]1", "", names(ml$`Mistik Caribou`))
 
   ## studyArea shouldn't use analysisGroup because it's not a reportingPolygon
   mistik_sr <- postProcess(ml$`LandWeb Study Area`,
