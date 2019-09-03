@@ -6,7 +6,7 @@ fmaTolko <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
   tolko <- extractFMA(ml, "Tolko|Meadow Lake OSB")
   tolko.full <- maptools::unionSpatialPolygons(tolko, rep(1, 5))
   shapefile(tolko.full, filename = file.path(dataDirTolko, "Tolko_Full.shp"), overwrite = TRUE)
-browser()
+
   if (grepl("LandWeb|Tolko_AB_N|tolko_AB_N", runName)) {
     ## reporting polygons
     tolko_ab_n <- tolko[4, ]
