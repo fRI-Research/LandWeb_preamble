@@ -150,6 +150,17 @@ Init <- function(sim) {
     ml <- fmaWeyCo(ml, P(sim)$runName, dataDir, sim$canProvs, asStudyArea = TRUE)
   } else if (grepl("WestFraser|BlueRidge", P(sim)$runName)) {
     ml <- fmaWestFraser(ml, P(sim)$runName, dataDir, sim$canProvs, asStudyArea = TRUE)
+  } else if (grepl("provAB", P(sim)$runName)) {
+    ml <- provAB(ml, P(sim)$runName, dataDir, sim$canProvs, asStudyArea = TRUE) ## WIP
+  } else if (grepl("provBC", P(sim)$runName)) {
+    ## TODO
+    ml <- provBC(ml, P(sim)$runName, dataDir, sim$canProvs, asStudyArea = TRUE)
+  } else if (grepl("provNWT", P(sim)$runName)) {
+    ## TODO
+    ml <- provNWT(ml, P(sim)$runName, dataDir, sim$canProvs, asStudyArea = TRUE)
+  } else if (grepl("provSK", P(sim)$runName)) {
+    ## TODO
+    ml <- provSK(ml, P(sim)$runName, dataDir, sim$canProvs, asStudyArea = TRUE)
   } else {
     # Make a random small study area
     message(crayon::red("Using random study area for runName", runName))
