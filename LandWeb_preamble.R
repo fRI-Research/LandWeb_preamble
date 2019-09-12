@@ -14,7 +14,7 @@ defineModule(sim, list(
   citation = list("citation.bib"),
   documentation = list("README.txt", "LandWeb_preamble.Rmd"),
   reqdPkgs = list("achubaty/amc@development",
-                  "dplyr", "fasterize", "ggplot2",
+                  "crayon", "dplyr", "fasterize", "ggplot2",
                   "PredictiveEcology/LandR@development",
                   "magrittr", "PredictiveEcology/map@development", "maptools",
                   "PredictiveEcology/pemisc@development",
@@ -84,10 +84,10 @@ Init <- function(sim) {
 
   ### Rename some polygons:
   ###   - DMI is now Mercer (MPR)
-  ids <- grep("Daishowa-Marubeni International Ltd", ml$`FMA Boundaries Updated`$Name)
+  ids <- grep("Daishowa-Marubeni International Ltd", ml[["FMA Boundaries Updated"]][["Name"]])
   newNames <- c("Mercer Peace River Pulp Ltd. (East)", "Mercer Peace River Pulp Ltd. (West)")
-  ml$`FMA Boundaries Updated`$Name[ids] <- newNames
-  ml$`FMA Boundaries Updated`$shinyLabel[ids] <- newNames
+  ml[["FMA Boundaries Updated"]][["Name"]][ids] <- newNames
+  ml[["FMA Boundaries Updated"]][["shinyLabel"]][ids] <- newNames
 
   ## Alberta Natural Subregions (ANSRs)
   ml <- mapAdd(map = ml, layerName = "Alberta Natural Subregions",
@@ -152,10 +152,11 @@ Init <- function(sim) {
     ml <- fmaWestFraser(ml, P(sim)$runName, dataDir, sim$canProvs, asStudyArea = TRUE)
   } else {
     # Make a random small study area
+    message(crayon::red("Using random study area for runName", runName))
     seed <- 863
     ranSeed <- .Random.seed
     set.seed(seed)
-    sp2 <- Cache(SpaDES.tools::randomPolygon, ml[[studyAreaName]], 4e5) # was 4e5
+    sp2 <- Cache(SpaDES.tools::randomPolygon, ml[[studyAreaName(ml)]], 4e5)
     ml <- mapAdd(obj = sp2, map = ml, filename2 = FALSE,
                  #targetCRS = targetCRS,
                  layerName = "Small Study Area",

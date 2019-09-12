@@ -7,7 +7,7 @@ fmaSundreFP <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
   shapefile(sundre, filename = file.path(dataDirSundreFP, "SundreFP.shp"), overwrite = TRUE)
 
   ## reportingPolygons
-  sundre.ansr <- postProcess(ml$`Alberta Natural Subregions`,
+  sundre.ansr <- postProcess(ml[["Alberta Natural Subregions"]],
                              studyArea = sundre, useSAcrs = TRUE,
                              filename2 = file.path(dataDirSundreFP, "SundreFP_ANSR"),
                              overwrite = TRUE) %>%
@@ -21,11 +21,11 @@ fmaSundreFP <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
                columnNameForLabels = "Name", filename2 = NULL)
 
   ## studyArea shouldn't use analysisGroup because it's not a reportingPolygon
-  sundre_sr <- postProcess(ml$`LandWeb Study Area`,
-                          studyArea = amc::outerBuffer(sundre, 50000), # 50 km buffer
-                          useSAcrs = TRUE,
-                          filename2 = file.path(dataDirSundreFP, "SundreFP_SR.shp"),
-                          overwrite = TRUE)
+  sundre_sr <- postProcess(ml[["LandWeb Study Area"]],
+                           studyArea = amc::outerBuffer(sundre, 50000), # 50 km buffer
+                           useSAcrs = TRUE,
+                           filename2 = file.path(dataDirSundreFP, "SundreFP_SR.shp"),
+                           overwrite = TRUE)
 
   plotFMA(sundre, provs = ab, caribou = NULL, xsr = sundre_sr,
           title = "Sundre Forest Products", png = file.path(dataDirSundreFP, "SundreFP.png"))

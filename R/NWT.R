@@ -6,7 +6,7 @@ fmaNWT <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
   shapefile(fmanwt, filename = file.path(dataDirFMANWT, "FMANWT.shp"), overwrite = TRUE)
 
   ## reportingPolygons
-  fmanwt.caribou <- postProcess(ml$`LandWeb Caribou Ranges`,
+  fmanwt.caribou <- postProcess(ml[["LandWeb Caribou Ranges"]],
                                 studyArea = fmanwt, useSAcrs = TRUE,
                                 filename2 = file.path(dataDirFMANWT, "FMANWT_caribou.shp"),
                                 overwrite = TRUE) %>%
@@ -20,11 +20,11 @@ fmaNWT <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
                columnNameForLabels = "Name", filename2 = NULL)
 
   ## studyArea shouldn't use analysisGroup because it's not a reportingPolygon
-  fmanwt_sr <- postProcess(ml$`LandWeb Study Area`,
-                          studyArea = amc::outerBuffer(fmanwt, 50000), # 50 km buffer
-                          useSAcrs = TRUE,
-                          filename2 = file.path(dataDirFMANWT, "FMANWT_SR.shp"),
-                          overwrite = TRUE)
+  fmanwt_sr <- postProcess(ml[["LandWeb Study Area"]],
+                           studyArea = amc::outerBuffer(fmanwt, 50000), # 50 km buffer
+                           useSAcrs = TRUE,
+                           filename2 = file.path(dataDirFMANWT, "FMANWT_SR.shp"),
+                           overwrite = TRUE)
 
   plotFMA(fmanwt, provs = nwt, caribou = fmanwt.caribou, xsr = fmanwt_sr,
           title = "Fort Resolution", png = file.path(dataDirFMANWT, "FMA_NWT.png"))

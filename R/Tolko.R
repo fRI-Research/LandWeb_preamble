@@ -12,12 +12,12 @@ fmaTolko <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
     tolko_ab_n <- tolko[4, ]
     shapefile(tolko_ab_n, filename = file.path(dataDirTolko, "Tolko_AB_N.shp"), overwrite = TRUE)
 
-    tolko_ab_n.ansr <- postProcess(ml$`Alberta Natural Subregions`,
+    tolko_ab_n.ansr <- postProcess(ml[["Alberta Natural Subregions"]],
                                    studyArea = tolko_ab_n, useSAcrs = TRUE,
                                    filename2 = file.path(dataDirTolko, "Tolko_AB_N_ANSR.shp"),
                                    overwrite = TRUE) %>%
       joinReportingPolygons(., tolko_ab_n)
-    tolko_ab_n.caribou <- postProcess(ml$`LandWeb Caribou Ranges`,
+    tolko_ab_n.caribou <- postProcess(ml[["LandWeb Caribou Ranges"]],
                                       studyArea = tolko_ab_n, useSAcrs = TRUE,
                                       filename2 = file.path(dataDirTolko, "Tolko_AB_N_caribou.shp"),
                                       overwrite = TRUE) %>%
@@ -34,7 +34,7 @@ fmaTolko <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
                  columnNameForLabels = "Name", filename2 = NULL)
 
     ## studyArea shouldn't use analysisGroup because it's not a reportingPolygon
-    tolko_ab_n_sr <- postProcess(ml$`LandWeb Study Area`,
+    tolko_ab_n_sr <- postProcess(ml[["LandWeb Study Area"]],
                                  studyArea = amc::outerBuffer(tolko_ab_n, 50000), # 50 km buffer
                                  useSAcrs = TRUE,
                                  filename2 = file.path(dataDirTolko, "Tolko_AB_N_SR.shp"),
@@ -57,12 +57,12 @@ fmaTolko <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
     tolko_ab_s <- tolko[c(2, 3, 5), ]
     shapefile(tolko_ab_s, filename = file.path(dataDirTolko, "Tolko_AB_S.shp"), overwrite = TRUE)
 
-    tolko_ab_s.ansr <- postProcess(ml$`Alberta Natural Subregions`,
+    tolko_ab_s.ansr <- postProcess(ml[["Alberta Natural Subregions"]],
                                    studyArea = tolko_ab_s, useSAcrs = TRUE,
                                    filename2 = file.path(dataDirTolko, "Tolko_AB_S_ANSR.shp"),
                                    overwrite = TRUE) %>%
       joinReportingPolygons(., tolko_ab_s)
-    tolko_ab_s.caribou <- postProcess(ml$`LandWeb Caribou Ranges`,
+    tolko_ab_s.caribou <- postProcess(ml[["LandWeb Caribou Ranges"]],
                                       studyArea = tolko_ab_s, useSAcrs = TRUE,
                                       filename2 = file.path(dataDirTolko, "Tolko_AB_S_caribou.shp"),
                                       overwrite = TRUE) %>%
@@ -79,7 +79,7 @@ fmaTolko <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
                  columnNameForLabels = "Name", filename2 = NULL)
 
     ## studyArea shouldn't use analysisGroup because it's not a reportingPolygon
-    tolko_ab_s_sr <- postProcess(ml$`LandWeb Study Area`,
+    tolko_ab_s_sr <- postProcess(ml[["LandWeb Study Area"]],
                                  studyArea = amc::outerBuffer(tolko_ab_s, 50000), # 50 km buffer
                                  useSAcrs = TRUE,
                                  filename2 = file.path(dataDirTolko, "Tolko_AB_S_SR.shp"),
@@ -102,7 +102,7 @@ fmaTolko <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
     tolko_sk <- tolko[1, ]
     shapefile(tolko_sk, filename = file.path(dataDirTolko, "Tolko_SK.shp"), overwrite = TRUE)
 
-    tolko_sk.caribou <- postProcess(ml$`LandWeb Caribou Ranges`,
+    tolko_sk.caribou <- postProcess(ml[["LandWeb Caribou Ranges"]],
                                     studyArea = tolko_sk, useSAcrs = TRUE,
                                     filename2 = file.path(dataDirTolko, "Tolko_SK_caribou.shp"),
                                     overwrite = TRUE) %>%
@@ -116,7 +116,7 @@ fmaTolko <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
                  columnNameForLabels = "Name", filename2 = NULL)
 
     ## studyArea shouldn't use analysisGroup because it's not a reportingPolygon
-    tolko_sk_sr <- postProcess(ml$`LandWeb Study Area`,
+    tolko_sk_sr <- postProcess(ml[["LandWeb Study Area"]],
                                studyArea = amc::outerBuffer(tolko_sk, 50000), # 50 km buffer
                                useSAcrs = TRUE,
                                filename2 = file.path(dataDirTolko, "Tolko_SK_SR.shp"),

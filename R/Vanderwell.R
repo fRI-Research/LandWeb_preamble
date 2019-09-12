@@ -9,12 +9,12 @@ fmaVanderwell <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
   shapefile(vanderwell, filename = file.path(dataDirVanderwell, "Vanderwell_full.shp"), overwrite = TRUE)
 
   ## reportingPolygons
-  vanderwell.ansr <- postProcess(ml$`Alberta Natural Subregions`,
+  vanderwell.ansr <- postProcess(ml[["Alberta Natural Subregions"]],
                                  studyArea = vanderwell, useSAcrs = TRUE,
                                  filename2 = file.path(dataDirVanderwell, "Vanderwell_ANSR.shp"),
                                  overwrite = TRUE) %>%
     joinReportingPolygons(., vanderwell)
-  vanderwell.caribou <- postProcess(ml$`LandWeb Caribou Ranges`,
+  vanderwell.caribou <- postProcess(ml[["LandWeb Caribou Ranges"]],
                                     studyArea = vanderwell, useSAcrs = TRUE,
                                     filename2 = file.path(dataDirVanderwell, "Vanderwell_caribou.shp"),
                                     overwrite = TRUE) %>%
@@ -31,11 +31,11 @@ fmaVanderwell <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
                columnNameForLabels = "Name", filename2 = NULL)
 
   ## studyArea shouldn't use analysisGroup because it's not a reportingPolygon
-  vanderwell_sr <- postProcess(ml$`LandWeb Study Area`,
-                          studyArea = amc::outerBuffer(vanderwell, 50000), # 50 km buffer
-                          useSAcrs = TRUE,
-                          filename2 = file.path(dataDirVanderwell, "Vanderwell_SR.shp"),
-                          overwrite = TRUE)
+  vanderwell_sr <- postProcess(ml[["LandWeb Study Area"]],
+                               studyArea = amc::outerBuffer(vanderwell, 50000), # 50 km buffer
+                               useSAcrs = TRUE,
+                               filename2 = file.path(dataDirVanderwell, "Vanderwell_SR.shp"),
+                               overwrite = TRUE)
 
   plotFMA(vanderwell, provs = ab, caribou = vanderwell.caribou, xsr = vanderwell_sr,
           title = "Vanderwell Contractors",

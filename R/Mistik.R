@@ -6,7 +6,7 @@ fmaMistik <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
   mistik <- extractFMA(ml, "Mistik")
   shapefile(mistik, filename = file.path(dataDirMistik, "Mistik.shp"), overwrite = TRUE)
 
-  mistik.caribou <- postProcess(ml$`LandWeb Caribou Ranges`,
+  mistik.caribou <- postProcess(ml[["LandWeb Caribou Ranges"]],
                                 studyArea = mistik, useSAcrs = TRUE,
                                 filename2 = file.path(dataDirMistik, "Mistik_caribou.shp"),
                                 overwrite = TRUE) %>%
@@ -20,11 +20,11 @@ fmaMistik <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
                columnNameForLabels = "Name", filename2 = NULL)
 
   ## studyArea shouldn't use analysisGroup because it's not a reportingPolygon
-  mistik_sr <- postProcess(ml$`LandWeb Study Area`,
-                          studyArea = amc::outerBuffer(mistik, 50000), # 50 km buffer
-                          useSAcrs = TRUE,
-                          filename2 = file.path(dataDirMistik, "Mistik_SR.shp"),
-                          overwrite = TRUE)
+  mistik_sr <- postProcess(ml[["LandWeb Study Area"]],
+                           studyArea = amc::outerBuffer(mistik, 50000), # 50 km buffer
+                           useSAcrs = TRUE,
+                           filename2 = file.path(dataDirMistik, "Mistik_SR.shp"),
+                           overwrite = TRUE)
 
   plotFMA(mistik, provs = absk, caribou = mistik.caribou, xsr = mistik_sr, title = "Mistik",
           png = file.path(dataDirMistik, "Mistik.png"))

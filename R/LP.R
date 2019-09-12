@@ -12,7 +12,7 @@ fmaLP <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
     lp_bc <- extractFMA(ml, "Fort St\\. John|Dawson Creek")
     shapefile(lp_bc, filename = file.path(dataDirLP, "LP_BC.shp"), overwrite = TRUE)
 
-    lp_bc.caribou <- postProcess(ml$`LandWeb Caribou Ranges`,
+    lp_bc.caribou <- postProcess(ml[["LandWeb Caribou Ranges"]],
                                  studyArea = lp_bc, useSAcrs = TRUE,
                                  filename2 = file.path(dataDirLP, "LP_BC_caribou.shp"),
                                  overwrite = TRUE) %>%
@@ -26,7 +26,7 @@ fmaLP <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
                  columnNameForLabels = "Name", filename2 = NULL)
 
     ## studyArea shouldn't use analysisGroup because it's not a reportingPolygon
-    lp_bc_sr <- postProcess(ml$`LandWeb Study Area`,
+    lp_bc_sr <- postProcess(ml[["LandWeb Study Area"]],
                             studyArea = amc::outerBuffer(lp_bc, 50000), # 50 km buffer
                             useSAcrs = TRUE,
                             filename2 = file.path(dataDirLP, "LP_BC_SR.shp"),
@@ -48,7 +48,7 @@ fmaLP <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
     lp_mb <- extractFMA(ml, "Mountain")
     shapefile(lp_mb, filename = file.path(dataDirLP, "LP_MB.shp"), overwrite = TRUE)
 
-    lp_mb.caribou <- postProcess(ml$`LandWeb Caribou Ranges`,
+    lp_mb.caribou <- postProcess(ml[["LandWeb Caribou Ranges"]],
                                  studyArea = lp_mb, useSAcrs = TRUE,
                                  filename2 = file.path(dataDirLP, "LP_MB_caribou.shp"),
                                  overwrite = TRUE) %>%
@@ -62,7 +62,7 @@ fmaLP <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
                  columnNameForLabels = "Name", filename2 = NULL)
 
     ## studyArea shouldn't use analysisGroup because it's not a reportingPolygon
-    lp_mb_sr <- postProcess(ml$`LandWeb Study Area`,
+    lp_mb_sr <- postProcess(ml[["LandWeb Study Area"]],
                             studyArea = amc::outerBuffer(lp_mb, 50000), # 50 km buffer
                             useSAcrs = TRUE,
                             filename2 = file.path(dataDirLP, "LP_MB_SR.shp"),

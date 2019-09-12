@@ -6,12 +6,12 @@ fmaManning <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
   shapefile(manning, filename = file.path(dataDirManning, "Manning_full.shp"), overwrite = TRUE)
 
   ## reportingPolygons
-  manning.ansr <- postProcess(ml$`Alberta Natural Subregions`,
+  manning.ansr <- postProcess(ml[["Alberta Natural Subregions"]],
                               studyArea = manning, useSAcrs = TRUE,
                               filename2 = file.path(dataDirManning, "Manning_ANSR.shp"),
                               overwrite = TRUE) %>%
     joinReportingPolygons(., manning)
-  manning.caribou <- postProcess(ml$`LandWeb Caribou Ranges`,
+  manning.caribou <- postProcess(ml[["LandWeb Caribou Ranges"]],
                                  studyArea = manning, useSAcrs = TRUE,
                                  filename2 = file.path(dataDirManning, "Manning_caribou.shp"),
                                  overwrite = TRUE) %>%
@@ -28,7 +28,7 @@ fmaManning <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
                columnNameForLabels = "Name", filename2 = NULL)
 
   ## studyArea shouldn't use analysisGroup because it's not a reportingPolygon
-  manning_sr <- postProcess(ml$`LandWeb Study Area`,
+  manning_sr <- postProcess(ml[["LandWeb Study Area"]],
                             studyArea = amc::outerBuffer(manning, 50000), # 50 km buffer
                             useSAcrs = TRUE,
                             filename2 = file.path(dataDirManning, "Manning_SR.shp"),

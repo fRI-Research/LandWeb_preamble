@@ -6,12 +6,12 @@ fmaANC <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
   shapefile(anc, filename = file.path(dataDirANC, "ANC.shp"), overwrite = TRUE)
 
   ## reportingPolygons
-  anc.ansr <- postProcess(ml$`Alberta Natural Subregions`,
+  anc.ansr <- postProcess(ml[["Alberta Natural Subregions"]],
                           studyArea = anc, useSAcrs = TRUE,
                           filename2 = file.path(dataDirANC, "ANC_ANSR.shp"),
                           overwrite = TRUE) %>%
     joinReportingPolygons(., anc)
-  anc.caribou <- postProcess(ml$`LandWeb Caribou Ranges`,
+  anc.caribou <- postProcess(ml[["LandWeb Caribou Ranges"]],
                              studyArea = anc, useSAcrs = TRUE,
                              filename2 = file.path(dataDirANC, "ANC_caribou.shp"),
                              overwrite = TRUE) %>%
@@ -34,7 +34,7 @@ fmaANC <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
                columnNameForLabels = "Name", filename2 = NULL)
 
   ## studyArea shouldn't use analysisGroup because it's not a reportingPolygon
-  anc_sr <- postProcess(ml$`LandWeb Study Area`,
+  anc_sr <- postProcess(ml[["LandWeb Study Area"]],
                         studyArea = amc::outerBuffer(anc, 50000), # 50 km buffer
                         useSAcrs = TRUE,
                         filename2 = file.path(dataDirANC, "ANC_SR.shp"),

@@ -6,16 +6,16 @@ fmaMillarWestern <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE
   shapefile(mw, filename = file.path(dataDirMillarWestern, "Millar_Western.shp"), overwrite = TRUE)
 
   ## reportingPolygons
-  mw.ansr <- postProcess(ml$`Alberta Natural Subregions`,
-                          studyArea = mw, useSAcrs = TRUE,
-                          filename2 = file.path(dataDirMillarWestern, "Millar_Western_ANSR.shp"),
-                          overwrite = TRUE) %>%
+  mw.ansr <- postProcess(ml[["Alberta Natural Subregions"]],
+                         studyArea = mw, useSAcrs = TRUE,
+                         filename2 = file.path(dataDirMillarWestern, "Millar_Western_ANSR.shp"),
+                         overwrite = TRUE) %>%
     joinReportingPolygons(., mw)
 
-  mw.caribou <- postProcess(ml$`LandWeb Caribou Ranges`,
-                               studyArea = mw, useSAcrs = TRUE,
-                               filename2 = file.path(dataDirMillarWestern, "Millar_Western_caribou.shp"),
-                               overwrite = TRUE) %>%
+  mw.caribou <- postProcess(ml[["LandWeb Caribou Ranges"]],
+                            studyArea = mw, useSAcrs = TRUE,
+                            filename2 = file.path(dataDirMillarWestern, "Millar_Western_caribou.shp"),
+                            overwrite = TRUE) %>%
     joinReportingPolygons(., mw)
 
   ml <- mapAdd(mw, ml, layerName = "Millar Western", useSAcrs = TRUE, poly = TRUE,
@@ -29,11 +29,11 @@ fmaMillarWestern <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE
                columnNameForLabels = "Name", filename2 = NULL)
 
   ## studyArea shouldn't use analysisGroup because it's not a reportingPolygon
-  mw_sr <- postProcess(ml$`LandWeb Study Area`,
-                          studyArea = amc::outerBuffer(mw, 50000), # 50 km buffer
-                          useSAcrs = TRUE,
-                          filename2 = file.path(dataDirMillarWestern, "Millar_Western_SR.shp"),
-                          overwrite = TRUE)
+  mw_sr <- postProcess(ml[["LandWeb Study Area"]],
+                       studyArea = amc::outerBuffer(mw, 50000), # 50 km buffer
+                       useSAcrs = TRUE,
+                       filename2 = file.path(dataDirMillarWestern, "Millar_Western_SR.shp"),
+                       overwrite = TRUE)
 
   plotFMA(mw, provs = ab, caribou = mw.caribou, xsr = mw_sr, title = "Millar Western",
           png = file.path(dataDirMillarWestern, "Millar_Western.png"))

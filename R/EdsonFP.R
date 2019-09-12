@@ -6,7 +6,7 @@ fmaEdsonFP <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
   shapefile(edson, filename = file.path(dataDirEdsonFP, "EdsonFP.shp"), overwrite = TRUE)
 
   ## reportingPolygons
-  edson.ansr <- postProcess(ml$`Alberta Natural Subregions`,
+  edson.ansr <- postProcess(ml[["Alberta Natural Subregions"]],
                             studyArea = edson, useSAcrs = TRUE,
                             filename2 = file.path(dataDirEdsonFP, "EdsonFP_ANSR.shp"),
                             overwrite = TRUE) %>%
@@ -21,7 +21,7 @@ fmaEdsonFP <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
                columnNameForLabels = "Name", filename2 = NULL)
 
   ## studyArea shouldn't use analysisGroup because it's not a reportingPolygon
-  edson_sr <- postProcess(ml$`LandWeb Study Area`,
+  edson_sr <- postProcess(ml[["LandWeb Study Area"]],
                           studyArea = amc::outerBuffer(edson, 50000), # 50 km buffer
                           useSAcrs = TRUE,
                           filename2 = file.path(dataDirEdsonFP, "EdsonFP_SR.shp"),

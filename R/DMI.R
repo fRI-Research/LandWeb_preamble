@@ -20,12 +20,12 @@ fmaDMI <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
   shapefile(dmi.sw, filename = file.path(dataDirDMI, "DMI_West_South.shp"), overwrite = TRUE)
 
   ## reporting polygons
-  dmi.ansr <- postProcess(ml$`Alberta Natural Subregions`,
+  dmi.ansr <- postProcess(ml[["Alberta Natural Subregions"]],
                           studyArea = dmi, useSAcrs = TRUE,
                           filename2 = file.path(dataDirDMI, "DMI_ANSR.shp")) %>%
     joinReportingPolygons(., dmi)
 
-  dmi.caribou <- postProcess(ml$`LandWeb Caribou Ranges`,
+  dmi.caribou <- postProcess(ml[["LandWeb Caribou Ranges"]],
                              studyArea = dmi, useSAcrs = TRUE,
                              filename2 = file.path(dataDirDMI, "DMI_caribou.shp")) %>%
     joinReportingPolygons(., dmi)
@@ -50,11 +50,11 @@ fmaDMI <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
                columnNameForLabels = "Name", filename2 = NULL)
 
   ## TODO: workaround problematic intersect() that changes Name to Name.1 and Name.2
-  names(ml$`DMI ANSR`) <- gsub("[.]1", "", names(ml$`DMI ANSR`))
-  names(ml$`DMI Caribou`) <- gsub("[.]1", "", names(ml$`DMI Caribou`))
+  names(ml[["DMI ANSR"]]) <- gsub("[.]1", "", names(ml[["DMI ANSR"]]))
+  names(ml[["DMI Caribou"]]) <- gsub("[.]1", "", names(ml[["DMI Caribou"]]))
 
   ## buffered study area (needs to have LTHFC data) ---------------------------#
-  dmi_sr <- postProcess(ml$`LandWeb Study Area`,
+  dmi_sr <- postProcess(ml[["LandWeb Study Area"]],
                         studyArea = amc::outerBuffer(dmi.full, 50000), ## 50 km buffer
                         useSAcrs = TRUE,
                         filename2 = file.path(dataDirDMI, "DMI_SR.shp"))

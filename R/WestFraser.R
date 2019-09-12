@@ -13,10 +13,10 @@ fmaWestFraser <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
     wf_br <- wf[grepl("Blue Ridge", wf$Name), ] ## first subpolygon
     shapefile(wf_br, filename = file.path(dataDirWestFraser, "WestFraser_BlueRidge.shp"), overwrite = TRUE)
 
-    wf_br.ansr <- postProcess(ml$`Alberta Natural Subregions`,
-                             studyArea = wf_br, useSAcrs = TRUE,
-                             filename2 = file.path(dataDirWestFraser, "WestFraser_BlueRidge_ANSR"),
-                             overwrite = TRUE) %>%
+    wf_br.ansr <- postProcess(ml[["Alberta Natural Subregions"]],
+                              studyArea = wf_br, useSAcrs = TRUE,
+                              filename2 = file.path(dataDirWestFraser, "WestFraser_BlueRidge_ANSR"),
+                              overwrite = TRUE) %>%
       joinReportingPolygons(., wf_br)
     ## NOTE: no intersecting caribou areas
 
@@ -28,11 +28,11 @@ fmaWestFraser <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
                  columnNameForLabels = "Name", filename2 = NULL)
 
     ## studyArea shouldn't use analysisGroup because it's not a reportingPolygon
-    wf_br_sr <- postProcess(ml$`LandWeb Study Area`,
-                           studyArea = amc::outerBuffer(wf_br, 50000), # 50 km buffer
-                           useSAcrs = TRUE,
-                           filename2 = file.path(dataDirWestFraser, "WestFraser_BlueRidge_SR.shp"),
-                           overwrite = TRUE)
+    wf_br_sr <- postProcess(ml[["LandWeb Study Area"]],
+                            studyArea = amc::outerBuffer(wf_br, 50000), # 50 km buffer
+                            useSAcrs = TRUE,
+                            filename2 = file.path(dataDirWestFraser, "WestFraser_BlueRidge_SR.shp"),
+                            overwrite = TRUE)
 
     if (isTRUE(asStudyArea)) {
       ml <- mapAdd(wf_br_sr, ml, isStudyArea = TRUE, layerName = "West Fraser Blue Ridge SR",
@@ -51,15 +51,15 @@ fmaWestFraser <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
     wf_n <- wf[c(2:3, 6), ]
     shapefile(wf_n, filename = file.path(dataDirWestFraser, "WestFraser_N.shp"), overwrite = TRUE)
 
-    wf_n.ansr <- postProcess(ml$`Alberta Natural Subregions`,
+    wf_n.ansr <- postProcess(ml[["Alberta Natural Subregions"]],
                              studyArea = wf_n, useSAcrs = TRUE,
                              filename2 = file.path(dataDirWestFraser, "WestFraser_N_ANSR"),
                              overwrite = TRUE) %>%
       joinReportingPolygons(., wf_n)
-    wf_n.caribou <- postProcess(ml$`LandWeb Caribou Ranges`,
-                                 studyArea = wf_n, useSAcrs = TRUE,
-                                 filename2 = file.path(dataDirWestFraser, "WestFraser_N_caribou.shp"),
-                                 overwrite = TRUE) %>%
+    wf_n.caribou <- postProcess(ml[["LandWeb Caribou Ranges"]],
+                                studyArea = wf_n, useSAcrs = TRUE,
+                                filename2 = file.path(dataDirWestFraser, "WestFraser_N_caribou.shp"),
+                                overwrite = TRUE) %>%
       joinReportingPolygons(., wf_n)
 
     ml <- mapAdd(wf_n, ml, layerName = "West Fraser N", useSAcrs = TRUE, poly = TRUE,
@@ -73,7 +73,7 @@ fmaWestFraser <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
                  columnNameForLabels = "Name", filename2 = NULL)
 
     ## studyArea shouldn't use analysisGroup because it's not a reportingPolygon
-    wf_n_sr <- postProcess(ml$`LandWeb Study Area`,
+    wf_n_sr <- postProcess(ml[["LandWeb Study Area"]],
                             studyArea = amc::outerBuffer(wf_n, 50000), # 50 km buffer
                             useSAcrs = TRUE,
                             filename2 = file.path(dataDirWestFraser, "WestFraser_N_SR.shp"),
@@ -96,12 +96,12 @@ fmaWestFraser <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
     wf_s <- wf[4:5,]
     shapefile(wf_s, filename = file.path(dataDirWestFraser, "WestFraser_S.shp"), overwrite = TRUE)
 
-    wf_s.ansr <- postProcess(ml$`Alberta Natural Subregions`,
+    wf_s.ansr <- postProcess(ml[["Alberta Natural Subregions"]],
                              studyArea = wf_s, useSAcrs = TRUE,
                              filename2 = file.path(dataDirWestFraser, "WestFraser_S_ANSR"),
                              overwrite = TRUE) %>%
       joinReportingPolygons(., wf_s)
-    wf_s.caribou <- postProcess(ml$`LandWeb Caribou Ranges`,
+    wf_s.caribou <- postProcess(ml[["LandWeb Caribou Ranges"]],
                                 studyArea = wf_s, useSAcrs = TRUE,
                                 filename2 = file.path(dataDirWestFraser, "WestFraser_S_caribou.shp"),
                                 overwrite = TRUE) %>%
@@ -118,7 +118,7 @@ fmaWestFraser <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
                  columnNameForLabels = "Name", filename2 = NULL)
 
     ## studyArea shouldn't use analysisGroup because it's not a reportingPolygon
-    wf_s_sr <- postProcess(ml$`LandWeb Study Area`,
+    wf_s_sr <- postProcess(ml[["LandWeb Study Area"]],
                            studyArea = amc::outerBuffer(wf_s, 50000), # 50 km buffer
                            useSAcrs = TRUE,
                            filename2 = file.path(dataDirWestFraser, "WestFraser_S_SR.shp"),

@@ -11,7 +11,7 @@ fmaWeyCo <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
     weyco_gp <- extractFMA(ml, "Weyerhaeuser Company Limited \\(Grande Prairie\\)")
     shapefile(weyco_gp, filename = file.path(dataDirWeyCo, "WeyCo_GP.shp"), overwrite = TRUE)
 
-    weyco_gp.ansr <- postProcess(ml$`Alberta Natural Subregions`,
+    weyco_gp.ansr <- postProcess(ml[["Alberta Natural Subregions"]],
                                  studyArea = weyco_gp, useSAcrs = TRUE,
                                  filename2 = file.path(dataDirWeyCo, "WeyCo_GP_ANSR.shp"),
                                  overwrite = TRUE) %>%
@@ -26,7 +26,7 @@ fmaWeyCo <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
                  columnNameForLabels = "Name", filename2 = NULL)
 
     ## studyArea shouldn't use analysisGroup because it's not a reportingPolygon
-    weyco_gp_sr <- postProcess(ml$`LandWeb Study Area`,
+    weyco_gp_sr <- postProcess(ml[["LandWeb Study Area"]],
                                studyArea = amc::outerBuffer(weyco_gp, 50000), # 50 km buffer
                                useSAcrs = TRUE,
                                filename2 = file.path(dataDirWeyCo, "WeyCo_GP_SR.shp"),
@@ -50,7 +50,7 @@ fmaWeyCo <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
     weyco_pt <- extractFMA(ml, "Weyerhaeuser Company Limited \\(Pembina Timberland\\)")
     shapefile(weyco_pt, filename = file.path(dataDirWeyCo, "WeyCo_PT.shp"), overwrite = TRUE)
 
-    weyco_pt.ansr <- postProcess(ml$`Alberta Natural Subregions`,
+    weyco_pt.ansr <- postProcess(ml[["Alberta Natural Subregions"]],
                                  studyArea = weyco_pt, useSAcrs = TRUE,
                                  filename2 = file.path(dataDirWeyCo, "WeyCo_PT_ANSR.shp"),
                                  overwrite = TRUE) %>%
@@ -65,7 +65,7 @@ fmaWeyCo <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
                  columnNameForLabels = "Name", filename2 = NULL)
 
     ## studyArea shouldn't use analysisGroup because it's not a reportingPolygon
-    weyco_pt_sr <- postProcess(ml$`LandWeb Study Area`,
+    weyco_pt_sr <- postProcess(ml[["LandWeb Study Area"]],
                                studyArea = amc::outerBuffer(weyco_pt, 50000), # 50 km buffer
                                useSAcrs = TRUE,
                                filename2 = file.path(dataDirWeyCo, "WeyCo_PT_SR.shp"),
@@ -89,7 +89,7 @@ fmaWeyCo <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
     weyco_sk <- extractFMA(ml, "Pasquia-Porcupine")
     shapefile(weyco_sk, filename = file.path(dataDirWeyCo, "WeyCo_SK.shp"), overwrite = TRUE)
 
-    weyco_sk.caribou <- postProcess(ml$`LandWeb Caribou Ranges`,
+    weyco_sk.caribou <- postProcess(ml[["LandWeb Caribou Ranges"]],
                                     studyArea = weyco_sk, useSAcrs = TRUE,
                                     filename2 = file.path(dataDirWeyCo, "WeyCo_SK_Caribou.shp"),
                                     overwrite = TRUE) %>%
@@ -103,7 +103,7 @@ fmaWeyCo <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
                  columnNameForLabels = "Name", filename2 = NULL)
 
     ## studyArea shouldn't use analysisGroup because it's not a reportingPolygon
-    weyco_sk_sr <- postProcess(ml$`LandWeb Study Area`,
+    weyco_sk_sr <- postProcess(ml[["LandWeb Study Area"]],
                                studyArea = amc::outerBuffer(weyco_sk, 50000), # 50 km buffer
                                useSAcrs = TRUE,
                                filename2 = file.path(dataDirWeyCo, "WeyCo_SK_SR.shp"),

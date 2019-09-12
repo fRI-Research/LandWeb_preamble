@@ -10,8 +10,8 @@
 #' @export
 #'
 extractFMA <- function(ml, name) {
-  if (is.null(ml$`FMA Boundaries Updated`)) stop("'FMA Boundaries Updated' not found")
-  ml$`FMA Boundaries Updated`[grepl(name, ml$`FMA Boundaries Updated`$Name), ]
+  if (is.null(ml[["FMA Boundaries Updated"]])) stop("'FMA Boundaries Updated' not found")
+  ml[["FMA Boundaries Updated"]][grepl(name, ml[["FMA Boundaries Updated"]][["Name"]]), ]
 }
 
 #' Join reporting polygons and intersect their features

@@ -11,15 +11,15 @@ allLandWeb <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
   west <- canProvs[canProvs$NAME_1 %in% c("British Columbia", "Alberta",
                                           "Saskatchewan", "Manitoba"), ]
 
-  lw <- ml$`LandWeb Study Area`
+  lw <- ml[["LandWeb Study Area"]]
   lw.sp <- as(lw, "SpatialPolygons")
 
   ## reportingPolygons
-  lw.caribou <- postProcess(ml$`LandWeb Caribou Ranges`,
+  lw.caribou <- postProcess(ml[["LandWeb Caribou Ranges"]],
                             studyArea = lw.sp, useSAcrs = TRUE,
                             filename2 = file.path(dataDirLandWeb, "LandWeb_caribou.shp"),
                             overwrite = TRUE)
-  lw.provs <- postProcess(ml$`Provincial Boundaries`,
+  lw.provs <- postProcess(ml[["Provincial Boundaries"]],
                           studyArea = lw.sp, useSAcrs = TRUE,
                           filename2 = file.path(dataDirLandWeb, "LandWeb_provinces.shp"),
                           overwrite = TRUE)
