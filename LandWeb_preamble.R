@@ -153,7 +153,6 @@ Init <- function(sim) {
   } else if (grepl("provAB", P(sim)$runName)) {
     ml <- provAB(ml, P(sim)$runName, dataDir, sim$canProvs, asStudyArea = TRUE) ## WIP
   } else if (grepl("provNWT", P(sim)$runName)) {
-    ## TODO
     ml <- provNWT(ml, P(sim)$runName, dataDir, sim$canProvs, asStudyArea = TRUE)
   } else if (grepl("provSK", P(sim)$runName)) {
     ## TODO
