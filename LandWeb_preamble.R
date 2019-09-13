@@ -152,9 +152,6 @@ Init <- function(sim) {
     ml <- fmaWestFraser(ml, P(sim)$runName, dataDir, sim$canProvs, asStudyArea = TRUE)
   } else if (grepl("provAB", P(sim)$runName)) {
     ml <- provAB(ml, P(sim)$runName, dataDir, sim$canProvs, asStudyArea = TRUE) ## WIP
-  } else if (grepl("provBC", P(sim)$runName)) {
-    ## TODO
-    ml <- provBC(ml, P(sim)$runName, dataDir, sim$canProvs, asStudyArea = TRUE)
   } else if (grepl("provNWT", P(sim)$runName)) {
     ## TODO
     ml <- provNWT(ml, P(sim)$runName, dataDir, sim$canProvs, asStudyArea = TRUE)
