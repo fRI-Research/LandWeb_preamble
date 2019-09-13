@@ -38,7 +38,7 @@ provAB <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
           title = "Alberta",
           png = file.path(dataDirAB, "AB.png"))
   #plotFMA(AB, provs = ab, caribou = AB.caribou, xsr = AB_sr,
-  #        title = "AB Contractors", png = NULL)
+  #        title = "Alberta", png = NULL)
 
   if (isTRUE(asStudyArea)) {
     ml <- mapAdd(AB_sr, ml, isStudyArea = TRUE, layerName = "AB SR",
