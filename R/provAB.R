@@ -1,6 +1,8 @@
 provAB <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
   dataDirAB <- file.path(dataDir, "AB") %>% checkPath(create = TRUE)
 
+  ab <- canProvs[canProvs$NAME_1 == "Alberta", ]
+
   id <- which(ml[["Provincial Boundaries"]][["NAME_1"]] == "Alberta")
   AB <- ml[["Provincial Boundaries"]][id, ]
   shapefile(AB, filename = file.path(dataDirAB, "AB_full.shp"), overwrite = TRUE)
