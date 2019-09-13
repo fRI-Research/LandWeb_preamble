@@ -155,7 +155,6 @@ Init <- function(sim) {
   } else if (grepl("provNWT", P(sim)$runName)) {
     ml <- provNWT(ml, P(sim)$runName, dataDir, sim$canProvs, asStudyArea = TRUE)
   } else if (grepl("provSK", P(sim)$runName)) {
-    ## TODO
     ml <- provSK(ml, P(sim)$runName, dataDir, sim$canProvs, asStudyArea = TRUE)
   } else {
     # Make a random small study area
