@@ -48,7 +48,7 @@ fmaWestFraser <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
 
   if (grepl("LandWeb|WestFraser_N", runName)) {
     ## reportingPolygons
-    wf_n <- wf[c(2:3, 6), ]
+    wf_n <- wf[c(2:3, 6), ] ## 3 FMAs: Slave Lake; shared w/ Tolko; shared vith Tolko & Vanderwell.
     shapefile(wf_n, filename = file.path(dataDirWestFraser, "WestFraser_N.shp"), overwrite = TRUE)
 
     wf_n.ansr <- postProcess(ml[["Alberta Natural Subregions"]],
@@ -93,7 +93,7 @@ fmaWestFraser <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
 
   if (grepl("LandWeb|WestFraser_S", runName)) {
     ## reportingPolygons
-    wf_s <- wf[4:5,]
+    wf_s <- wf[4:5, ] ## Hinton and Edson FMAs
     shapefile(wf_s, filename = file.path(dataDirWestFraser, "WestFraser_S.shp"), overwrite = TRUE)
 
     wf_s.ansr <- postProcess(ml[["Alberta Natural Subregions"]],
