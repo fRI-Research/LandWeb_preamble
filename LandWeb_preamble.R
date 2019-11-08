@@ -67,8 +67,9 @@ doEvent.LandWeb_preamble = function(sim, eventTime, eventType) {
 }
 
 Init <- function(sim) {
-  targetCRS <- CRS(paste("+proj=lcc +lat_1=49 +lat_2=77 +lat_0=0 +lon_0=-95",
-                         "+x_0=0 +y_0=0 +datum=NAD83 +units=m +no_defs +ellps=GRS80 +towgs84=0,0,0"))
+  ## NOTE (2019-11-08): targetCRS needs to be character, not CRS class due to change in data.table
+  targetCRS <- paste("+proj=lcc +lat_1=49 +lat_2=77 +lat_0=0 +lon_0=-95",
+                     "+x_0=0 +y_0=0 +datum=NAD83 +units=m +no_defs +ellps=GRS80 +towgs84=0,0,0")
 
   ## LandWeb study area -- LTHFC (aka "fire return interval") map
   ml <- mapAdd(layerName = "LandWeb Study Area",
@@ -164,7 +165,6 @@ Init <- function(sim) {
     set.seed(seed)
     sp2 <- Cache(SpaDES.tools::randomPolygon, ml[[studyAreaName(ml)]], 4e5)
     ml <- mapAdd(obj = sp2, map = ml, filename2 = FALSE,
-                 #targetCRS = targetCRS,
                  layerName = "Small Study Area",
                  columnNameForLabels = "Name", isStudyArea = TRUE,
                  filename1 = NULL, poly = TRUE,
