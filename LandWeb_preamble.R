@@ -158,26 +158,22 @@ Init <- function(sim) {
   } else if (grepl("provSK", P(sim)$runName)) {
     ml <- provSK(ml, P(sim)$runName, dataDir, sim$canProvs, asStudyArea = TRUE)
   } else {
-    # Make a random small study area
+    ## use a small random study area
     message(crayon::red("Using random study area for runName", runName))
     seed <- 863
     ranSeed <- .Random.seed
     set.seed(seed)
-    sp2 <- Cache(SpaDES.tools::randomPolygon, ml[[studyAreaName(ml)]], 4e5)
-    ml <- mapAdd(obj = sp2, map = ml, filename2 = FALSE,
-                 layerName = "Small Study Area",
-                 columnNameForLabels = "Name", isStudyArea = TRUE,
-                 filename1 = NULL, poly = TRUE,
-                 analysisGroupReportingPolygon = "Small Study Area"
-    )
-    # re-add the LandWeb polygon, but this time crop it to the Small Study Area
-    ml <- mapAdd(layerName = "Small Study Area", map = ml,
-                 #studyArea = studyArea(ml),
-                 overwrite = TRUE, useSAcrs = TRUE, poly = TRUE,
-                 analysisGroupReportingPolygon = "Small Study Area",
-                 url = "https://drive.google.com/open?id=1JptU0R7qsHOEAEkxybx5MGg650KC98c6",
-                 columnNameForLabels = "NSN", isStudyArea = TRUE, filename2 = NULL
-    )
+    rnd <- Cache(SpaDES.tools::randomPolygon, ml[[studyAreaName(ml)]], 4e5)
+    ml <- mapAdd(rnd, ml, layerName = "Random Study Area", useSAcrs = TRUE, poly = TRUE,
+                 analysisGroupReportingPolygon = "Random Study Area", isStudyArea = TRUE,
+                 columnNameForLabels = "Name", filename2 = NULL)
+
+    rnd_sr <- postProcess(ml[["LandWeb Study Area"]],
+                          studyArea = amc::outerBuffer(rnd, 50000), # 50 km buffer
+                          useSAcrs = TRUE, filename2 = NULL)
+    ml <- mapAdd(rnd_sr, ml, isStudyArea = TRUE, layerName = "Random Study Area SR",
+                 useSAcrs = TRUE, poly = TRUE, studyArea = NULL, # don't crop/mask to studyArea(ml, 2)
+                 columnNameForLabels = "NSN", filename2 = NULL)
   }
 
   ##########################################################
