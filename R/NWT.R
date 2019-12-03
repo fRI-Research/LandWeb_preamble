@@ -11,7 +11,7 @@ fmaNWT <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
   fmanwt_FR <- extractFMA(ml, "Fort Resolution") # FMANWT1
   shapefile(fmanwt_FR, filename = file.path(dataDirFMANWT, "FMA_NWT_FR.shp"), overwrite = TRUE)
 
-  if (grepl("FMANWT2", P(sim)$runName)) {
+  if (grepl("FMANWT2", runName)) {
     ## reportingPolygons
     fmanwt_FP.caribou <- postProcess(ml[["LandWeb Caribou Ranges"]],
                                      studyArea = fmanwt_FP, useSAcrs = TRUE,
