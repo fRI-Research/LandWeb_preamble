@@ -2,40 +2,79 @@ fmaNWT <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
   dataDirFMANWT <- file.path(dataDir, "FMANWT") %>% checkPath(create = TRUE)
 
   nwt <- canProvs[canProvs$NAME_1 %in% c("Northwest Territories"), ]
-  fmanwt <- extractFMA(ml, "Fort Resolution")
-  shapefile(fmanwt, filename = file.path(dataDirFMANWT, "FMANWT.shp"), overwrite = TRUE)
+  fmanwt <- extractFMA(ml, "Fort Resolution|Fort Providence")
+  shapefile(fmanwt, filename = file.path(dataDirFMANWT, "FMA_NWT.shp"), overwrite = TRUE)
 
-  ## reportingPolygons
-  fmanwt.caribou <- postProcess(ml[["LandWeb Caribou Ranges"]],
-                                studyArea = fmanwt, useSAcrs = TRUE,
-                                filename2 = file.path(dataDirFMANWT, "FMANWT_caribou.shp"),
-                                overwrite = TRUE) %>%
-    joinReportingPolygons(., fmanwt)
+  fmanwt_FP <- extractFMA(ml, "Fort Providence") # FMANWT2
+  shapefile(fmanwt_FP, filename = file.path(dataDirFMANWT, "FMA_NWT_FP.shp"), overwrite = TRUE)
 
-  ml <- mapAdd(fmanwt, ml, layerName = "FMANWT", useSAcrs = TRUE, poly = TRUE,
-               analysisGroupReportingPolygon = "FMANWT", isStudyArea = isTRUE(asStudyArea),
-               columnNameForLabels = "Name", filename2 = NULL)
-  ml <- mapAdd(fmanwt.caribou, ml, layerName = "FMANWT Caribou", useSAcrs = TRUE, poly = TRUE,
-               analysisGroupReportingPolygon = "FMANWT Caribou",
-               columnNameForLabels = "Name", filename2 = NULL)
+  fmanwt_FR <- extractFMA(ml, "Fort Resolution") # FMANWT1
+  shapefile(fmanwt_FR, filename = file.path(dataDirFMANWT, "FMA_NWT_FR.shp"), overwrite = TRUE)
 
-  ## studyArea shouldn't use analysisGroup because it's not a reportingPolygon
-  fmanwt_sr <- postProcess(ml[["LandWeb Study Area"]],
-                           studyArea = amc::outerBuffer(fmanwt, 50000), # 50 km buffer
-                           useSAcrs = TRUE,
-                           filename2 = file.path(dataDirFMANWT, "FMANWT_SR.shp"),
-                           overwrite = TRUE)
+  if (grepl("FMANWT2", P(sim)$runName)) {
+    ## reportingPolygons
+    fmanwt_FP.caribou <- postProcess(ml[["LandWeb Caribou Ranges"]],
+                                     studyArea = fmanwt_FP, useSAcrs = TRUE,
+                                     filename2 = file.path(dataDirFMANWT, "FMA_NWT_FP_caribou.shp"),
+                                     overwrite = TRUE) %>%
+      joinReportingPolygons(., fmanwt_FP)
 
-  plotFMA(fmanwt, provs = nwt, caribou = fmanwt.caribou, xsr = fmanwt_sr,
-          title = "Fort Resolution", png = file.path(dataDirFMANWT, "FMA_NWT.png"))
-  #plotFMA(fmanwt, provs = nwt, caribou = fmanwt.caribou, xsr = fmanwt_sr,
-  #        title = "Fort Resolution", png = NULL)
+    ml <- mapAdd(fmanwt_FP, ml, layerName = "FMANWT FP", useSAcrs = TRUE, poly = TRUE,
+                 analysisGroupReportingPolygon = "FMANWT FP", isStudyArea = isTRUE(asStudyArea),
+                 columnNameForLabels = "Name", filename2 = NULL)
+    ml <- mapAdd(fmanwt_FP.caribou, ml, layerName = "FMANWT FP Caribou", useSAcrs = TRUE, poly = TRUE,
+                 analysisGroupReportingPolygon = "FMANWT FP Caribou",
+                 columnNameForLabels = "Name", filename2 = NULL)
 
-  if (isTRUE(asStudyArea)) {
-    ml <- mapAdd(fmanwt_sr, ml, isStudyArea = TRUE, layerName = "FMANWT SR",
-                 useSAcrs = TRUE, poly = TRUE, studyArea = NULL, # don't crop/mask to studyArea(ml, 2)
-                 columnNameForLabels = "NSN", filename2 = NULL)
+    ## studyArea shouldn't use analysisGroup because it's not a reportingPolygon
+    fmanwt_FP_sr <- postProcess(ml[["LandWeb Study Area"]],
+                                studyArea = amc::outerBuffer(fmanwt_FP, 50000), # 50 km buffer
+                                useSAcrs = TRUE,
+                                filename2 = file.path(dataDirFMANWT, "FMA_NWT_FP_SR.shp"),
+                                overwrite = TRUE)
+
+    plotFMA(fmanwt_FP, provs = nwt, caribou = fmanwt_FP.caribou, xsr = fmanwt_FP_sr,
+            title = "Fort Providence", png = file.path(dataDirFMANWT, "FMA_NWT_FP.png"))
+    #plotFMA(fmanwt_FP, provs = nwt, caribou = fmanwt_FP.caribou, xsr = fmanwt_FP_sr,
+    #        title = "Fort Resolution", png = NULL)
+
+    if (isTRUE(asStudyArea)) {
+      ml <- mapAdd(fmanwt_FP_sr, ml, isStudyArea = TRUE, layerName = "FMANWT FP SR",
+                   useSAcrs = TRUE, poly = TRUE, studyArea = NULL, # don't crop/mask to studyArea(ml, 2)
+                   columnNameForLabels = "NSN", filename2 = NULL)
+    }
+  } else {
+    ## reportingPolygons
+    fmanwt_FR.caribou <- postProcess(ml[["LandWeb Caribou Ranges"]],
+                                     studyArea = fmanwt_FR, useSAcrs = TRUE,
+                                     filename2 = file.path(dataDirFMANWT, "FMA_NWT_FR_caribou.shp"),
+                                     overwrite = TRUE) %>%
+      joinReportingPolygons(., fmanwt_FR)
+
+    ml <- mapAdd(fmanwt_FR, ml, layerName = "FMANWT FR", useSAcrs = TRUE, poly = TRUE,
+                 analysisGroupReportingPolygon = "FMANWT FR", isStudyArea = isTRUE(asStudyArea),
+                 columnNameForLabels = "Name", filename2 = NULL)
+    ml <- mapAdd(fmanwt_FR.caribou, ml, layerName = "FMANWT FR Caribou", useSAcrs = TRUE, poly = TRUE,
+                 analysisGroupReportingPolygon = "FMANWT FR Caribou",
+                 columnNameForLabels = "Name", filename2 = NULL)
+
+    ## studyArea shouldn't use analysisGroup because it's not a reportingPolygon
+    fmanwt_FR_sr <- postProcess(ml[["LandWeb Study Area"]],
+                                studyArea = amc::outerBuffer(fmanwt_FR, 50000), # 50 km buffer
+                                useSAcrs = TRUE,
+                                filename2 = file.path(dataDirFMANWT, "FMA_NWT_FR_SR.shp"),
+                                overwrite = TRUE)
+
+    plotFMA(fmanwt_FR, provs = nwt, caribou = fmanwt_FR.caribou, xsr = fmanwt_FR_sr,
+            title = "Fort Resolution", png = file.path(dataDirFMANWT, "FMA_NWT_FR.png"))
+    #plotFMA(fmanwt_FR, provs = nwt, caribou = fmanwt_FR.caribou, xsr = fmanwt_FR_sr,
+    #        title = "Fort Resolution", png = NULL)
+
+    if (isTRUE(asStudyArea)) {
+      ml <- mapAdd(fmanwt_FR_sr, ml, isStudyArea = TRUE, layerName = "FMANWT FR SR",
+                   useSAcrs = TRUE, poly = TRUE, studyArea = NULL, # don't crop/mask to studyArea(ml, 2)
+                   columnNameForLabels = "NSN", filename2 = NULL)
+    }
   }
-
   return(ml)
 }
