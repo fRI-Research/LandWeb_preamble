@@ -4,7 +4,7 @@ defineModule(sim, list(
   keywords = c("LandWeb"),
   authors = c(
     person(c("Eliot", "J", "B"), "McIntire", email = "eliot.mcintire@canada.ca", role = c("aut", "cre")),
-    person(c("Alex", "M."), "Chubaty", email = "achubaty@friresearch.ca", role = c("aut"))
+    person(c("Alex", "M."), "Chubaty", email = "achubaty@for-cast.ca", role = c("aut"))
   ),
   childModules = character(0),
   version = list(SpaDES.core = "0.2.3.9009", LandWeb_preamble = "0.0.2"),
@@ -21,6 +21,9 @@ defineModule(sim, list(
                   "raster", "RColorBrewer", "reproducible", "rgeos",
                   "scales", "sf", "sp", "SpaDES.tools"),
   parameters = rbind(
+    defineParameter("mapResFact", "numeric", 1, 1, 10,
+                    paste("The map resolution factor to use with raster::disaggregate to reduce pixel size below 250 m.",
+                          "Should be one of 1, 2, 5, 10, which correspends to pixel size of 250m, 125m, 50m, 25m, repsectively.")),
     defineParameter("minFRI", "numeric", 40, 0, 200, "The value of fire return interval below which, pixels will be changed to NA, i.e., ignored"),
     defineParameter("runName", "character", NA, NA, NA, "A description for run; this will form the basis of cache path and output path"),
     defineParameter("treeClassesLCC", "numeric", c(1:15, 20, 32, 34:36), 0, 39,
@@ -180,6 +183,10 @@ Init <- function(sim) {
   # LCC2005
   ##########################################################
   LCC2005 <- prepInputsLCC(studyArea = studyArea(ml), destinationPath = Paths$inputPath)
+  if (P(sim)$mapResFact != 1) {
+    stopifnot(P(sim)$mapResFact %in% c(2, 5, 10)) ## 125m, 50m, 25m resolutions respectively
+    LCC2005 <- Cache(raster::disaggregate, x = LCC2005, fact = P(sim)$mapResFact)
+  }
   ml <- mapAdd(LCC2005, layerName = "LCC2005", map = ml, filename2 = NULL, leaflet = FALSE,
                isRasterToMatch = TRUE, method = "ngb")
 
