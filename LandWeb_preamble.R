@@ -7,7 +7,7 @@ defineModule(sim, list(
     person(c("Alex", "M."), "Chubaty", email = "achubaty@for-cast.ca", role = c("aut"))
   ),
   childModules = character(0),
-  version = list(SpaDES.core = "0.2.3.9009", LandWeb_preamble = "0.0.2"),
+  version = list(SpaDES.core = "0.2.3.9009", LandWeb_preamble = "0.0.2", LandR = "0.0.2.9011"),
   spatialExtent = raster::extent(rep(NA_real_, 4)),
   timeframe = as.POSIXlt(c(NA, NA)),
   timeunit = "year",
@@ -86,6 +86,12 @@ Init <- function(sim) {
                url = "https://drive.google.com/file/d/1nTFOcrdMf1hIsxd_yNCSTr8RrYNHHwuc/view?usp=sharing",
                columnNameForLabels = "Name", isStudyArea = FALSE, filename2 = NULL)
 
+  ## AB FMU boundaries
+  ml <- mapAdd(map = ml, layerName = "AB FMU Boundaries",
+               useSAcrs = TRUE, poly = TRUE, overwrite = TRUE,
+               url = "https://drive.google.com/open?id=1OH3b5pwjumm1ToytDBDI6jthVe2pp0tS",
+               columnNameForLabels = "FMU_NAME", isStudyArea = FALSE, filename2 = NULL)
+
   ### Rename some polygons:
   ###   - DMI is now Mercer (MPR)
   ids <- grep("Daishowa-Marubeni International Ltd", ml[["FMA Boundaries Updated"]][["Name"]])
@@ -134,6 +140,8 @@ Init <- function(sim) {
     ml <- fmaEdsonFP(ml, P(sim)$runName, dataDir, sim$canProvs, asStudyArea = TRUE)
   } else if (grepl("FMANWT", P(sim)$runName)) {
     ml <- fmaNWT(ml, P(sim)$runName, dataDir, sim$canProvs, asStudyArea = TRUE)
+  } else if (grepl("FMU", P(sim)$runName)) {
+    ml <- fmu(ml, P(sim)$runName, dataDir, sim$canProvs, asStudyArea = TRUE)
   } else if (grepl("LandWeb", P(sim)$runName)) {
     ml <- allLandWeb(ml, P(sim)$runName, file.path("inputs", "LandWeb"), sim$canProvs, asStudyArea = TRUE)
   } else if (grepl("LP", P(sim)$runName)) {
@@ -155,7 +163,7 @@ Init <- function(sim) {
   } else if (grepl("WestFraser|BlueRidge", P(sim)$runName)) {
     ml <- fmaWestFraser(ml, P(sim)$runName, dataDir, sim$canProvs, asStudyArea = TRUE)
   } else if (grepl("provAB", P(sim)$runName)) {
-    ml <- provAB(ml, P(sim)$runName, dataDir, sim$canProvs, asStudyArea = TRUE) ## WIP
+    ml <- provAB(ml, P(sim)$runName, dataDir, sim$canProvs, asStudyArea = TRUE)
   } else if (grepl("provNWT", P(sim)$runName)) {
     ml <- provNWT(ml, P(sim)$runName, dataDir, sim$canProvs, asStudyArea = TRUE)
   } else if (grepl("provSK", P(sim)$runName)) {
@@ -278,7 +286,8 @@ Init <- function(sim) {
   ##########################################################
   # Clean up the study area
   ##########################################################
-  studyArea(ml) <- polygonClean(studyArea(ml), type = P(sim)$runName, minFRI = P(sim)$minFRI)
+  #studyArea(ml) <- polygonClean(studyArea(ml), type = P(sim)$runName, minFRI = P(sim)$minFRI)
+  studyArea(ml) <- polygonClean(studyArea(ml), type = "LandWeb", minFRI = P(sim)$minFRI)
 
   ##########################################################
   # Flammability and Fire Return Interval maps

@@ -14,6 +14,12 @@ extractFMA <- function(ml, name) {
   ml[["FMA Boundaries Updated"]][grepl(name, ml[["FMA Boundaries Updated"]][["Name"]]), ]
 }
 
+#' @rdname extractFMA
+extractFMU <- function(ml, name) {
+  if (is.null(ml[["AB FMU Boundaries"]])) stop("'AB FMU Boundaries' not found")
+  ml[["AB FMU Boundaries"]][ml[["AB FMU Boundaries"]][["FMU_NAME"]] == name, ]
+}
+
 #' Join reporting polygons and intersect their features
 #'
 #' Join two reporting polygons, preserving thoir featuers;
