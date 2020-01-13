@@ -190,11 +190,18 @@ Init <- function(sim) {
   ##########################################################
   # LCC2005
   ##########################################################
+  LCC2005large <- prepInputsLCC(studyArea = studyArea(ml, 1), destinationPath = Paths$inputPath)
+  if (P(sim)$mapResFact != 1) {
+    stopifnot(P(sim)$mapResFact %in% c(2, 5, 10)) ## 125m, 50m, 25m resolutions respectively
+    LCC2005large <- Cache(raster::disaggregate, x = LCC2005large, fact = P(sim)$mapResFact)
+  }
+
   LCC2005 <- prepInputsLCC(studyArea = studyArea(ml), destinationPath = Paths$inputPath)
   if (P(sim)$mapResFact != 1) {
     stopifnot(P(sim)$mapResFact %in% c(2, 5, 10)) ## 125m, 50m, 25m resolutions respectively
     LCC2005 <- Cache(raster::disaggregate, x = LCC2005, fact = P(sim)$mapResFact)
   }
+
   ml <- mapAdd(LCC2005, layerName = "LCC2005", map = ml, filename2 = NULL, leaflet = FALSE,
                isRasterToMatch = TRUE, method = "ngb")
 
@@ -342,6 +349,7 @@ Init <- function(sim) {
   sim$rasterToMatchReporting <- postProcess(rasterToMatch(ml),
                                             studyArea = studyArea(ml, 2),
                                             filename2 = NULL) # this is the small one
+  sim$rasterToMatchLarge <- LCC2005large
 
   sim$ml <- ml
 
