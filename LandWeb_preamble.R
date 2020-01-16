@@ -174,7 +174,7 @@ Init <- function(sim) {
     seed <- 863
     ranSeed <- .Random.seed
     set.seed(seed)
-    rnd <- Cache(SpaDES.tools::randomPolygon, ml[[studyAreaName(ml)]], 4e5)
+    rnd <- Cache(SpaDES.tools::randomPolygon, ml[[studyAreaName(ml)]], 4e4)
     ml <- mapAdd(rnd, ml, layerName = "Random Study Area", useSAcrs = TRUE, poly = TRUE,
                  analysisGroupReportingPolygon = "Random Study Area", isStudyArea = TRUE,
                  columnNameForLabels = "Name", filename2 = NULL)
