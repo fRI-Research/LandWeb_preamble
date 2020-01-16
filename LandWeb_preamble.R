@@ -18,8 +18,8 @@ defineModule(sim, list(
                   "PredictiveEcology/LandR@development",
                   "magrittr", "PredictiveEcology/map@development", "maptools",
                   "PredictiveEcology/pemisc@development",
-                  "raster", "RColorBrewer", "reproducible", "rgeos",
-                  "scales", "sf", "sp", "SpaDES.tools"),
+                  "raster", "RColorBrewer", "RCurl", "reproducible", "rgeos",
+                  "scales", "sf", "sp", "SpaDES.tools", "XML"),
   parameters = rbind(
     defineParameter("mapResFact", "numeric", 1, 1, 10,
                     paste("The map resolution factor to use with raster::disaggregate to reduce pixel size below 250 m.",
@@ -270,15 +270,22 @@ Init <- function(sim) {
 
   ########################################################################
   # Age from KNN
+  # https://open.canada.ca/data/en/dataset/ec9e2659-1c29-4ddb-87a2-6aced147a990
   ########################################################################
 
-  standAgeMapFilename <- "NFI_MODIS250m_kNN_Structure_Stand_Age_v0.tif"
+ kNNurl <- paste0(
+    "http://ftp.maps.canada.ca/pub/nrcan_rncan/Forests_Foret/",
+    "canada-forests-attributes_attributs-forests-canada/2001-attributes_attributs-2001/"
+  )
+  fileURLs <- RCurl::getURL(kNNurl, dirlistonly = TRUE)
+  fileNames <- XML::getHTMLLinks(fileURLs)
+  standAgeMapFileName <- grep("Structure_Stand_Age.*.tif$", fileNames, value = TRUE)
+  standAgeMapURL <- paste0(kNNurl, standAgeMapFileName)
+
   standAgeMap <- Cache(prepInputs, #notOlderThan = Sys.time(),
-                       targetFile = standAgeMapFilename,
-                       archive = asPath(c("kNN-StructureStandVolume.tar",
-                                          "NFI_MODIS250m_kNN_Structure_Stand_Age_v0.zip")),
+                       targetFile = standAgeMapFileName,
                        destinationPath = Paths$inputPath,
-                       url = "http://tree.pfc.forestry.ca/kNN-StructureStandVolume.tar",
+                       url = standAgeMapURL,
                        fun = "raster::raster",
                        studyArea = studyArea(ml),
                        rasterToMatch = rasterToMatch(ml),
