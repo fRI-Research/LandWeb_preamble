@@ -196,23 +196,20 @@ Init <- function(sim) {
     LCC2005large <- Cache(raster::disaggregate, x = LCC2005large, fact = P(sim)$mapResFact)
   }
 
-  LCC2005 <- prepInputsLCC(studyArea = studyArea(ml), destinationPath = Paths$inputPath)
-  if (P(sim)$mapResFact != 1) {
-    stopifnot(P(sim)$mapResFact %in% c(2, 5, 10)) ## 125m, 50m, 25m resolutions respectively
-    LCC2005 <- Cache(raster::disaggregate, x = LCC2005, fact = P(sim)$mapResFact)
-  }
-
-  ml <- mapAdd(LCC2005, layerName = "LCC2005", map = ml, filename2 = NULL, leaflet = FALSE,
+  ml <- mapAdd(LCC2005large, layerName = "LCC2005large", map = ml, filename2 = NULL, leaflet = FALSE,
                isRasterToMatch = TRUE, method = "ngb")
+  ## TODO: should be rasterToMatch, but not getting large SA
+  ml[[ml@metadata[ml@metadata$rasterToMatch == 1, ]$layerName]] <- LCC2005large ## workaround
 
   ##########################################################
   # Current Conditions
   ##########################################################
   ccURL <- "https://drive.google.com/file/d/1JnKeXrw0U9LmrZpixCDooIm62qiv4_G1/view?usp=sharing"
   LandTypeFileCC <- file.path(Paths$inputPath, "LandType1.tif")
-  sim$LandTypeCC <- Cache(prepInputs, LandTypeFileCC, studyArea = studyArea(ml),
+  sim$LandTypeCC <- Cache(prepInputs, LandTypeFileCC, studyArea = studyArea(ml, 1),
                           url = ccURL, method = "ngb",
-                          rasterToMatch = rasterToMatch(ml), filename2 = NULL)
+                          rasterToMatch = rasterToMatch(ml),
+                          filename2 = NULL)
 
   ##########################################################
   # Non Tree pixels
@@ -228,7 +225,7 @@ Init <- function(sim) {
   noDataPixelsCC <- LandTypeCCNA | (sim$LandTypeCC[] == 5)
   treePixelsCC <- which(treePixelsCCTF)
 
-  uniqueLCCClasses <- na.omit(unique(ml$LCC2005[]))
+  uniqueLCCClasses <- na.omit(unique(ml$LCC2005large[]))
   nontreeClassesLCC <- sort(uniqueLCCClasses[!uniqueLCCClasses %in% P(sim)$treeClassesLCC])
 
   ## for each LCC2005 + CC class combo, define which LCC2005 code should be used
@@ -242,17 +239,15 @@ Init <- function(sim) {
   remapDT[is.na(LCC2005) & CC %in% 0:2, newLCC := 99] ## reclassification needed
   remapDT[LCC2005 %in% P(sim)$treeClassesToReplace, newLCC := 99] ## reclassification needed
 
-  sim$LCC <- overlayLCCs(list(CC = sim$LandTypeCC, LCC2005 = ml$LCC2005),
-                         forestedList = list(CC = 0, LCC2005 = P(sim)$treeClassesLCC),
-                         outputLayer = "LCC2005",
-                         #NAcondition = "LCC2005 == 0",
-                         #NNcondition = "CC == 1 & LCC2005 == 0",
-                         remapTable = remapDT,
-                         classesToReplace = c(P(sim)$treeClassesToReplace, 99),
-                         availableERC_by_Sp = NULL)
+  sim$LCClarge <- overlayLCCs(list(CC = sim$LandTypeCC, LCC2005 = ml$LCC2005large),
+                              forestedList = list(CC = 0, LCC2005 = P(sim)$treeClassesLCC),
+                              outputLayer = "LCC2005",
+                              remapTable = remapDT,
+                              classesToReplace = c(P(sim)$treeClassesToReplace, 99),
+                              availableERC_by_Sp = NULL)
 
-  treePixelsLCC <- which(sim$LCC[] %in% P(sim)$treeClassesLCC)
-  nonTreePixels <- which(sim$LCC[] %in% nontreeClassesLCC)
+  treePixelsLCC <- which(sim$LCClarge[] %in% P(sim)$treeClassesLCC)
+  nonTreePixels <- which(sim$LCClarge[] %in% nontreeClassesLCC)
 
   sim$nonTreePixels <- nonTreePixels
 
@@ -314,19 +309,12 @@ Init <- function(sim) {
   # No data class is 5 -- these will be filled in by LCC2005 layer
   # NA_ids <- which(is.na(sim$LandTypeCC[]) | sim$LandTypeCC[] == 5)
   # Only class 4 is considered non-flammable
-  rstFlammableCC <- defineFlammable(sim$LandTypeCC, nonFlammClasses = 4,
-                                    mask = NULL, filename2 = NULL)
+  rstFlammableCC <- defineFlammable(sim$LandTypeCC, nonFlammClasses = 4, mask = NULL, filename2 = NULL)
   rstFlammableCC <- deratify(rstFlammableCC, complete = TRUE)
 
-  #LandTypeFileLCC <- file.path(Paths$inputPath, "LCC2005_V1_4a.tif")
   # Only classes 36, 37, 38, 39 is considered non-flammable
-  rstFlammableLCC <- defineFlammable(LCC2005, nonFlammClasses = 36:39, mask = NULL, filename2 = NULL)
+  rstFlammableLCC <- defineFlammable(LCC2005large, nonFlammClasses = 36:39, mask = NULL, filename2 = NULL)
   rstFlammableLCC <- deratify(rstFlammableLCC, complete = TRUE)
-
-  #rstFlammableLCC <- Cache(prepInputs, LandTypeFileLCC, studyArea = studyArea(ml),
-  #                         url = ccURL, method = "ngb",
-  #                         rasterToMatch = rasterToMatch(ml), filename2 = NULL) %>%
-  #  defineFlammable(., nonFlammClasses = 36:39, mask = NULL, filename2 = NULL)
 
   sim$rstFlammable <- rstFlammableCC
   sim$rstFlammable[LandTypeCCNA] <- rstFlammableLCC[LandTypeCCNA]
@@ -349,14 +337,16 @@ Init <- function(sim) {
   sim$studyArea <- studyArea(ml, 3)
   sim$studyAreaLarge <- studyArea(ml, 1)
   sim$studyAreaReporting <- studyArea(ml, 2)
-  sim$rasterToMatch <- sim$LCC #rasterToMatch(ml)
+
+  sim$rasterToMatch <- postProcess(rasterToMatch(ml), studyArea = studyArea(ml, 3), filename2 = NULL)
+  sim$rasterToMatchLarge <- sim$LCClarge
+  sim$rasterToMatchReporting <- postProcess(rasterToMatch(ml), studyArea = studyArea(ml, 2), filename2 = NULL)
+
+  sim$LCC <- sim$LCClarge
+
   sim$fireReturnInterval <- ml$fireReturnInterval # no NAing here because this needs only
-  sim$LCC2005 <- sim$LCC #ml$LCC2005
+
   sim[[TSFLayerName]] <- ml[[TSFLayerName]]
-  sim$rasterToMatchReporting <- postProcess(rasterToMatch(ml),
-                                            studyArea = studyArea(ml, 2),
-                                            filename2 = NULL) # this is the small one
-  sim$rasterToMatchLarge <- LCC2005large
 
   sim$ml <- ml
 
