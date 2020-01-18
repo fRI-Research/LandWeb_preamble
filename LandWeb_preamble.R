@@ -282,8 +282,8 @@ Init <- function(sim) {
                        destinationPath = Paths$inputPath,
                        url = standAgeMapURL,
                        fun = "raster::raster",
-                       studyArea = studyArea(ml),
-                       rasterToMatch = rasterToMatch(ml),
+                       studyArea = studyArea(ml, 1), ## TODO: use studyAreaLarge !!
+                       rasterToMatch = rasterToMatch(ml), ## TODO: confirm this is rasterToMatchLarge
                        maskWithRTM = TRUE,
                        method = "bilinear",
                        datatype = "INT2U",
