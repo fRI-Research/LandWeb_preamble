@@ -263,8 +263,25 @@ Init <- function(sim) {
                alsoExtract = "similar", leaflet = FALSE)
   ml[[TSFLayerName]][] <- as.integer(ml[[TSFLayerName]][])
 
+  ## TODO: workaround for large study area, which mapAdd isn't dealing with correctly
+  ageCClarge <- Cache(postProcess,
+                      x = raster(file.path(Paths$inputPath, fname_age)),
+                      filename1 = NULL,
+                      filename2 = NULL,
+                      studyArea = studyArea(ml, 1), ## studyAreaLarge
+                      rasterToMatch = rasterToMatch(ml), ##rasterToMatchLarge
+                      maskWithRTM = TRUE,
+                      method = "bilinear",
+                      datatype = "INT2U",
+                      userTags = c("stable", currentModule(sim)))
+  if (P(sim)$mapResFact != 1) {
+    stopifnot(P(sim)$mapResFact %in% c(2, 5, 10)) ## 125m, 50m, 25m resolutions respectively
+    ageCClarge <- Cache(raster::disaggregate, x = ageCClarge, fact = P(sim)$mapResFact)
+  }
+  ml[[TSFLayerName]] <- as.integer(ageCClarge)
+
   ########################################################################
-  # Age from KNN
+  # Age from kNN
   # https://open.canada.ca/data/en/dataset/ec9e2659-1c29-4ddb-87a2-6aced147a990
   ########################################################################
 
@@ -282,8 +299,8 @@ Init <- function(sim) {
                        destinationPath = Paths$inputPath,
                        url = standAgeMapURL,
                        fun = "raster::raster",
-                       studyArea = studyArea(ml, 1), ## TODO: use studyAreaLarge !!
-                       rasterToMatch = rasterToMatch(ml), ## TODO: confirm this is rasterToMatchLarge
+                       studyArea = studyArea(ml, 1), ## studyAreaLarge
+                       rasterToMatch = rasterToMatch(ml),  ##rasterToMatchLarge
                        maskWithRTM = TRUE,
                        method = "bilinear",
                        datatype = "INT2U",
