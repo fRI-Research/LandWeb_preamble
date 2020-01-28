@@ -46,7 +46,7 @@ defineModule(sim, list(
     createsOutput("LandTypeCC", "RasterLayer", desc = NA),
     createsOutput("LCC2005", "RasterLayer", desc = NA),
     createsOutput("ml", "map", desc = NA),
-    createsOutput("LCC", "RasterLayer", desc = "A key output fromt this module: it is the result of LandR::overlayLCCs on LCC2005 and LandTypeCC"),
+    createsOutput("LCC", "RasterLayer", desc = "A key output from this module: it is the result of LandR::overlayLCCs on LCC2005 and LandTypeCC"),
     createsOutput("nonTreePixels", "integer", desc = NA),
     createsOutput("rasterToMatch", "RasterLayer", desc = NA),
     createsOutput("rasterToMatchReporting", "RasterLayer", desc = NA),
