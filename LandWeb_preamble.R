@@ -21,6 +21,7 @@ defineModule(sim, list(
                   "raster", "RColorBrewer", "RCurl", "reproducible", "rgeos",
                   "scales", "sf", "sp", "SpaDES.tools", "XML"),
   parameters = rbind(
+    defineParameter("friMultiple", "numeric", 1.0, 1.0, 2.0, "Multiplication factor for adjusting fire return intervals."),
     defineParameter("mapResFact", "numeric", 1, 1, 10,
                     paste("The map resolution factor to use with raster::disaggregate to reduce pixel size below 250 m.",
                           "Should be one of 1, 2, 5, 10, which correspends to pixel size of 250m, 125m, 50m, 25m, repsectively.")),
@@ -348,8 +349,9 @@ Init <- function(sim) {
   ml <- mapAdd(rstFireReturnInterval, layerName = "fireReturnInterval", filename2 = NULL,
                map = ml, leaflet = FALSE, maskWithRTM = FALSE)
 
-  if (grepl("doubleFRI", P(sim)$runName))
-    ml$fireReturnInterval <- 2L * ml$fireReturnInterval
+  if (P(sim)$friMultiple != 1) {
+    ml$fireReturnInterval <- as.integer(P(sim)$friMultiple * ml$fireReturnInterval)
+  }
 
   sim$studyArea <- studyArea(ml, 3)
   sim$studyAreaLarge <- studyArea(ml, 1)
