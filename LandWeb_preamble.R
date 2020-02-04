@@ -210,7 +210,8 @@ Init <- function(sim) {
   sim$LandTypeCC <- Cache(prepInputs, LandTypeFileCC, studyArea = studyArea(ml, 1),
                           url = ccURL, method = "ngb",
                           rasterToMatch = rasterToMatch(ml),
-                          filename2 = NULL)
+                          filename2 = NULL) %>%
+    extend(., LCC2005large) ## workaround
 
   ##########################################################
   # Non Tree pixels
