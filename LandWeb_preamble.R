@@ -189,9 +189,17 @@ Init <- function(sim) {
   }
 
   ##########################################################
-  # LCC2005
+  # study areas
   ##########################################################
-  LCC2005large <- prepInputsLCC(studyArea = studyArea(ml, 1), destinationPath = Paths$inputPath)
+  sim$studyArea <- studyArea(ml, 3)           ## buffered study area
+  #sim$studyAreaLarge <- studyArea(ml, 1)      ## entire LandWeb area (too big for fitting etc. for now)
+  sim$studyAreaLarge <- studyArea(ml, 3)      ## buffered study area
+  sim$studyAreaReporting <- studyArea(ml, 2)  ## reporting area (e.g., FMA)
+
+  ##########################################################
+  # LCC 2005 / raster to match
+  ##########################################################
+  LCC2005large <- prepInputsLCC(studyArea = sim$studyAreaLarge, destinationPath = Paths$inputPath)
   if (P(sim)$mapResFact != 1) {
     stopifnot(P(sim)$mapResFact %in% c(2, 5, 10)) ## 125m, 50m, 25m resolutions respectively
     LCC2005large <- Cache(raster::disaggregate, x = LCC2005large, fact = P(sim)$mapResFact)
@@ -199,15 +207,19 @@ Init <- function(sim) {
 
   ml <- mapAdd(LCC2005large, layerName = "LCC2005large", map = ml, filename2 = NULL, leaflet = FALSE,
                isRasterToMatch = TRUE, method = "ngb")
-  ## TODO: should be rasterToMatch, but not getting large SA
+  ## TODO: should be rasterToMatch, but not getting studyAreaLarge
   ml[[ml@metadata[ml@metadata$rasterToMatch == 1, ]$layerName]] <- LCC2005large ## workaround
+
+  sim$rasterToMatch <- postProcess(rasterToMatch(ml), studyArea = sim$studyArea, filename2 = NULL)
+  sim$rasterToMatchLarge <- sim$LCClarge
+  sim$rasterToMatchReporting <- postProcess(rasterToMatch(ml), studyArea = sim$studyAreaReporting, filename2 = NULL)
 
   ##########################################################
   # Current Conditions
   ##########################################################
   ccURL <- "https://drive.google.com/file/d/1JnKeXrw0U9LmrZpixCDooIm62qiv4_G1/view?usp=sharing"
   LandTypeFileCC <- file.path(Paths$inputPath, "LandType1.tif")
-  sim$LandTypeCC <- Cache(prepInputs, LandTypeFileCC, studyArea = studyArea(ml, 1),
+  sim$LandTypeCC <- Cache(prepInputs, LandTypeFileCC, studyArea = sim$studyAreaLarge,
                           url = ccURL, method = "ngb",
                           rasterToMatch = rasterToMatch(ml),
                           filename2 = NULL) %>%
@@ -253,8 +265,9 @@ Init <- function(sim) {
 
   sim$nonTreePixels <- nonTreePixels
 
-  # Update rasterToMatch layer with all trees
+  ## Update rasterToMatch layer with all trees
   ml[[ml@metadata[ml@metadata$rasterToMatch == 1, ]$layerName]][sim$nonTreePixels] <- NA
+  sim$rasterToMatch <- postProcess(rasterToMatch(ml), studyArea = sim$studyArea, filename2 = NULL)
 
   fname_age <- "Age1.tif"
   TSFLayerName <- "CC TSF"
@@ -270,8 +283,8 @@ Init <- function(sim) {
                       x = raster(file.path(Paths$inputPath, fname_age)),
                       filename1 = NULL,
                       filename2 = NULL,
-                      studyArea = studyArea(ml, 1), ## studyAreaLarge
-                      rasterToMatch = rasterToMatch(ml), ##rasterToMatchLarge
+                      studyArea = sim$studyAreaLarge,
+                      rasterToMatch = sim$rasterToMatchLarge,
                       maskWithRTM = TRUE,
                       method = "bilinear",
                       datatype = "INT2U",
@@ -287,7 +300,7 @@ Init <- function(sim) {
   # https://open.canada.ca/data/en/dataset/ec9e2659-1c29-4ddb-87a2-6aced147a990
   ########################################################################
 
- kNNurl <- paste0(
+  kNNurl <- paste0(
     "http://ftp.maps.canada.ca/pub/nrcan_rncan/Forests_Foret/",
     "canada-forests-attributes_attributs-forests-canada/2001-attributes_attributs-2001/"
   )
@@ -301,8 +314,8 @@ Init <- function(sim) {
                        destinationPath = Paths$inputPath,
                        url = standAgeMapURL,
                        fun = "raster::raster",
-                       studyArea = studyArea(ml, 1), ## studyAreaLarge
-                       rasterToMatch = rasterToMatch(ml),  ##rasterToMatchLarge
+                       studyArea = sim$studyAreaLarge,
+                       rasterToMatch = sim$rasterToMatchLarge,
                        maskWithRTM = TRUE,
                        method = "bilinear",
                        datatype = "INT2U",
@@ -314,7 +327,6 @@ Init <- function(sim) {
   ##########################################################
   # Clean up the study area
   ##########################################################
-  #studyArea(ml) <- polygonClean(studyArea(ml), type = P(sim)$runName, minFRI = P(sim)$minFRI)
   studyArea(ml) <- polygonClean(studyArea(ml), type = "LandWeb", minFRI = P(sim)$minFRI)
 
   ##########################################################
@@ -354,14 +366,6 @@ Init <- function(sim) {
     ml$fireReturnInterval <- as.integer(P(sim)$friMultiple * ml$fireReturnInterval)
   }
 
-  sim$studyArea <- studyArea(ml, 3)
-  sim$studyAreaLarge <- studyArea(ml, 1)
-  sim$studyAreaReporting <- studyArea(ml, 2)
-
-  sim$rasterToMatch <- postProcess(rasterToMatch(ml), studyArea = studyArea(ml, 3), filename2 = NULL)
-  sim$rasterToMatchLarge <- sim$LCClarge
-  sim$rasterToMatchReporting <- postProcess(rasterToMatch(ml), studyArea = studyArea(ml, 2), filename2 = NULL)
-
   sim$LCC <- sim$LCClarge
 
   sim$fireReturnInterval <- ml$fireReturnInterval # no NAing here because this needs only
@@ -372,7 +376,7 @@ Init <- function(sim) {
 
   ## some assertions:
   testObjs <- c("studyArea", "studyAreaLarge", "studyAreaReporting",
-                "rasterToMatch", "rasterToMatchReporting",
+                "rasterToMatch", "rasterToMatchLarge", "rasterToMatchReporting",
                 "fireReturnInterval", TSFLayerName)
   lapply(testObjs, function(x) {
     if (is.null(sim[[x]]))
