@@ -28,7 +28,7 @@ fmaNWT <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
 
     ## studyArea shouldn't use analysisGroup because it's not a reportingPolygon
     fmanwt_FP_sr <- postProcess(ml[["LandWeb Study Area"]],
-                                studyArea = amc::outerBuffer(fmanwt_FP, 50000), # 50 km buffer
+                                studyArea = amc::outerBuffer(fmanwt_FP, 25000), # 25 km buffer
                                 useSAcrs = TRUE,
                                 filename2 = file.path(dataDirFMANWT, "FMA_NWT_FP_SR.shp"),
                                 overwrite = TRUE)
@@ -60,7 +60,7 @@ fmaNWT <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
 
     ## studyArea shouldn't use analysisGroup because it's not a reportingPolygon
     fmanwt_FR_sr <- postProcess(ml[["LandWeb Study Area"]],
-                                studyArea = amc::outerBuffer(fmanwt_FR, 50000), # 50 km buffer
+                                studyArea = amc::outerBuffer(fmanwt_FR, 25000), # 25 km buffer
                                 useSAcrs = TRUE,
                                 filename2 = file.path(dataDirFMANWT, "FMA_NWT_FR_SR.shp"),
                                 overwrite = TRUE)

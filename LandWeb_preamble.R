@@ -181,7 +181,7 @@ Init <- function(sim) {
                  columnNameForLabels = "Name", filename2 = NULL)
 
     rnd_sr <- postProcess(ml[["LandWeb Study Area"]],
-                          studyArea = amc::outerBuffer(rnd, 50000), # 50 km buffer
+                          studyArea = amc::outerBuffer(rnd, 25000), # 25 km buffer
                           useSAcrs = TRUE, filename2 = NULL)
     ml <- mapAdd(rnd_sr, ml, isStudyArea = TRUE, layerName = "Random Study Area SR",
                  useSAcrs = TRUE, poly = TRUE, studyArea = NULL, # don't crop/mask to studyArea(ml, 2)

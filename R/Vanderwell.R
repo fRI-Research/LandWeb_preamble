@@ -32,7 +32,7 @@ fmaVanderwell <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
 
   ## studyArea shouldn't use analysisGroup because it's not a reportingPolygon
   vanderwell_sr <- postProcess(ml[["LandWeb Study Area"]],
-                               studyArea = amc::outerBuffer(vanderwell, 50000), # 50 km buffer
+                               studyArea = amc::outerBuffer(vanderwell, 25000), # 25 km buffer
                                useSAcrs = TRUE,
                                filename2 = file.path(dataDirVanderwell, "Vanderwell_SR.shp"),
                                overwrite = TRUE)
