@@ -300,14 +300,12 @@ Init <- function(sim) {
   # https://open.canada.ca/data/en/dataset/ec9e2659-1c29-4ddb-87a2-6aced147a990
   ########################################################################
 
-  kNNurl <- paste0(
+  standAgeMapURL <- paste0(
     "http://ftp.maps.canada.ca/pub/nrcan_rncan/Forests_Foret/",
-    "canada-forests-attributes_attributs-forests-canada/2001-attributes_attributs-2001/"
+    "canada-forests-attributes_attributs-forests-canada/2001-attributes_attributs-2001/",
+    "NFI_MODIS250m_2001_kNN_Structure_Stand_Age_v1.tif"
   )
-  fileURLs <- RCurl::getURL(kNNurl, dirlistonly = TRUE)
-  fileNames <- XML::getHTMLLinks(fileURLs)
-  standAgeMapFileName <- grep("Structure_Stand_Age.*.tif$", fileNames, value = TRUE)
-  standAgeMapURL <- paste0(kNNurl, standAgeMapFileName)
+  standAgeMapFileName <- basename(standAgeMapURL)
 
   standAgeMap <- Cache(prepInputs, #notOlderThan = Sys.time(),
                        targetFile = standAgeMapFileName,
