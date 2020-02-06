@@ -223,7 +223,7 @@ Init <- function(sim) {
                           url = ccURL, method = "ngb",
                           rasterToMatch = rasterToMatch(ml),
                           filename2 = NULL) %>%
-    extend(., LCC2005large) ## workaround
+    extend(., sim$rasterToMatchLarge) ## workaround
 
   ##########################################################
   # Non Tree pixels
