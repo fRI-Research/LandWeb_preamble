@@ -211,7 +211,7 @@ Init <- function(sim) {
   ml[[ml@metadata[ml@metadata$rasterToMatch == 1, ]$layerName]] <- LCC2005large ## workaround
 
   sim$rasterToMatch <- postProcess(rasterToMatch(ml), studyArea = sim$studyArea, filename2 = NULL)
-  sim$rasterToMatchLarge <- sim$LCC2005large
+  sim$rasterToMatchLarge <- LCC2005large
   sim$rasterToMatchReporting <- postProcess(rasterToMatch(ml), studyArea = sim$studyAreaReporting, filename2 = NULL)
 
   ##########################################################
