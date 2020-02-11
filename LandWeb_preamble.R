@@ -222,8 +222,10 @@ Init <- function(sim) {
   sim$LandTypeCC <- Cache(prepInputs, LandTypeFileCC, studyArea = sim$studyAreaLarge,
                           url = ccURL, method = "ngb",
                           rasterToMatch = rasterToMatch(ml),
-                          filename2 = NULL) %>%
-    extend(., sim$rasterToMatchLarge) ## workaround
+                          filename2 = NULL)
+  ## workaround extent issues:
+  if (extent(sim$LandTypeCC) < extent(sim$rasterToMatchLarge))
+    sim$LandTypeCC <- extend(sim$LandTypeCC, sim$rasterToMatchLarge)
 
   ##########################################################
   # Non Tree pixels
@@ -253,12 +255,14 @@ Init <- function(sim) {
   remapDT[is.na(LCC2005) & CC %in% 0:2, newLCC := 99] ## reclassification needed
   remapDT[LCC2005 %in% P(sim)$treeClassesToReplace, newLCC := 99] ## reclassification needed
 
+  message("Overlaying land cover maps...")
   sim$LCClarge <- overlayLCCs(list(CC = sim$LandTypeCC, LCC2005 = ml$LCC2005large),
                               forestedList = list(CC = 0, LCC2005 = P(sim)$treeClassesLCC),
                               outputLayer = "LCC2005",
                               remapTable = remapDT,
                               classesToReplace = c(P(sim)$treeClassesToReplace, 99),
                               availableERC_by_Sp = NULL)
+  message("...done.")
 
   treePixelsLCC <- which(sim$LCClarge[] %in% P(sim)$treeClassesLCC)
   nonTreePixels <- which(sim$LCClarge[] %in% nontreeClassesLCC)
