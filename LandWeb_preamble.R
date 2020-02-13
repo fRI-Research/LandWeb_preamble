@@ -256,12 +256,13 @@ Init <- function(sim) {
   remapDT[LCC2005 %in% P(sim)$treeClassesToReplace, newLCC := 99] ## reclassification needed
 
   message("Overlaying land cover maps...")
-  sim$LCClarge <- overlayLCCs(list(CC = sim$LandTypeCC, LCC2005 = ml$LCC2005large),
-                              forestedList = list(CC = 0, LCC2005 = P(sim)$treeClassesLCC),
-                              outputLayer = "LCC2005",
-                              remapTable = remapDT,
-                              classesToReplace = c(P(sim)$treeClassesToReplace, 99),
-                              availableERC_by_Sp = NULL)
+  sim$LCClarge <- Cache(overlayLCCs,
+                        LCCs = list(CC = sim$LandTypeCC, LCC2005 = ml$LCC2005large),
+                        forestedList = list(CC = 0, LCC2005 = P(sim)$treeClassesLCC),
+                        outputLayer = "LCC2005",
+                        remapTable = remapDT,
+                        classesToReplace = c(P(sim)$treeClassesToReplace, 99),
+                        availableERC_by_Sp = NULL)
   message("...done.")
 
   treePixelsLCC <- which(sim$LCClarge[] %in% P(sim)$treeClassesLCC)
@@ -292,6 +293,7 @@ Init <- function(sim) {
                       method = "bilinear",
                       datatype = "INT2U",
                       userTags = c("stable", currentModule(sim)))
+  ageCClarge[ageCClarge < 0] <- 0
   ml[[TSFLayerName]] <- as.integer(ageCClarge)
 
   ########################################################################
@@ -363,10 +365,8 @@ Init <- function(sim) {
     ml$fireReturnInterval <- as.integer(P(sim)$friMultiple * ml$fireReturnInterval)
   }
 
+  sim$fireReturnInterval <- ml$fireReturnInterval
   sim$LCC <- sim$LCClarge
-
-  sim$fireReturnInterval <- ml$fireReturnInterval # no NAing here because this needs only
-
   sim[[TSFLayerName]] <- ml[[TSFLayerName]]
 
   sim$ml <- ml
