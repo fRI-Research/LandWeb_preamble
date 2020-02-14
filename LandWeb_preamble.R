@@ -349,17 +349,20 @@ Init <- function(sim) {
   sim$rstFlammable <- rstFlammableCC
   sim$rstFlammable[LandTypeCCNA] <- rstFlammableLCC[LandTypeCCNA]
   sim$rstFlammable[] <- as.integer(sim$rstFlammable[])
+  sim$rstFlammable <- crop(sim$rstFlammable, sim$rasterToMatch) ## ensure it matches studyArea
 
   ## fireReturnInterval needs to be masked by rstFlammable
   rstFireReturnInterval <- fasterize::fasterize(sf::st_as_sf(studyArea(ml)),
                                                 raster = rasterToMatch(ml),
                                                 field = "fireReturnInterval")
+  sim$rstFireReturnInterval <- crop(rstFireReturnInterval, sim$rasterToMatch) ## ensure it matches studyArea
 
   if (!is.integer(rstFireReturnInterval[]))
     rstFireReturnInterval[] <- as.integer(rstFireReturnInterval[])
 
   ml <- mapAdd(rstFireReturnInterval, layerName = "fireReturnInterval", filename2 = NULL,
                map = ml, leaflet = FALSE, maskWithRTM = FALSE)
+  ml$fireReturnInterval <- crop(ml$fireReturnInterval, sim$rasterToMatch) ## ensure it matches studyArea
 
   if (P(sim)$friMultiple != 1) {
     ml$fireReturnInterval <- as.integer(P(sim)$friMultiple * ml$fireReturnInterval)
@@ -379,6 +382,8 @@ Init <- function(sim) {
     if (is.null(sim[[x]]))
       stop("LandWeb_preamble: ", paste0("sim$", x, " returned NULL."), call. = FALSE)
   })
+
+  compareRaster(sim$rasterToMatch, sim$rstFireReturnInterval, sim$rstFlammable)
   ## end assertions
 
   return(invisible(sim))
