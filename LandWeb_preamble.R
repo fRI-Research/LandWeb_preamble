@@ -223,9 +223,6 @@ Init <- function(sim) {
                           url = ccURL, method = "ngb",
                           rasterToMatch = rasterToMatch(ml),
                           filename2 = NULL)
-  ## workaround extent issues:
-  if (extent(sim$LandTypeCC) < extent(sim$rasterToMatchLarge))
-    sim$LandTypeCC <- extend(sim$LandTypeCC, sim$rasterToMatchLarge)
 
   ##########################################################
   # Non Tree pixels
