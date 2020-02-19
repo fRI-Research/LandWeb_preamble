@@ -73,7 +73,7 @@ doEvent.LandWeb_preamble = function(sim, eventTime, eventType) {
 Init <- function(sim) {
   ## NOTE (2019-11-08): targetCRS needs to be character, not CRS class due to change in data.table
   targetCRS <- paste("+proj=lcc +lat_1=49 +lat_2=77 +lat_0=0 +lon_0=-95",
-                     "+x_0=0 +y_0=0 +datum=NAD83 +units=m +no_defs +ellps=GRS80 +towgs84=0,0,0")
+                     "+x_0=0 +y_0=0 +units=m +no_defs +ellps=GRS80 +towgs84=0,0,0")
 
   ## LandWeb study area -- LTHFC (aka "fire return interval") map
   ml <- mapAdd(layerName = "LandWeb Study Area",
