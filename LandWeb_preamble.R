@@ -21,6 +21,8 @@ defineModule(sim, list(
                   "raster", "RColorBrewer", "RCurl", "reproducible", "rgeos",
                   "scales", "sf", "sp", "SpaDES.tools", "XML"),
   parameters = rbind(
+    defineParameter("bufferDist", "numeric", 25000, 20000, 100000, "Study area buffer distance (m) used to make studyArea."),
+    defineParameter("bufferDistLarge", "numeric", 50000, 20000, 100000, "Study area buffer distance (m) used to make studyAreaLarge."),
     defineParameter("friMultiple", "numeric", 1.0, 1.0, 2.0, "Multiplication factor for adjusting fire return intervals."),
     defineParameter("mapResFact", "numeric", 1, 1, 10,
                     paste("The map resolution factor to use with raster::disaggregate to reduce pixel size below 250 m.",
@@ -134,41 +136,41 @@ Init <- function(sim) {
   dataDir <- file.path("inputs", "FMA_Boundaries")
 
   if (grepl("ANC", P(sim)$runName)) {
-    ml <- fmaANC(ml, P(sim)$runName, dataDir, sim$canProvs, asStudyArea = TRUE)
+    ml <- fmaANC(ml, P(sim)$runName, dataDir, sim$canProvs, P(sim)$bufferDist, asStudyArea = TRUE)
   } else if (grepl("DMI|MPR", P(sim)$runName)) {
-    ml <- fmaDMI(ml, P(sim)$runName, dataDir, sim$canProvs, asStudyArea = TRUE)
+    ml <- fmaDMI(ml, P(sim)$runName, dataDir, sim$canProvs, P(sim)$bufferDist, asStudyArea = TRUE)
   } else if (grepl("Edson", P(sim)$runName)) {
-    ml <- fmaEdsonFP(ml, P(sim)$runName, dataDir, sim$canProvs, asStudyArea = TRUE)
+    ml <- fmaEdsonFP(ml, P(sim)$runName, dataDir, sim$canProvs, P(sim)$bufferDist, asStudyArea = TRUE)
   } else if (grepl("FMANWT", P(sim)$runName)) {
-    ml <- fmaNWT(ml, P(sim)$runName, dataDir, sim$canProvs, asStudyArea = TRUE)
+    ml <- fmaNWT(ml, P(sim)$runName, dataDir, sim$canProvs, P(sim)$bufferDist, asStudyArea = TRUE)
   } else if (grepl("FMU", P(sim)$runName)) {
-    ml <- fmu(ml, P(sim)$runName, dataDir, sim$canProvs, asStudyArea = TRUE)
+    ml <- fmu(ml, P(sim)$runName, dataDir, sim$canProvs, P(sim)$bufferDist, asStudyArea = TRUE)
   } else if (grepl("LandWeb", P(sim)$runName)) {
-    ml <- allLandWeb(ml, P(sim)$runName, file.path("inputs", "LandWeb"), sim$canProvs, asStudyArea = TRUE)
+    ml <- allLandWeb(ml, P(sim)$runName, file.path("inputs", "LandWeb"), sim$canProvs, P(sim)$bufferDist, asStudyArea = TRUE)
   } else if (grepl("LP", P(sim)$runName)) {
-    ml <- fmaLP(ml, P(sim)$runName, dataDir, sim$canProvs, asStudyArea = TRUE)
+    ml <- fmaLP(ml, P(sim)$runName, dataDir, sim$canProvs, P(sim)$bufferDist, asStudyArea = TRUE)
   } else if (grepl("Manning", P(sim)$runName)) {
-    ml <- fmaManning(ml, P(sim)$runName, dataDir, sim$canProvs, asStudyArea = TRUE)
+    ml <- fmaManning(ml, P(sim)$runName, dataDir, sim$canProvs, P(sim)$bufferDist, asStudyArea = TRUE)
   } else if (grepl("MillarWestern", P(sim)$runName)) {
-    ml <- fmaMillarWestern(ml, P(sim)$runName, dataDir, sim$canProvs, asStudyArea = TRUE)
+    ml <- fmaMillarWestern(ml, P(sim)$runName, dataDir, sim$canProvs, P(sim)$bufferDist, asStudyArea = TRUE)
   } else if (grepl("Mistik", P(sim)$runName)) {
-    ml <- fmaMistik(ml, P(sim)$runName, dataDir, sim$canProvs, asStudyArea = TRUE)
+    ml <- fmaMistik(ml, P(sim)$runName, dataDir, sim$canProvs, P(sim)$bufferDist, asStudyArea = TRUE)
   } else if (grepl("Sundre", P(sim)$runName)) {
-    ml <- fmaSundreFP(ml, P(sim)$runName, dataDir, sim$canProvs, asStudyArea = TRUE)
+    ml <- fmaSundreFP(ml, P(sim)$runName, dataDir, sim$canProvs, P(sim)$bufferDist, asStudyArea = TRUE)
   } else if (grepl("Tolko|tolko", P(sim)$runName)) {
-    ml <- fmaTolko(ml, P(sim)$runName, dataDir, sim$canProvs, asStudyArea = TRUE)
+    ml <- fmaTolko(ml, P(sim)$runName, dataDir, sim$canProvs, P(sim)$bufferDist, asStudyArea = TRUE)
   } else if (grepl("Vanderwell", P(sim)$runName)) {
-    ml <- fmaVanderwell(ml, P(sim)$runName, dataDir, sim$canProvs, asStudyArea = TRUE)
+    ml <- fmaVanderwell(ml, P(sim)$runName, dataDir, sim$canProvs, P(sim)$bufferDist, asStudyArea = TRUE)
   } else if (grepl("WeyCo", P(sim)$runName)) {
-    ml <- fmaWeyCo(ml, P(sim)$runName, dataDir, sim$canProvs, asStudyArea = TRUE)
+    ml <- fmaWeyCo(ml, P(sim)$runName, dataDir, sim$canProvs, P(sim)$bufferDist, asStudyArea = TRUE)
   } else if (grepl("WestFraser|BlueRidge", P(sim)$runName)) {
-    ml <- fmaWestFraser(ml, P(sim)$runName, dataDir, sim$canProvs, asStudyArea = TRUE)
+    ml <- fmaWestFraser(ml, P(sim)$runName, dataDir, sim$canProvs, P(sim)$bufferDist, asStudyArea = TRUE)
   } else if (grepl("provAB", P(sim)$runName)) {
-    ml <- provAB(ml, P(sim)$runName, dataDir, sim$canProvs, asStudyArea = TRUE)
+    ml <- provAB(ml, P(sim)$runName, dataDir, sim$canProvs, P(sim)$bufferDist, asStudyArea = TRUE)
   } else if (grepl("provNWT", P(sim)$runName)) {
-    ml <- provNWT(ml, P(sim)$runName, dataDir, sim$canProvs, asStudyArea = TRUE)
+    ml <- provNWT(ml, P(sim)$runName, dataDir, sim$canProvs, P(sim)$bufferDist, asStudyArea = TRUE)
   } else if (grepl("provSK", P(sim)$runName)) {
-    ml <- provSK(ml, P(sim)$runName, dataDir, sim$canProvs, asStudyArea = TRUE)
+    ml <- provSK(ml, P(sim)$runName, dataDir, sim$canProvs, P(sim)$bufferDist, asStudyArea = TRUE)
   } else {
     ## use a small random study area
     message(crayon::red("Using random study area for runName", runName))
@@ -181,7 +183,7 @@ Init <- function(sim) {
                  columnNameForLabels = "Name", filename2 = NULL)
 
     rnd_sr <- postProcess(ml[["LandWeb Study Area"]],
-                          studyArea = amc::outerBuffer(rnd, 25000), # 25 km buffer
+                          studyArea = amc::outerBuffer(rnd, P(sim)$bufferDist),
                           useSAcrs = TRUE, filename2 = NULL)
     ml <- mapAdd(rnd_sr, ml, isStudyArea = TRUE, layerName = "Random Study Area SR",
                  useSAcrs = TRUE, poly = TRUE, studyArea = NULL, # don't crop/mask to studyArea(ml, 2)
@@ -193,7 +195,7 @@ Init <- function(sim) {
   ##########################################################
   sim$studyArea <- studyArea(ml, 3)           ## buffered study area
   #sim$studyAreaLarge <- studyArea(ml, 1)      ## entire LandWeb area (too big for fitting etc. for now)
-  sim$studyAreaLarge <- studyArea(ml, 3)      ## buffered study area
+  sim$studyAreaLarge <- amc::outerBuffer(studyArea(ml, 2), P(sim)$bufferDistLarge) ## further buffered study area
   sim$studyAreaReporting <- studyArea(ml, 2)  ## reporting area (e.g., FMA)
 
   ##########################################################

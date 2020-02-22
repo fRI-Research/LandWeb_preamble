@@ -1,4 +1,4 @@
-fmu <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
+fmu <- function(ml, runName, dataDir, canProvs, bufferDist, asStudyArea = FALSE) {
   fmuNum <- strsplit(runName, "_")[[1]][2]
   dataDirFMU <- file.path(dataDir, "FMU", fmuNum) %>% checkPath(create = TRUE)
 
@@ -34,7 +34,7 @@ fmu <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
 
   ## buffered study area (needs to have LTHFC data) ---------------------------#
   fmu_sr <- postProcess(ml[["LandWeb Study Area"]],
-                        studyArea = amc::outerBuffer(fmu, 25000), # 25 km buffer
+                        studyArea = amc::outerBuffer(fmu, bufferDist),
                         useSAcrs = TRUE,
                         filename2 = file.path(dataDirFMU, paste0("FMU", fmuNum, "_SR.shp")))
 

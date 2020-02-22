@@ -1,4 +1,4 @@
-fmaTolko <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
+fmaTolko <- function(ml, runName, dataDir, canProvs, bufferDist, asStudyArea = FALSE) {
   dataDirTolko <- file.path(dataDir, "Tolko") %>% checkPath(create = TRUE)
 
   ## There are 3 parts to the Tolko FMA in AB and one in SK
@@ -35,7 +35,7 @@ fmaTolko <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
 
     ## studyArea shouldn't use analysisGroup because it's not a reportingPolygon
     tolko_ab_n_sr <- postProcess(ml[["LandWeb Study Area"]],
-                                 studyArea = amc::outerBuffer(tolko_ab_n, 25000), # 25 km buffer
+                                 studyArea = amc::outerBuffer(tolko_ab_n, bufferDist),
                                  useSAcrs = TRUE,
                                  filename2 = file.path(dataDirTolko, "Tolko_AB_N_SR.shp"),
                                  overwrite = TRUE)
@@ -80,7 +80,7 @@ fmaTolko <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
 
     ## studyArea shouldn't use analysisGroup because it's not a reportingPolygon
     tolko_ab_s_sr <- postProcess(ml[["LandWeb Study Area"]],
-                                 studyArea = amc::outerBuffer(tolko_ab_s, 25000), # 25 km buffer
+                                 studyArea = amc::outerBuffer(tolko_ab_s, bufferDist),
                                  useSAcrs = TRUE,
                                  filename2 = file.path(dataDirTolko, "Tolko_AB_S_SR.shp"),
                                  overwrite = TRUE)
@@ -117,7 +117,7 @@ fmaTolko <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
 
     ## studyArea shouldn't use analysisGroup because it's not a reportingPolygon
     tolko_sk_sr <- postProcess(ml[["LandWeb Study Area"]],
-                               studyArea = amc::outerBuffer(tolko_sk, 25000), # 25 km buffer
+                               studyArea = amc::outerBuffer(tolko_sk, bufferDist),
                                useSAcrs = TRUE,
                                filename2 = file.path(dataDirTolko, "Tolko_SK_SR.shp"),
                                overwrite = TRUE)

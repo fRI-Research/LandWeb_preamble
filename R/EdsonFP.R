@@ -1,4 +1,4 @@
-fmaEdsonFP <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
+fmaEdsonFP <- function(ml, runName, dataDir, canProvs, bufferDist, asStudyArea = FALSE) {
   dataDirEdsonFP <- file.path(dataDir, "EdsonFP") %>% checkPath(create = TRUE)
 
   ab <- canProvs[canProvs$NAME_1 == "Alberta", ]
@@ -22,7 +22,7 @@ fmaEdsonFP <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
 
   ## studyArea shouldn't use analysisGroup because it's not a reportingPolygon
   edson_sr <- postProcess(ml[["LandWeb Study Area"]],
-                          studyArea = amc::outerBuffer(edson, 25000), # 25 km buffer
+                          studyArea = amc::outerBuffer(edson, bufferDist),
                           useSAcrs = TRUE,
                           filename2 = file.path(dataDirEdsonFP, "EdsonFP_SR.shp"),
                           overwrite = TRUE)

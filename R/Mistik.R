@@ -1,4 +1,4 @@
-fmaMistik <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
+fmaMistik <- function(ml, runName, dataDir, canProvs, bufferDist, asStudyArea = FALSE) {
   dataDirMistik <- file.path(dataDir, "Mistik") %>% checkPath(create = TRUE)
 
   ## reportingPolygons
@@ -21,7 +21,7 @@ fmaMistik <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
 
   ## studyArea shouldn't use analysisGroup because it's not a reportingPolygon
   mistik_sr <- postProcess(ml[["LandWeb Study Area"]],
-                           studyArea = amc::outerBuffer(mistik, 25000), # 25 km buffer
+                           studyArea = amc::outerBuffer(mistik, bufferDist),
                            useSAcrs = TRUE,
                            filename2 = file.path(dataDirMistik, "Mistik_SR.shp"),
                            overwrite = TRUE)

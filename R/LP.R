@@ -1,4 +1,4 @@
-fmaLP <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
+fmaLP <- function(ml, runName, dataDir, canProvs, bufferDist, asStudyArea = FALSE) {
   dataDirLP <- file.path(dataDir, "LP") %>% checkPath(create = TRUE)
 
   ## There are 3 parts to the LP FMA: 2 in BC and one in MB.
@@ -27,7 +27,7 @@ fmaLP <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
 
     ## studyArea shouldn't use analysisGroup because it's not a reportingPolygon
     lp_bc_sr <- postProcess(ml[["LandWeb Study Area"]],
-                            studyArea = amc::outerBuffer(lp_bc, 25000), # 25 km buffer
+                            studyArea = amc::outerBuffer(lp_bc, bufferDist),
                             useSAcrs = TRUE,
                             filename2 = file.path(dataDirLP, "LP_BC_SR.shp"),
                             overwrite = TRUE)
@@ -63,7 +63,7 @@ fmaLP <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
 
     ## studyArea shouldn't use analysisGroup because it's not a reportingPolygon
     lp_mb_sr <- postProcess(ml[["LandWeb Study Area"]],
-                            studyArea = amc::outerBuffer(lp_mb, 25000), # 25 km buffer
+                            studyArea = amc::outerBuffer(lp_mb, bufferDist),
                             useSAcrs = TRUE,
                             filename2 = file.path(dataDirLP, "LP_MB_SR.shp"),
                             overwrite = TRUE)

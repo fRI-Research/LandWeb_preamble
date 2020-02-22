@@ -1,4 +1,4 @@
-provSK <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
+provSK <- function(ml, runName, dataDir, canProvs, bufferDist, asStudyArea = FALSE) {
   dataDirSK <- file.path(dataDir, "SK") %>% checkPath(create = TRUE)
 
   sk <- canProvs[canProvs$NAME_1 == "Saskatchewan", ]
@@ -24,7 +24,7 @@ provSK <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
 
   ## studyArea shouldn't use analysisGroup because it's not a reportingPolygon
   SK_sr <- postProcess(ml[["LandWeb Study Area"]],
-                       studyArea = amc::outerBuffer(SK, 25000), # 25 km buffer
+                       studyArea = amc::outerBuffer(SK,bufferDist),
                        useSAcrs = TRUE,
                        filename2 = file.path(dataDirSK, "SK_SR.shp"),
                        overwrite = TRUE)

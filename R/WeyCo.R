@@ -1,4 +1,4 @@
-fmaWeyCo <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
+fmaWeyCo <- function(ml, runName, dataDir, canProvs, bufferDist, asStudyArea = FALSE) {
   dataDirWeyCo <- file.path(dataDir, "WeyCo") %>% checkPath(create = TRUE)
 
   ## There are 3 parts to the WeyCo FMA: two in AB and one in SK
@@ -27,7 +27,7 @@ fmaWeyCo <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
 
     ## studyArea shouldn't use analysisGroup because it's not a reportingPolygon
     weyco_gp_sr <- postProcess(ml[["LandWeb Study Area"]],
-                               studyArea = amc::outerBuffer(weyco_gp, 25000), # 25 km buffer
+                               studyArea = amc::outerBuffer(weyco_gp, bufferDist),
                                useSAcrs = TRUE,
                                filename2 = file.path(dataDirWeyCo, "WeyCo_GP_SR.shp"),
                                overwrite = TRUE)
@@ -66,7 +66,7 @@ fmaWeyCo <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
 
     ## studyArea shouldn't use analysisGroup because it's not a reportingPolygon
     weyco_pt_sr <- postProcess(ml[["LandWeb Study Area"]],
-                               studyArea = amc::outerBuffer(weyco_pt, 25000), # 25 km buffer
+                               studyArea = amc::outerBuffer(weyco_pt, bufferDist),
                                useSAcrs = TRUE,
                                filename2 = file.path(dataDirWeyCo, "WeyCo_PT_SR.shp"),
                                overwrite = TRUE)
@@ -104,7 +104,7 @@ fmaWeyCo <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
 
     ## studyArea shouldn't use analysisGroup because it's not a reportingPolygon
     weyco_sk_sr <- postProcess(ml[["LandWeb Study Area"]],
-                               studyArea = amc::outerBuffer(weyco_sk, 25000), # 25 km buffer
+                               studyArea = amc::outerBuffer(weyco_sk, bufferDist),
                                useSAcrs = TRUE,
                                filename2 = file.path(dataDirWeyCo, "WeyCo_SK_SR.shp"),
                                overwrite = TRUE)

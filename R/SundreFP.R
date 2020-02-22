@@ -1,4 +1,4 @@
-fmaSundreFP <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
+fmaSundreFP <- function(ml, runName, dataDir, canProvs, bufferDist, asStudyArea = FALSE) {
   dataDirSundreFP <- file.path(dataDir, "SundreFP") %>% checkPath(create = TRUE)
 
   ## There are 3 parts to the SundreFP FMA: 2 in BC and one in MB.
@@ -22,7 +22,7 @@ fmaSundreFP <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
 
   ## studyArea shouldn't use analysisGroup because it's not a reportingPolygon
   sundre_sr <- postProcess(ml[["LandWeb Study Area"]],
-                           studyArea = amc::outerBuffer(sundre, 25000), # 25 km buffer
+                           studyArea = amc::outerBuffer(sundre, bufferDist),
                            useSAcrs = TRUE,
                            filename2 = file.path(dataDirSundreFP, "SundreFP_SR.shp"),
                            overwrite = TRUE)

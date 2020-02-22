@@ -1,4 +1,4 @@
-fmaManning <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
+fmaManning <- function(ml, runName, dataDir, canProvs, bufferDist, asStudyArea = FALSE) {
   dataDirManning <- file.path(dataDir, "Manning") %>% checkPath(create = TRUE)
 
   ab <- canProvs[canProvs$NAME_1 == "Alberta", ]
@@ -29,7 +29,7 @@ fmaManning <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
 
   ## studyArea shouldn't use analysisGroup because it's not a reportingPolygon
   manning_sr <- postProcess(ml[["LandWeb Study Area"]],
-                            studyArea = amc::outerBuffer(manning, 25000), # 25 km buffer
+                            studyArea = amc::outerBuffer(manning, bufferDist),
                             useSAcrs = TRUE,
                             filename2 = file.path(dataDirManning, "Manning_SR.shp"),
                             overwrite = TRUE)

@@ -1,4 +1,4 @@
-fmaDMI <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
+fmaDMI <- function(ml, runName, dataDir, canProvs, bufferDist, asStudyArea = FALSE) {
   dataDirDMI <- file.path(dataDir, "DMI") %>% checkPath(create = TRUE)
 
   ## There are 3 parts to the DMI FMA: an East and two West areas (North and South)
@@ -55,7 +55,7 @@ fmaDMI <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
 
   ## buffered study area (needs to have LTHFC data) ---------------------------#
   dmi_sr <- postProcess(ml[["LandWeb Study Area"]],
-                        studyArea = amc::outerBuffer(dmi.full, 25000), # 25 km buffer
+                        studyArea = amc::outerBuffer(dmi.full, bufferDist),
                         useSAcrs = TRUE,
                         filename2 = file.path(dataDirDMI, "DMI_SR.shp"))
 

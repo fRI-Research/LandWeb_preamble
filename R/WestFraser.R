@@ -1,4 +1,4 @@
-fmaWestFraser <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
+fmaWestFraser <- function(ml, runName, dataDir, canProvs, bufferDist, asStudyArea = FALSE) {
   dataDirWestFraser <- file.path(dataDir, "WestFraser") %>% checkPath(create = TRUE)
 
   ## There are multiple parts to the WestFraser FMAs:
@@ -29,7 +29,7 @@ fmaWestFraser <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
 
     ## studyArea shouldn't use analysisGroup because it's not a reportingPolygon
     wf_br_sr <- postProcess(ml[["LandWeb Study Area"]],
-                            studyArea = amc::outerBuffer(wf_br, 25000), # 25 km buffer
+                            studyArea = amc::outerBuffer(wf_br, bufferDist),
                             useSAcrs = TRUE,
                             filename2 = file.path(dataDirWestFraser, "WestFraser_BlueRidge_SR.shp"),
                             overwrite = TRUE)
@@ -74,7 +74,7 @@ fmaWestFraser <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
 
     ## studyArea shouldn't use analysisGroup because it's not a reportingPolygon
     wf_n_sr <- postProcess(ml[["LandWeb Study Area"]],
-                            studyArea = amc::outerBuffer(wf_n, 25000), # 25 km buffer
+                            studyArea = amc::outerBuffer(wf_n, bufferDist),
                             useSAcrs = TRUE,
                             filename2 = file.path(dataDirWestFraser, "WestFraser_N_SR.shp"),
                             overwrite = TRUE)
@@ -119,7 +119,7 @@ fmaWestFraser <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
 
     ## studyArea shouldn't use analysisGroup because it's not a reportingPolygon
     wf_s_sr <- postProcess(ml[["LandWeb Study Area"]],
-                           studyArea = amc::outerBuffer(wf_s, 25000), # 25 km buffer
+                           studyArea = amc::outerBuffer(wf_s, bufferDist),
                            useSAcrs = TRUE,
                            filename2 = file.path(dataDirWestFraser, "WestFraser_S_SR.shp"),
                            overwrite = TRUE)
