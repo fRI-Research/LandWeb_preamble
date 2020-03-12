@@ -1,4 +1,4 @@
-allLandWeb <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
+allLandWeb <- function(ml, runName, dataDir, canProvs, bufferDist, asStudyArea = FALSE) {
   dataDirLandWeb <- file.path(dataDir, "FULL") %>% checkPath(create = TRUE)
 
   ## LandWeb area extends a bit into Yukon, Nunavut, Ontario, but not relevant here
@@ -36,19 +36,19 @@ allLandWeb <- function(ml, runName, dataDir, canProvs, asStudyArea = FALSE) {
                analysisGroupReportingPolygon = "LandWeb Provinces",
                columnNameForLabels = "NAME_1", filename2 = NULL)
 
-  ml <- fmaANC(ml, runName, dataDir, canProvs, asStudyArea = FALSE)
-  ml <- fmaDMI(ml, runName, dataDir, canProvs, asStudyArea = FALSE)
-  ml <- fmaEdsonFP(ml, runName, dataDir, canProvs, asStudyArea = FALSE)
-  ml <- fmaLP(ml, runName, dataDir, canProvs, asStudyArea = FALSE)
-  ml <- fmaManning(ml, runName, dataDir, canProvs, asStudyArea = FALSE)
-  ml <- fmaMillarWestern(ml, runName, dataDir, canProvs, asStudyArea = FALSE)
-  ml <- fmaMistik(ml, runName, dataDir, canProvs, asStudyArea = FALSE)
-  ml <- fmaNWT(ml, runName, dataDir, canProvs, asStudyArea = FALSE)
-  ml <- fmaSundreFP(ml, runName, dataDir, canProvs, asStudyArea = FALSE)
-  ml <- fmaTolko(ml, runName, dataDir, canProvs, asStudyArea = FALSE)
-  ml <- fmaVanderwell(ml, runName, dataDir, canProvs, asStudyArea = FALSE)
-  ml <- fmaWestFraser(ml, runName, dataDir, canProvs, asStudyArea = FALSE)
-  ml <- fmaWeyCo(ml, runName, dataDir, canProvs, asStudyArea = FALSE)
+  ml <- fmaANC(ml, runName, dataDir, canProvs, bufferDist, asStudyArea = FALSE)
+  ml <- fmaDMI(ml, runName, dataDir, canProvs, bufferDist, asStudyArea = FALSE)
+  ml <- fmaEdsonFP(ml, runName, dataDir, canProvs, bufferDist, asStudyArea = FALSE)
+  ml <- fmaLP(ml, runName, dataDir, canProvs, bufferDist, asStudyArea = FALSE)
+  ml <- fmaManning(ml, runName, dataDir, canProvs, bufferDist, asStudyArea = FALSE)
+  ml <- fmaMillarWestern(ml, runName, dataDir, canProvs, bufferDist, asStudyArea = FALSE)
+  ml <- fmaMistik(ml, runName, dataDir, canProvs, bufferDist, asStudyArea = FALSE)
+  ml <- fmaNWT(ml, runName, dataDir, canProvs, bufferDist, asStudyArea = FALSE)
+  ml <- fmaSundreFP(ml, runName, dataDir, canProvs, bufferDist, asStudyArea = FALSE)
+  ml <- fmaTolko(ml, runName, dataDir, canProvs, bufferDist, asStudyArea = FALSE)
+  ml <- fmaVanderwell(ml, runName, dataDir, canProvs, bufferDist, asStudyArea = FALSE)
+  ml <- fmaWestFraser(ml, runName, dataDir, canProvs, bufferDist, asStudyArea = FALSE)
+  ml <- fmaWeyCo(ml, runName, dataDir, canProvs, bufferDist, asStudyArea = FALSE)
 
   if (isTRUE(asStudyArea)) {
     ## studyArea shouldn't use analysisGroup because it's not a reportingPolygon
