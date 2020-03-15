@@ -23,7 +23,7 @@ defineModule(sim, list(
   parameters = rbind(
     defineParameter("bufferDist", "numeric", 25000, 20000, 100000, "Study area buffer distance (m) used to make studyArea."),
     defineParameter("bufferDistLarge", "numeric", 50000, 20000, 100000, "Study area buffer distance (m) used to make studyAreaLarge."),
-    defineParameter("friMultiple", "numeric", 1.0, 1.0, 2.0, "Multiplication factor for adjusting fire return intervals."),
+    defineParameter("friMultiple", "numeric", 1.0, 0.5, 2.0, "Multiplication factor for adjusting fire return intervals."),
     defineParameter("mapResFact", "numeric", 1, 1, 10,
                     paste("The map resolution factor to use with raster::disaggregate to reduce pixel size below 250 m.",
                           "Should be one of 1, 2, 5, 10, which correspends to pixel size of 250m, 125m, 50m, 25m, repsectively.")),
