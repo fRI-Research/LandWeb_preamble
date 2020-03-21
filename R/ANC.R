@@ -18,7 +18,8 @@ fmaANC <- function(ml, runName, dataDir, canProvs, bufferDist, asStudyArea = FAL
     joinReportingPolygons(., anc)
   anc.caribou.joined <- SpatialPolygonsDataFrame(aggregate(anc.caribou),
                                                  data.frame(Name = "A La Peche & Little Smoky",
-                                                            shinyLabel = "A La Peche & Little Smoky"))
+                                                            shinyLabel = "A La Peche & Little Smoky")) %>%
+    joinReportingPolygons(., anc)
 
   ml <- mapAdd(anc, ml, layerName = "ANC", useSAcrs = TRUE, poly = TRUE,
                analysisGroupReportingPolygon = "ANC", isStudyArea = isTRUE(asStudyArea),
