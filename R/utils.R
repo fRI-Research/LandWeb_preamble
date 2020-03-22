@@ -55,14 +55,6 @@ joinReportingPolygons <- function(x, y) {
     z <- as(z, "Spatial")
   }
 
-  ids <- which(duplicated(z[["Name"]]))
-  l <- length(ids)
-
-  if (l > 0) { ## TODO: will this work if more than 2 dupes per poly name?
-    z[["Name"]][ids] <- paste(z[["Name"]][ids], 2)
-    z[["shinyLabel"]][ids] <- paste(z[["shinyLabel"]][ids], 2)
-  }
-
   return(z)
 }
 
