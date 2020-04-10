@@ -155,6 +155,8 @@ Init <- function(sim) {
     ml <- fmaMillarWestern(ml, P(sim)$runName, dataDir, sim$canProvs, P(sim)$bufferDist, asStudyArea = TRUE)
   } else if (grepl("Mistik", P(sim)$runName)) {
     ml <- fmaMistik(ml, P(sim)$runName, dataDir, sim$canProvs, P(sim)$bufferDist, asStudyArea = TRUE)
+  } else if (grepl("SprayLake", P(sim)$runName)) {
+    ml <- fmaSprayLake(ml, P(sim)$runName, dataDir, sim$canProvs, P(sim)$bufferDist, asStudyArea = TRUE)
   } else if (grepl("Sundre", P(sim)$runName)) {
     ml <- fmaSundreFP(ml, P(sim)$runName, dataDir, sim$canProvs, P(sim)$bufferDist, asStudyArea = TRUE)
   } else if (grepl("Tolko|tolko", P(sim)$runName)) {
