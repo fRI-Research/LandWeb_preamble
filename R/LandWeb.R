@@ -1,6 +1,4 @@
 allLandWeb <- function(ml, runName, dataDir, canProvs, bufferDist, asStudyArea = FALSE) {
-  dataDirLandWeb <- file.path(dataDir, "FULL") %>% checkPath(create = TRUE)
-
   ## LandWeb area extends a bit into Yukon, Nunavut, Ontario, but not relevant here
   provs <- canProvs[canProvs$NAME_1 %in% c("British Columbia", "Alberta",
                                            "Saskatchewan", "Manitoba",
@@ -17,11 +15,11 @@ allLandWeb <- function(ml, runName, dataDir, canProvs, bufferDist, asStudyArea =
   ## reportingPolygons
   lw.caribou <- postProcess(ml[["LandWeb Caribou Ranges"]],
                             studyArea = lw.sp, useSAcrs = TRUE,
-                            filename2 = file.path(dataDirLandWeb, "LandWeb_caribou.shp"),
+                            filename2 = file.path(dataDir, "LandWeb_caribou.shp"),
                             overwrite = TRUE)
   lw.provs <- postProcess(ml[["Provincial Boundaries"]],
                           studyArea = lw.sp, useSAcrs = TRUE,
-                          filename2 = file.path(dataDirLandWeb, "LandWeb_provinces.shp"),
+                          filename2 = file.path(dataDir, "LandWeb_provinces.shp"),
                           overwrite = TRUE)
 
   ml <- mapAdd(lw, ml, layerName = "LandWeb", useSAcrs = TRUE, poly = TRUE,
@@ -58,7 +56,7 @@ allLandWeb <- function(ml, runName, dataDir, canProvs, bufferDist, asStudyArea =
   }
 
   plotLandWeb(lw.provs, provs = provs, caribou = lw.caribou, xsr = NULL,
-              title = "LandWeb Study Area", png = file.path(dataDirLandWeb, "LandWeb.png"))
+              title = "LandWeb Study Area", png = file.path(dataDir, "LandWeb.png"))
   #plotLandWeb(lw.provs, provs = provs, caribou = lw.caribou, xsr = NULL,
   #            title = "LandWeb Study Area", png = NULL)
 

@@ -133,7 +133,7 @@ Init <- function(sim) {
 
   ################################################################################
   ## COMPANY-SPECIFIC STUDY AREAS
-  dataDir <- file.path("inputs", "FMA_Boundaries")
+  dataDir <- outputPath(sim)
 
   if (grepl("ANC", P(sim)$runName)) {
     ml <- fmaANC(ml, P(sim)$runName, dataDir, sim$canProvs, P(sim)$bufferDist, asStudyArea = TRUE)
@@ -146,7 +146,7 @@ Init <- function(sim) {
   } else if (grepl("FMU", P(sim)$runName)) {
     ml <- fmu(ml, P(sim)$runName, dataDir, sim$canProvs, P(sim)$bufferDist, asStudyArea = TRUE)
   } else if (grepl("LandWeb", P(sim)$runName)) {
-    ml <- allLandWeb(ml, P(sim)$runName, file.path("inputs", "LandWeb"), sim$canProvs, P(sim)$bufferDist, asStudyArea = TRUE)
+    ml <- allLandWeb(ml, P(sim)$runName, dataDir, sim$canProvs, P(sim)$bufferDist, asStudyArea = TRUE)
   } else if (grepl("LP", P(sim)$runName)) {
     ml <- fmaLP(ml, P(sim)$runName, dataDir, sim$canProvs, P(sim)$bufferDist, asStudyArea = TRUE)
   } else if (grepl("Manning", P(sim)$runName)) {

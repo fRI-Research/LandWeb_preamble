@@ -1,14 +1,12 @@
 fmaSprayLake <- function(ml, runName, dataDir, canProvs, bufferDist, asStudyArea = FALSE) {
-  dataDirSprayLake <- file.path(dataDir, "SprayLake") %>% checkPath(create = TRUE)
-
   ab <- canProvs[canProvs$NAME_1 == "Alberta", ]
   spraylake <- extractFMA(ml, "Spray Lake")
-  shapefile(spraylake, filename = file.path(dataDirSprayLake, "SprayLake.shp"), overwrite = TRUE)
+  shapefile(spraylake, filename = file.path(dataDir, "SprayLake.shp"), overwrite = TRUE)
 
   ## reportingPolygons
   spraylake.ansr <- postProcess(ml[["Alberta Natural Subregions"]],
                                  studyArea = spraylake, useSAcrs = TRUE,
-                                 filename2 = file.path(dataDirSprayLake, "SprayLake_ANSR.shp"),
+                                 filename2 = file.path(dataDir, "SprayLake_ANSR.shp"),
                                  overwrite = TRUE) %>%
     joinReportingPolygons(., spraylake)
   ## NOTE: no caribou ranges intersect with this FMA
@@ -24,11 +22,11 @@ fmaSprayLake <- function(ml, runName, dataDir, canProvs, bufferDist, asStudyArea
   spraylake_sr <- postProcess(ml[["LandWeb Study Area"]],
                                studyArea = amc::outerBuffer(spraylake, bufferDist),
                                useSAcrs = TRUE,
-                               filename2 = file.path(dataDirSprayLake, "SprayLake_SR.shp"),
+                               filename2 = file.path(dataDir, "SprayLake_SR.shp"),
                                overwrite = TRUE)
 
   plotFMA(spraylake, provs = ab, caribou = NULL, xsr = spraylake_sr,
-          title = "SprayLake", png = file.path(dataDirSprayLake, "SprayLake.png"))
+          title = "SprayLake", png = file.path(dataDir, "SprayLake.png"))
   #plotFMA(spraylake, provs = ab, caribou = spraylake.caribou, xsr = spraylake_sr, title = "SprayLake", png = NULL)
 
   if (isTRUE(asStudyArea)) {

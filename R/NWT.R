@@ -1,21 +1,19 @@
 fmaNWT <- function(ml, runName, dataDir, canProvs, bufferDist, asStudyArea = FALSE) {
-  dataDirFMANWT <- file.path(dataDir, "FMANWT") %>% checkPath(create = TRUE)
-
   nwt <- canProvs[canProvs$NAME_1 %in% c("Northwest Territories"), ]
   fmanwt <- extractFMA(ml, "Fort Resolution|Fort Providence")
-  shapefile(fmanwt, filename = file.path(dataDirFMANWT, "FMA_NWT.shp"), overwrite = TRUE)
+  shapefile(fmanwt, filename = file.path(dataDir, "FMA_NWT.shp"), overwrite = TRUE)
 
   fmanwt_FP <- extractFMA(ml, "Fort Providence") # FMANWT2
-  shapefile(fmanwt_FP, filename = file.path(dataDirFMANWT, "FMA_NWT_FP.shp"), overwrite = TRUE)
+  shapefile(fmanwt_FP, filename = file.path(dataDir, "FMA_NWT_FP.shp"), overwrite = TRUE)
 
   fmanwt_FR <- extractFMA(ml, "Fort Resolution") # FMANWT1
-  shapefile(fmanwt_FR, filename = file.path(dataDirFMANWT, "FMA_NWT_FR.shp"), overwrite = TRUE)
+  shapefile(fmanwt_FR, filename = file.path(dataDir, "FMA_NWT_FR.shp"), overwrite = TRUE)
 
   if (grepl("FMANWT2", runName)) {
     ## reportingPolygons
     fmanwt_FP.caribou <- postProcess(ml[["LandWeb Caribou Ranges"]],
                                      studyArea = fmanwt_FP, useSAcrs = TRUE,
-                                     filename2 = file.path(dataDirFMANWT, "FMA_NWT_FP_caribou.shp"),
+                                     filename2 = file.path(dataDir, "FMA_NWT_FP_caribou.shp"),
                                      overwrite = TRUE) %>%
       joinReportingPolygons(., fmanwt_FP)
 
@@ -30,11 +28,11 @@ fmaNWT <- function(ml, runName, dataDir, canProvs, bufferDist, asStudyArea = FAL
     fmanwt_FP_sr <- postProcess(ml[["LandWeb Study Area"]],
                                 studyArea = amc::outerBuffer(fmanwt_FP, bufferDist),
                                 useSAcrs = TRUE,
-                                filename2 = file.path(dataDirFMANWT, "FMA_NWT_FP_SR.shp"),
+                                filename2 = file.path(dataDir, "FMA_NWT_FP_SR.shp"),
                                 overwrite = TRUE)
 
     plotFMA(fmanwt_FP, provs = nwt, caribou = fmanwt_FP.caribou, xsr = fmanwt_FP_sr,
-            title = "Fort Providence", png = file.path(dataDirFMANWT, "FMA_NWT_FP.png"))
+            title = "Fort Providence", png = file.path(dataDir, "FMA_NWT_FP.png"))
     #plotFMA(fmanwt_FP, provs = nwt, caribou = fmanwt_FP.caribou, xsr = fmanwt_FP_sr,
     #        title = "Fort Resolution", png = NULL)
 
@@ -47,7 +45,7 @@ fmaNWT <- function(ml, runName, dataDir, canProvs, bufferDist, asStudyArea = FAL
     ## reportingPolygons
     fmanwt_FR.caribou <- postProcess(ml[["LandWeb Caribou Ranges"]],
                                      studyArea = fmanwt_FR, useSAcrs = TRUE,
-                                     filename2 = file.path(dataDirFMANWT, "FMA_NWT_FR_caribou.shp"),
+                                     filename2 = file.path(dataDir, "FMA_NWT_FR_caribou.shp"),
                                      overwrite = TRUE) %>%
       joinReportingPolygons(., fmanwt_FR)
 
@@ -62,11 +60,11 @@ fmaNWT <- function(ml, runName, dataDir, canProvs, bufferDist, asStudyArea = FAL
     fmanwt_FR_sr <- postProcess(ml[["LandWeb Study Area"]],
                                 studyArea = amc::outerBuffer(fmanwt_FR, bufferDist),
                                 useSAcrs = TRUE,
-                                filename2 = file.path(dataDirFMANWT, "FMA_NWT_FR_SR.shp"),
+                                filename2 = file.path(dataDir, "FMA_NWT_FR_SR.shp"),
                                 overwrite = TRUE)
 
     plotFMA(fmanwt_FR, provs = nwt, caribou = fmanwt_FR.caribou, xsr = fmanwt_FR_sr,
-            title = "Fort Resolution", png = file.path(dataDirFMANWT, "FMA_NWT_FR.png"))
+            title = "Fort Resolution", png = file.path(dataDir, "FMA_NWT_FR.png"))
     #plotFMA(fmanwt_FR, provs = nwt, caribou = fmanwt_FR.caribou, xsr = fmanwt_FR_sr,
     #        title = "Fort Resolution", png = NULL)
 

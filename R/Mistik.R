@@ -1,14 +1,12 @@
 fmaMistik <- function(ml, runName, dataDir, canProvs, bufferDist, asStudyArea = FALSE) {
-  dataDirMistik <- file.path(dataDir, "Mistik") %>% checkPath(create = TRUE)
-
   ## reportingPolygons
   absk <- canProvs[canProvs$NAME_1 %in% c("Alberta", "Saskatchewan"), ]
   mistik <- extractFMA(ml, "Mistik")
-  shapefile(mistik, filename = file.path(dataDirMistik, "Mistik.shp"), overwrite = TRUE)
+  shapefile(mistik, filename = file.path(dataDir, "Mistik.shp"), overwrite = TRUE)
 
   mistik.caribou <- postProcess(ml[["LandWeb Caribou Ranges"]],
                                 studyArea = mistik, useSAcrs = TRUE,
-                                filename2 = file.path(dataDirMistik, "Mistik_caribou.shp"),
+                                filename2 = file.path(dataDir, "Mistik_caribou.shp"),
                                 overwrite = TRUE) %>%
     joinReportingPolygons(., mistik)
 
@@ -23,11 +21,11 @@ fmaMistik <- function(ml, runName, dataDir, canProvs, bufferDist, asStudyArea = 
   mistik_sr <- postProcess(ml[["LandWeb Study Area"]],
                            studyArea = amc::outerBuffer(mistik, bufferDist),
                            useSAcrs = TRUE,
-                           filename2 = file.path(dataDirMistik, "Mistik_SR.shp"),
+                           filename2 = file.path(dataDir, "Mistik_SR.shp"),
                            overwrite = TRUE)
 
   plotFMA(mistik, provs = absk, caribou = mistik.caribou, xsr = mistik_sr, title = "Mistik",
-          png = file.path(dataDirMistik, "Mistik.png"))
+          png = file.path(dataDir, "Mistik.png"))
   #plotFMA(mistik, provs = absk, caribou = mistik.caribou, xsr = mistik_sr,
   #        title = "Mistik", png = NULL)
 

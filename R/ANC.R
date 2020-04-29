@@ -1,19 +1,17 @@
 fmaANC <- function(ml, runName, dataDir, canProvs, bufferDist, asStudyArea = FALSE) {
-  dataDirANC <- file.path(dataDir, "ANC") %>% checkPath(create = TRUE)
-
   ab <- canProvs[canProvs$NAME_1 == "Alberta", ]
   anc <- extractFMA(ml, "ANC")
-  shapefile(anc, filename = file.path(dataDirANC, "ANC.shp"), overwrite = TRUE)
+  shapefile(anc, filename = file.path(dataDir, "ANC.shp"), overwrite = TRUE)
 
   ## reportingPolygons
   anc.ansr <- postProcess(ml[["Alberta Natural Subregions"]],
                           studyArea = anc, useSAcrs = TRUE,
-                          filename2 = file.path(dataDirANC, "ANC_ANSR.shp"),
+                          filename2 = file.path(dataDir, "ANC_ANSR.shp"),
                           overwrite = TRUE) %>%
     joinReportingPolygons(., anc)
   anc.caribou <- postProcess(ml[["LandWeb Caribou Ranges"]],
                              studyArea = anc, useSAcrs = TRUE,
-                             filename2 = file.path(dataDirANC, "ANC_caribou.shp"),
+                             filename2 = file.path(dataDir, "ANC_caribou.shp"),
                              overwrite = TRUE) %>%
     joinReportingPolygons(., anc)
   anc.caribou.joined <- SpatialPolygonsDataFrame(aggregate(anc.caribou),
@@ -38,11 +36,11 @@ fmaANC <- function(ml, runName, dataDir, canProvs, bufferDist, asStudyArea = FAL
   anc_sr <- postProcess(ml[["LandWeb Study Area"]],
                         studyArea = amc::outerBuffer(anc, bufferDist),
                         useSAcrs = TRUE,
-                        filename2 = file.path(dataDirANC, "ANC_SR.shp"),
+                        filename2 = file.path(dataDir, "ANC_SR.shp"),
                         overwrite = TRUE)
 
   plotFMA(anc, provs = ab, caribou = anc.caribou, xsr = anc_sr, title = "ANC",
-          png = file.path(dataDirANC, "ANC.png"))
+          png = file.path(dataDir, "ANC.png"))
   #plotFMA(anc, provs = ab, caribou = anc.caribou, xsr = anc_sr, title = "ANC", png = NULL)
 
   if (isTRUE(asStudyArea)) {

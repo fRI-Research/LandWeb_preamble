@@ -1,33 +1,31 @@
 fmaDMI <- function(ml, runName, dataDir, canProvs, bufferDist, asStudyArea = FALSE) {
-  dataDirDMI <- file.path(dataDir, "DMI") %>% checkPath(create = TRUE)
-
   ## There are 3 parts to the DMI FMA: an East and two West areas (North and South)
   ab <- canProvs[canProvs$NAME_1 == "Alberta", ]
   dmi <- extractFMA(ml, "Mercer Peace River")
   dmi.full <- maptools::unionSpatialPolygons(dmi, rep(1, 2))
-  shapefile(dmi.full, filename = file.path(dataDirDMI, "DMI_Full.shp"), overwrite = TRUE)
+  shapefile(dmi.full, filename = file.path(dataDir, "DMI_Full.shp"), overwrite = TRUE)
 
   dmi.e <- extractFMA(ml, "Mercer Peace River.*East")
-  shapefile(dmi.e, filename = file.path(dataDirDMI, "DMI_East.shp"), overwrite = TRUE)
+  shapefile(dmi.e, filename = file.path(dataDir, "DMI_East.shp"), overwrite = TRUE)
 
   dmi.w <- extractFMA(ml, "Mercer Peace River.*West")
-  shapefile(dmi.w, filename = file.path(dataDirDMI, "DMI_West.shp"), overwrite = TRUE)
+  shapefile(dmi.w, filename = file.path(dataDir, "DMI_West.shp"), overwrite = TRUE)
 
   dmi.nw <- disaggregate(dmi.w)[2, ]
-  shapefile(dmi.nw, filename = file.path(dataDirDMI, "DMI_West_North.shp"), overwrite = TRUE)
+  shapefile(dmi.nw, filename = file.path(dataDir, "DMI_West_North.shp"), overwrite = TRUE)
 
   dmi.sw <- disaggregate(dmi.w)[1, ]
-  shapefile(dmi.sw, filename = file.path(dataDirDMI, "DMI_West_South.shp"), overwrite = TRUE)
+  shapefile(dmi.sw, filename = file.path(dataDir, "DMI_West_South.shp"), overwrite = TRUE)
 
   ## reporting polygons
   dmi.ansr <- postProcess(ml[["Alberta Natural Subregions"]],
                           studyArea = dmi, useSAcrs = TRUE,
-                          filename2 = file.path(dataDirDMI, "DMI_ANSR.shp")) %>%
+                          filename2 = file.path(dataDir, "DMI_ANSR.shp")) %>%
     joinReportingPolygons(., dmi)
 
   dmi.caribou <- postProcess(ml[["LandWeb Caribou Ranges"]],
                              studyArea = dmi, useSAcrs = TRUE,
-                             filename2 = file.path(dataDirDMI, "DMI_caribou.shp")) %>%
+                             filename2 = file.path(dataDir, "DMI_caribou.shp")) %>%
     joinReportingPolygons(., dmi)
 
   ml <- mapAdd(dmi, ml, layerName = "DMI Full", useSAcrs = TRUE, poly = TRUE,
@@ -57,10 +55,10 @@ fmaDMI <- function(ml, runName, dataDir, canProvs, bufferDist, asStudyArea = FAL
   dmi_sr <- postProcess(ml[["LandWeb Study Area"]],
                         studyArea = amc::outerBuffer(dmi.full, bufferDist),
                         useSAcrs = TRUE,
-                        filename2 = file.path(dataDirDMI, "DMI_SR.shp"))
+                        filename2 = file.path(dataDir, "DMI_SR.shp"))
 
   plotFMA(dmi, provs = ab, caribou = dmi.caribou, xsr = dmi_sr,
-          title = "Mercer Peace River Pulp Ltd.", png = file.path(dataDirDMI, "DMI.png"))
+          title = "Mercer Peace River Pulp Ltd.", png = file.path(dataDir, "DMI.png"))
   #plotFMA(dmi, provs = ab, caribou = dmi.caribou, xsr = dmi_sr,
   #        title = "Mercer Peace River Pulp Ltd.", png = NULL)
 

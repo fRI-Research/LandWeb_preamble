@@ -1,20 +1,18 @@
 fmaMillarWestern <- function(ml, runName, dataDir, canProvs, bufferDist, asStudyArea = FALSE) {
-  dataDirMillarWestern <- file.path(dataDir, "MillarWestern") %>% checkPath(create = TRUE)
-
   ab <- canProvs[canProvs$NAME_1 == "Alberta", ]
   mw <- extractFMA(ml, "Millar Western Forest Products")
-  shapefile(mw, filename = file.path(dataDirMillarWestern, "Millar_Western.shp"), overwrite = TRUE)
+  shapefile(mw, filename = file.path(dataDir, "Millar_Western.shp"), overwrite = TRUE)
 
   ## reportingPolygons
   mw.ansr <- postProcess(ml[["Alberta Natural Subregions"]],
                          studyArea = mw, useSAcrs = TRUE,
-                         filename2 = file.path(dataDirMillarWestern, "Millar_Western_ANSR.shp"),
+                         filename2 = file.path(dataDir, "Millar_Western_ANSR.shp"),
                          overwrite = TRUE) %>%
     joinReportingPolygons(., mw)
 
   mw.caribou <- postProcess(ml[["LandWeb Caribou Ranges"]],
                             studyArea = mw, useSAcrs = TRUE,
-                            filename2 = file.path(dataDirMillarWestern, "Millar_Western_caribou.shp"),
+                            filename2 = file.path(dataDir, "Millar_Western_caribou.shp"),
                             overwrite = TRUE) %>%
     joinReportingPolygons(., mw)
 
@@ -32,11 +30,11 @@ fmaMillarWestern <- function(ml, runName, dataDir, canProvs, bufferDist, asStudy
   mw_sr <- postProcess(ml[["LandWeb Study Area"]],
                        studyArea = amc::outerBuffer(mw, bufferDist),
                        useSAcrs = TRUE,
-                       filename2 = file.path(dataDirMillarWestern, "Millar_Western_SR.shp"),
+                       filename2 = file.path(dataDir, "Millar_Western_SR.shp"),
                        overwrite = TRUE)
 
   plotFMA(mw, provs = ab, caribou = mw.caribou, xsr = mw_sr, title = "Millar Western",
-          png = file.path(dataDirMillarWestern, "Millar_Western.png"))
+          png = file.path(dataDir, "Millar_Western.png"))
   #plotFMA(mw, provs = ab, caribou = mw.caribou, xsr = mw_sr, title = "Millar Western", png = NULL)
 
   if (isTRUE(asStudyArea)) {

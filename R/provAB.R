@@ -1,11 +1,9 @@
 provAB <- function(ml, runName, dataDir, canProvs, bufferDist, asStudyArea = FALSE) {
-  dataDirAB <- file.path(dataDir, "AB") %>% checkPath(create = TRUE)
-
   ab <- canProvs[canProvs$NAME_1 == "Alberta", ]
 
   id <- which(ml[["Provincial Boundaries"]][["NAME_1"]] == "Alberta")
   AB <- ml[["Provincial Boundaries"]][id, ]
-  shapefile(AB, filename = file.path(dataDirAB, "AB_full.shp"), overwrite = TRUE)
+  shapefile(AB, filename = file.path(dataDir, "AB_full.shp"), overwrite = TRUE)
 
   ## reportingPolygons
   AB.ansr <- ml[["Alberta Natural Subregions"]]
@@ -13,7 +11,7 @@ provAB <- function(ml, runName, dataDir, canProvs, bufferDist, asStudyArea = FAL
   AB[["Name"]] <- AB[["NAME_1"]]
   AB.caribou <- postProcess(ml[["LandWeb Caribou Ranges"]],
                             studyArea = AB, useSAcrs = TRUE,
-                            filename2 = file.path(dataDirAB, "AB_caribou.shp"),
+                            filename2 = file.path(dataDir, "AB_caribou.shp"),
                             overwrite = TRUE) %>%
     joinReportingPolygons(., AB)
 
@@ -31,12 +29,12 @@ provAB <- function(ml, runName, dataDir, canProvs, bufferDist, asStudyArea = FAL
   AB_sr <- postProcess(ml[["LandWeb Study Area"]],
                        studyArea = amc::outerBuffer(AB, bufferDist),
                        useSAcrs = TRUE,
-                       filename2 = file.path(dataDirAB, "AB_SR.shp"),
+                       filename2 = file.path(dataDir, "AB_SR.shp"),
                        overwrite = TRUE)
 
   plotFMA(AB, provs = ab, caribou = AB.caribou, xsr = AB_sr,
           title = "Alberta",
-          png = file.path(dataDirAB, "AB.png"))
+          png = file.path(dataDir, "AB.png"))
   #plotFMA(AB, provs = ab, caribou = AB.caribou, xsr = AB_sr,
   #        title = "Alberta", png = NULL)
 

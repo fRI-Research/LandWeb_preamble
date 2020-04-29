@@ -1,15 +1,13 @@
 fmaSundreFP <- function(ml, runName, dataDir, canProvs, bufferDist, asStudyArea = FALSE) {
-  dataDirSundreFP <- file.path(dataDir, "SundreFP") %>% checkPath(create = TRUE)
-
   ## There are 3 parts to the SundreFP FMA: 2 in BC and one in MB.
   ab <- canProvs[canProvs$NAME_1 == "Alberta", ]
   sundre <- extractFMA(ml, "Sundre Forest Products Inc.")
-  shapefile(sundre, filename = file.path(dataDirSundreFP, "SundreFP.shp"), overwrite = TRUE)
+  shapefile(sundre, filename = file.path(dataDir, "SundreFP.shp"), overwrite = TRUE)
 
   ## reportingPolygons
   sundre.ansr <- postProcess(ml[["Alberta Natural Subregions"]],
                              studyArea = sundre, useSAcrs = TRUE,
-                             filename2 = file.path(dataDirSundreFP, "SundreFP_ANSR"),
+                             filename2 = file.path(dataDir, "SundreFP_ANSR"),
                              overwrite = TRUE) %>%
     joinReportingPolygons(., sundre)
 
@@ -24,11 +22,11 @@ fmaSundreFP <- function(ml, runName, dataDir, canProvs, bufferDist, asStudyArea 
   sundre_sr <- postProcess(ml[["LandWeb Study Area"]],
                            studyArea = amc::outerBuffer(sundre, bufferDist),
                            useSAcrs = TRUE,
-                           filename2 = file.path(dataDirSundreFP, "SundreFP_SR.shp"),
+                           filename2 = file.path(dataDir, "SundreFP_SR.shp"),
                            overwrite = TRUE)
 
   plotFMA(sundre, provs = ab, caribou = NULL, xsr = sundre_sr,
-          title = "Sundre Forest Products", png = file.path(dataDirSundreFP, "SundreFP.png"))
+          title = "Sundre Forest Products", png = file.path(dataDir, "SundreFP.png"))
   #plotFMA(sundre, provs = ab, caribou = sundre.caribou, xsr = sundre_sr,
   #        title = "Sundre Forest Products", png = NULL)
 

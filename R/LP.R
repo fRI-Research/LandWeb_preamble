@@ -1,20 +1,18 @@
 fmaLP <- function(ml, runName, dataDir, canProvs, bufferDist, asStudyArea = FALSE) {
-  dataDirLP <- file.path(dataDir, "LP") %>% checkPath(create = TRUE)
-
   ## There are 3 parts to the LP FMA: 2 in BC and one in MB.
   west <- canProvs[canProvs$NAME_1 %in% c("British Columbia", "Alberta",
                                           "Saskatchewan", "Manitoba"), ]
   lp <- extractFMA(ml, "Fort St\\. John|Dawson Creek|Mountain")
-  shapefile(lp, filename = file.path(dataDirLP, "LP_full.shp"), overwrite = TRUE)
+  shapefile(lp, filename = file.path(dataDir, "LP_full.shp"), overwrite = TRUE)
 
   if (grepl("LandWeb|LP_BC", runName)) {
     ## reportingPolygons
     lp_bc <- extractFMA(ml, "Fort St\\. John|Dawson Creek")
-    shapefile(lp_bc, filename = file.path(dataDirLP, "LP_BC.shp"), overwrite = TRUE)
+    shapefile(lp_bc, filename = file.path(dataDir, "LP_BC.shp"), overwrite = TRUE)
 
     lp_bc.caribou <- postProcess(ml[["LandWeb Caribou Ranges"]],
                                  studyArea = lp_bc, useSAcrs = TRUE,
-                                 filename2 = file.path(dataDirLP, "LP_BC_caribou.shp"),
+                                 filename2 = file.path(dataDir, "LP_BC_caribou.shp"),
                                  overwrite = TRUE) %>%
       joinReportingPolygons(., lp_bc)
 
@@ -29,11 +27,11 @@ fmaLP <- function(ml, runName, dataDir, canProvs, bufferDist, asStudyArea = FALS
     lp_bc_sr <- postProcess(ml[["LandWeb Study Area"]],
                             studyArea = amc::outerBuffer(lp_bc, bufferDist),
                             useSAcrs = TRUE,
-                            filename2 = file.path(dataDirLP, "LP_BC_SR.shp"),
+                            filename2 = file.path(dataDir, "LP_BC_SR.shp"),
                             overwrite = TRUE)
 
     plotFMA(lp_bc, provs = west, caribou = lp_bc.caribou, xsr = lp_bc_sr, title = "LP BC",
-            png = file.path(dataDirLP, "LP_BC.png"))
+            png = file.path(dataDir, "LP_BC.png"))
     #plotFMA(lp_bc, provs = west, caribou = lp_bc.caribou, xsr = lp_bc_sr, title = "LP BC", png = NULL)
 
     if (isTRUE(asStudyArea)) {
@@ -46,11 +44,11 @@ fmaLP <- function(ml, runName, dataDir, canProvs, bufferDist, asStudyArea = FALS
   if (grepl("LandWeb|LP_MB", runName)) {
     ## reportingPolygons
     lp_mb <- extractFMA(ml, "Mountain")
-    shapefile(lp_mb, filename = file.path(dataDirLP, "LP_MB.shp"), overwrite = TRUE)
+    shapefile(lp_mb, filename = file.path(dataDir, "LP_MB.shp"), overwrite = TRUE)
 
     lp_mb.caribou <- postProcess(ml[["LandWeb Caribou Ranges"]],
                                  studyArea = lp_mb, useSAcrs = TRUE,
-                                 filename2 = file.path(dataDirLP, "LP_MB_caribou.shp"),
+                                 filename2 = file.path(dataDir, "LP_MB_caribou.shp"),
                                  overwrite = TRUE) %>%
       joinReportingPolygons(., lp_mb)
 
@@ -65,11 +63,11 @@ fmaLP <- function(ml, runName, dataDir, canProvs, bufferDist, asStudyArea = FALS
     lp_mb_sr <- postProcess(ml[["LandWeb Study Area"]],
                             studyArea = amc::outerBuffer(lp_mb, bufferDist),
                             useSAcrs = TRUE,
-                            filename2 = file.path(dataDirLP, "LP_MB_SR.shp"),
+                            filename2 = file.path(dataDir, "LP_MB_SR.shp"),
                             overwrite = TRUE)
 
     plotFMA(lp_mb, provs = west, caribou = lp_mb.caribou, xsr = lp_mb_sr, title = "LP MB",
-            png = file.path(dataDirLP, "LP_MB.png"))
+            png = file.path(dataDir, "LP_MB.png"))
     #plotFMA(lp_mb, provs = west, caribou = lp_mb.caribou, xsr = lp_mb_sr, title = "LP MB", png = NULL)
     if (isTRUE(asStudyArea)) {
       ml <- mapAdd(lp_mb_sr, ml, isStudyArea = TRUE, layerName = "LP MB SR",

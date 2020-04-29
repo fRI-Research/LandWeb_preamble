@@ -1,21 +1,19 @@
 fmaWestFraser <- function(ml, runName, dataDir, canProvs, bufferDist, asStudyArea = FALSE) {
-  dataDirWestFraser <- file.path(dataDir, "WestFraser") %>% checkPath(create = TRUE)
-
   ## There are multiple parts to the WestFraser FMAs:
   ## - also includes Tolko_AB_S
   ## - also includes Blue Ridge
   ab <- canProvs[canProvs$NAME_1 == "Alberta", ]
   wf <- extractFMA(ml, "West Fraser|Blue Ridge")
-  shapefile(wf, filename = file.path(dataDirWestFraser, "WestFraser_full.shp"), overwrite = TRUE)
+  shapefile(wf, filename = file.path(dataDir, "WestFraser_full.shp"), overwrite = TRUE)
 
   if (grepl("LandWeb|BlueRidge", runName)) {
     ## reportingPolygons
     wf_br <- wf[grepl("Blue Ridge", wf$Name), ] ## first subpolygon
-    shapefile(wf_br, filename = file.path(dataDirWestFraser, "WestFraser_BlueRidge.shp"), overwrite = TRUE)
+    shapefile(wf_br, filename = file.path(dataDir, "WestFraser_BlueRidge.shp"), overwrite = TRUE)
 
     wf_br.ansr <- postProcess(ml[["Alberta Natural Subregions"]],
                               studyArea = wf_br, useSAcrs = TRUE,
-                              filename2 = file.path(dataDirWestFraser, "WestFraser_BlueRidge_ANSR"),
+                              filename2 = file.path(dataDir, "WestFraser_BlueRidge_ANSR"),
                               overwrite = TRUE) %>%
       joinReportingPolygons(., wf_br)
     ## NOTE: no intersecting caribou areas
@@ -31,7 +29,7 @@ fmaWestFraser <- function(ml, runName, dataDir, canProvs, bufferDist, asStudyAre
     wf_br_sr <- postProcess(ml[["LandWeb Study Area"]],
                             studyArea = amc::outerBuffer(wf_br, bufferDist),
                             useSAcrs = TRUE,
-                            filename2 = file.path(dataDirWestFraser, "WestFraser_BlueRidge_SR.shp"),
+                            filename2 = file.path(dataDir, "WestFraser_BlueRidge_SR.shp"),
                             overwrite = TRUE)
 
     if (isTRUE(asStudyArea)) {
@@ -41,7 +39,7 @@ fmaWestFraser <- function(ml, runName, dataDir, canProvs, bufferDist, asStudyAre
     }
 
     plotFMA(wf_br, provs = ab, caribou = NULL, xsr = wf_br_sr, title = "West Fraser Blue Ridge",
-            png = file.path(dataDirWestFraser, "WestFraser_BR.png"))
+            png = file.path(dataDir, "WestFraser_BR.png"))
     # plotFMA(wf_br, provs = ab, caribou = NULL, xsr = wf_br_sr,
     #         title = "West Fraser Blue Ridge", png = NULL)
   }
@@ -49,16 +47,16 @@ fmaWestFraser <- function(ml, runName, dataDir, canProvs, bufferDist, asStudyAre
   if (grepl("LandWeb|WestFraser_N", runName)) {
     ## reportingPolygons
     wf_n <- wf[c(2:3, 6), ] ## 3 FMAs: Slave Lake; shared w/ Tolko; shared vith Tolko & Vanderwell.
-    shapefile(wf_n, filename = file.path(dataDirWestFraser, "WestFraser_N.shp"), overwrite = TRUE)
+    shapefile(wf_n, filename = file.path(dataDir, "WestFraser_N.shp"), overwrite = TRUE)
 
     wf_n.ansr <- postProcess(ml[["Alberta Natural Subregions"]],
                              studyArea = wf_n, useSAcrs = TRUE,
-                             filename2 = file.path(dataDirWestFraser, "WestFraser_N_ANSR"),
+                             filename2 = file.path(dataDir, "WestFraser_N_ANSR"),
                              overwrite = TRUE) %>%
       joinReportingPolygons(., wf_n)
     wf_n.caribou <- postProcess(ml[["LandWeb Caribou Ranges"]],
                                 studyArea = wf_n, useSAcrs = TRUE,
-                                filename2 = file.path(dataDirWestFraser, "WestFraser_N_caribou.shp"),
+                                filename2 = file.path(dataDir, "WestFraser_N_caribou.shp"),
                                 overwrite = TRUE) %>%
       joinReportingPolygons(., wf_n)
 
@@ -76,7 +74,7 @@ fmaWestFraser <- function(ml, runName, dataDir, canProvs, bufferDist, asStudyAre
     wf_n_sr <- postProcess(ml[["LandWeb Study Area"]],
                             studyArea = amc::outerBuffer(wf_n, bufferDist),
                             useSAcrs = TRUE,
-                            filename2 = file.path(dataDirWestFraser, "WestFraser_N_SR.shp"),
+                            filename2 = file.path(dataDir, "WestFraser_N_SR.shp"),
                             overwrite = TRUE)
 
     if (isTRUE(asStudyArea)) {
@@ -86,7 +84,7 @@ fmaWestFraser <- function(ml, runName, dataDir, canProvs, bufferDist, asStudyAre
     }
 
     plotFMA(wf_n, provs = ab, caribou = NULL, xsr = wf_n_sr, title = "West Fraser North",
-            png = file.path(dataDirWestFraser, "WestFraser_N.png"))
+            png = file.path(dataDir, "WestFraser_N.png"))
     # plotFMA(wf_n, provs = ab, caribou = NULL, xsr = wf_s_sr,
     #         title = "West Fraser North", png = NULL)
   }
@@ -94,16 +92,16 @@ fmaWestFraser <- function(ml, runName, dataDir, canProvs, bufferDist, asStudyAre
   if (grepl("LandWeb|WestFraser_S", runName)) {
     ## reportingPolygons
     wf_s <- wf[4:5, ] ## Hinton and Edson FMAs
-    shapefile(wf_s, filename = file.path(dataDirWestFraser, "WestFraser_S.shp"), overwrite = TRUE)
+    shapefile(wf_s, filename = file.path(dataDir, "WestFraser_S.shp"), overwrite = TRUE)
 
     wf_s.ansr <- postProcess(ml[["Alberta Natural Subregions"]],
                              studyArea = wf_s, useSAcrs = TRUE,
-                             filename2 = file.path(dataDirWestFraser, "WestFraser_S_ANSR"),
+                             filename2 = file.path(dataDir, "WestFraser_S_ANSR"),
                              overwrite = TRUE) %>%
       joinReportingPolygons(., wf_s)
     wf_s.caribou <- postProcess(ml[["LandWeb Caribou Ranges"]],
                                 studyArea = wf_s, useSAcrs = TRUE,
-                                filename2 = file.path(dataDirWestFraser, "WestFraser_S_caribou.shp"),
+                                filename2 = file.path(dataDir, "WestFraser_S_caribou.shp"),
                                 overwrite = TRUE) %>%
       joinReportingPolygons(., wf_s)
 
@@ -121,7 +119,7 @@ fmaWestFraser <- function(ml, runName, dataDir, canProvs, bufferDist, asStudyAre
     wf_s_sr <- postProcess(ml[["LandWeb Study Area"]],
                            studyArea = amc::outerBuffer(wf_s, bufferDist),
                            useSAcrs = TRUE,
-                           filename2 = file.path(dataDirWestFraser, "WestFraser_S_SR.shp"),
+                           filename2 = file.path(dataDir, "WestFraser_S_SR.shp"),
                            overwrite = TRUE)
 
     if (isTRUE(asStudyArea)) {
@@ -131,7 +129,7 @@ fmaWestFraser <- function(ml, runName, dataDir, canProvs, bufferDist, asStudyAre
     }
 
     plotFMA(wf_s, provs = ab, caribou = NULL, xsr = wf_s_sr, title = "West Fraser South",
-            png = file.path(dataDirWestFraser, "WestFraser_S.png"))
+            png = file.path(dataDir, "WestFraser_S.png"))
     # plotFMA(wf_s, provs = ab, caribou = NULL, xsr = wf_s_sr,
     #         title = "West Fraser South", png = NULL)
 

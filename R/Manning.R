@@ -1,19 +1,17 @@
 fmaManning <- function(ml, runName, dataDir, canProvs, bufferDist, asStudyArea = FALSE) {
-  dataDirManning <- file.path(dataDir, "Manning") %>% checkPath(create = TRUE)
-
   ab <- canProvs[canProvs$NAME_1 == "Alberta", ]
   manning <- extractFMA(ml, "Manning")
-  shapefile(manning, filename = file.path(dataDirManning, "Manning_full.shp"), overwrite = TRUE)
+  shapefile(manning, filename = file.path(dataDir, "Manning_full.shp"), overwrite = TRUE)
 
   ## reportingPolygons
   manning.ansr <- postProcess(ml[["Alberta Natural Subregions"]],
                               studyArea = manning, useSAcrs = TRUE,
-                              filename2 = file.path(dataDirManning, "Manning_ANSR.shp"),
+                              filename2 = file.path(dataDir, "Manning_ANSR.shp"),
                               overwrite = TRUE) %>%
     joinReportingPolygons(., manning)
   manning.caribou <- postProcess(ml[["LandWeb Caribou Ranges"]],
                                  studyArea = manning, useSAcrs = TRUE,
-                                 filename2 = file.path(dataDirManning, "Manning_caribou.shp"),
+                                 filename2 = file.path(dataDir, "Manning_caribou.shp"),
                                  overwrite = TRUE) %>%
     joinReportingPolygons(., manning)
 
@@ -31,11 +29,11 @@ fmaManning <- function(ml, runName, dataDir, canProvs, bufferDist, asStudyArea =
   manning_sr <- postProcess(ml[["LandWeb Study Area"]],
                             studyArea = amc::outerBuffer(manning, bufferDist),
                             useSAcrs = TRUE,
-                            filename2 = file.path(dataDirManning, "Manning_SR.shp"),
+                            filename2 = file.path(dataDir, "Manning_SR.shp"),
                             overwrite = TRUE)
 
   plotFMA(manning, provs = ab, caribou = manning.caribou, xsr = manning_sr,
-          title = "Manning", png = file.path(dataDirManning, "Manning.png"))
+          title = "Manning", png = file.path(dataDir, "Manning.png"))
   #plotFMA(manning, provs = ab, caribou = manning.caribou, xsr = manning_sr,
   #        title = "Manning", png = NULL)
 

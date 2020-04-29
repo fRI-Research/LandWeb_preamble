@@ -1,21 +1,20 @@
 fmu <- function(ml, runName, dataDir, canProvs, bufferDist, asStudyArea = FALSE) {
   fmuNum <- strsplit(runName, "_")[[1]][2]
-  dataDirFMU <- file.path(dataDir, "FMU", fmuNum) %>% checkPath(create = TRUE)
 
   ab <- canProvs[canProvs$NAME_1 == "Alberta", ]
   fmu <- extractFMU(ml, fmuNum)
   fmu[["Name"]] <- fmu[["FMU_NAME"]]
-  shapefile(fmu, filename = file.path(dataDirFMU, paste0("FMU_", fmuNum, ".shp")), overwrite = TRUE)
+  shapefile(fmu, filename = file.path(dataDir, paste0("FMU_", fmuNum, ".shp")), overwrite = TRUE)
 
   ## reporting polygons
   fmu.ansr <- postProcess(ml[["Alberta Natural Subregions"]],
                           studyArea = fmu, useSAcrs = TRUE,
-                          filename2 = file.path(dataDirFMU, paste0("FMU", fmuNum, "_ANSR.shp"))) %>%
+                          filename2 = file.path(dataDir, paste0("FMU", fmuNum, "_ANSR.shp"))) %>%
     joinReportingPolygons(., fmu)
 
   fmu.caribou <- postProcess(ml[["LandWeb Caribou Ranges"]],
                              studyArea = fmu, useSAcrs = TRUE,
-                             filename2 = file.path(dataDirFMU, paste0("FMU", fmuNum, "_caribou.shp"))) %>%
+                             filename2 = file.path(dataDir, paste0("FMU", fmuNum, "_caribou.shp"))) %>%
     joinReportingPolygons(., fmu)
 
   ml <- mapAdd(fmu, ml, layerName = "FMU", useSAcrs = TRUE, poly = TRUE,
@@ -36,10 +35,10 @@ fmu <- function(ml, runName, dataDir, canProvs, bufferDist, asStudyArea = FALSE)
   fmu_sr <- postProcess(ml[["LandWeb Study Area"]],
                         studyArea = amc::outerBuffer(fmu, bufferDist),
                         useSAcrs = TRUE,
-                        filename2 = file.path(dataDirFMU, paste0("FMU", fmuNum, "_SR.shp")))
+                        filename2 = file.path(dataDir, paste0("FMU", fmuNum, "_SR.shp")))
 
   plotFMA(fmu, provs = ab, caribou = fmu.caribou, xsr = fmu_sr,
-          title = "Mercer Peace River Pulp Ltd.", png = file.path(dataDirFMU, paste0("FMU", fmuNum, ".png")))
+          title = "Mercer Peace River Pulp Ltd.", png = file.path(dataDir, paste0("FMU", fmuNum, ".png")))
   #plotFMA(fmu, provs = ab, caribou = fmu.caribou, xsr = fmu_sr,
   #        title = "Mercer Peace River Pulp Ltd.", png = NULL)
 

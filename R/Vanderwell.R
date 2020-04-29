@@ -1,22 +1,20 @@
 fmaVanderwell <- function(ml, runName, dataDir, canProvs, bufferDist, asStudyArea = FALSE) {
-  dataDirVanderwell <- file.path(dataDir, "Vanderwell") %>% checkPath(create = TRUE)
-
   ## NOTE: Vanderwell has 2 FMAS (close enough we can run all together):
   ## - one shared vith Tolko/WestFraser (Tolko_AB_S)
   ## - the other is just south of the first
   ab <- canProvs[canProvs$NAME_1 == "Alberta", ]
   vanderwell <- extractFMA(ml, "Vanderwell Contractors")
-  shapefile(vanderwell, filename = file.path(dataDirVanderwell, "Vanderwell_full.shp"), overwrite = TRUE)
+  shapefile(vanderwell, filename = file.path(dataDir, "Vanderwell_full.shp"), overwrite = TRUE)
 
   ## reportingPolygons
   vanderwell.ansr <- postProcess(ml[["Alberta Natural Subregions"]],
                                  studyArea = vanderwell, useSAcrs = TRUE,
-                                 filename2 = file.path(dataDirVanderwell, "Vanderwell_ANSR.shp"),
+                                 filename2 = file.path(dataDir, "Vanderwell_ANSR.shp"),
                                  overwrite = TRUE) %>%
     joinReportingPolygons(., vanderwell)
   vanderwell.caribou <- postProcess(ml[["LandWeb Caribou Ranges"]],
                                     studyArea = vanderwell, useSAcrs = TRUE,
-                                    filename2 = file.path(dataDirVanderwell, "Vanderwell_caribou.shp"),
+                                    filename2 = file.path(dataDir, "Vanderwell_caribou.shp"),
                                     overwrite = TRUE) %>%
     joinReportingPolygons(., vanderwell)
 
@@ -34,12 +32,12 @@ fmaVanderwell <- function(ml, runName, dataDir, canProvs, bufferDist, asStudyAre
   vanderwell_sr <- postProcess(ml[["LandWeb Study Area"]],
                                studyArea = amc::outerBuffer(vanderwell, bufferDist),
                                useSAcrs = TRUE,
-                               filename2 = file.path(dataDirVanderwell, "Vanderwell_SR.shp"),
+                               filename2 = file.path(dataDir, "Vanderwell_SR.shp"),
                                overwrite = TRUE)
 
   plotFMA(vanderwell, provs = ab, caribou = vanderwell.caribou, xsr = vanderwell_sr,
           title = "Vanderwell Contractors",
-          png = file.path(dataDirVanderwell, "Vanderwell.png"))
+          png = file.path(dataDir, "Vanderwell.png"))
   #plotFMA(vanderwell, provs = ab, caribou = vanderwell.caribou, xsr = vanderwell_sr,
   #        title = "Vanderwell Contractors", png = NULL)
 
