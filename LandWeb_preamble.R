@@ -133,7 +133,7 @@ Init <- function(sim) {
 
   ################################################################################
   ## COMPANY-SPECIFIC STUDY AREAS
-  dataDir <- checkPath(file.path(outputPath(sim), "studyArea"), create = TRUE)
+  dataDir <- checkPath(file.path(inputPath(sim), "studyAreas"), create = TRUE)
 
   if (grepl("ANC", P(sim)$runName)) {
     ml <- fmaANC(ml, P(sim)$runName, dataDir, sim$canProvs, P(sim)$bufferDist, asStudyArea = TRUE)
