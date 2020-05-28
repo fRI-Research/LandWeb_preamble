@@ -67,7 +67,7 @@ joinReportingPolygons <- function(x, y) {
 #'
 #' @param caribou  Optional \code{SpatialPolygons*} object corresponding to caribou boundaries
 #'
-#' @param xsr      Optional \code{SpatialPolygons*} object corresponding to a buffered studyArea
+#' @param xsr      Optional \code{SpatialPolygons*} object corresponding to a buffered \code{studyArea}
 #'
 #' @param title    Character string to use for plot title
 #'
@@ -75,17 +75,17 @@ joinReportingPolygons <- function(x, y) {
 #'
 #' @export
 #' @importFrom graphics dev.off png
-#' @importFrom sp crs plot.SpatialPointsDataFrame spTransform
+#' @importFrom sp crs plot spTransform
 #' @rdname plotFMA
 plotFMA <- function(x, provs, caribou = NULL, xsr = NULL, title = NULL, png = NULL) {
   provs <- spTransform(provs, crs(x))
 
   ## regular boring old plot
   if (!is.null(png)) png(filename = png, width = 1200, height = 800)
-  plot(provs)
-  plot(x[, "Name"], main = title, col = "lightblue", add = TRUE)
-  if (!is.null(caribou)) plot(caribou, col = "magenta", add = TRUE)
-  if (!is.null(xsr)) plot(xsr, add = TRUE)
+  sp::plot(provs)
+  sp::plot(x[, "Name"], main = title, col = "lightblue", add = TRUE)
+  if (!is.null(caribou)) sp::plot(caribou, col = "magenta", add = TRUE)
+  if (!is.null(xsr)) sp::plot(xsr, add = TRUE)
   if (!is.null(png)) dev.off()
 
   ## sexy ggplot version
@@ -98,17 +98,17 @@ plotFMA <- function(x, provs, caribou = NULL, xsr = NULL, title = NULL, png = NU
 }
 
 #' @export
-#' @importFrom sp spTransform
+#' @importFrom sp plot spTransform
 #' @rdname plotFMA
 plotLandWeb <- function(x, provs, caribou = NULL, xsr = NULL, title = NULL, png = NULL) {
   provs <- spTransform(provs, crs(x))
 
   ## regular boring old plot
   if (!is.null(png)) png(filename = png, width = 1800, height = 1200)
-  plot(provs)
-  plot(x, main = title, col = "lightblue", add = TRUE)
-  if (!is.null(caribou)) plot(caribou, col = "magenta", add = TRUE)
-  if (!is.null(xsr)) plot(xsr, add = TRUE)
+  sp::plot(provs)
+  sp::plot(x, main = title, col = "lightblue", add = TRUE)
+  if (!is.null(caribou)) sp::plot(caribou, col = "magenta", add = TRUE)
+  if (!is.null(xsr)) sp::plot(xsr, add = TRUE)
   if (!is.null(png)) dev.off()
 
   ## sexy ggplot version
