@@ -145,6 +145,8 @@ Init <- function(sim) {
 
   if (grepl("ANC", P(sim)$runName)) {
     ml <- fmaANC(ml, P(sim)$runName, dataDir, sim$canProvs, P(sim)$bufferDist, asStudyArea = TRUE)
+  } else if (grepl("AlPac", P(sim)$runName)) {
+    ml <- fmaAlpac(ml, P(sim)$runName, dataDir, sim$canProvs, P(sim)$bufferDist, asStudyArea = TRUE)
   } else if (grepl("DMI|MPR", P(sim)$runName)) {
     ml <- fmaDMI(ml, P(sim)$runName, dataDir, sim$canProvs, P(sim)$bufferDist, asStudyArea = TRUE)
   } else if (grepl("Edson", P(sim)$runName)) {
