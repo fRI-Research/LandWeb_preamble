@@ -87,7 +87,7 @@ Init <- function(sim) {
   ## Updated FMA boundaries
   ml <- mapAdd(map = ml, layerName = "FMA Boundaries Updated",
                useSAcrs = TRUE, poly = TRUE, overwrite = TRUE,
-               url = "https://drive.google.com/file/d/1nTFOcrdMf1hIsxd_yNCSTr8RrYNHHwuc/view?usp=sharing",
+               url = "https://drive.google.com/file/d/1BNsUiMqENJa0I8gzhO68K307ySPHbdGk/view?usp=sharing",
                columnNameForLabels = "Name", isStudyArea = FALSE, filename2 = NULL)
 
   ## AB FMU boundaries
@@ -113,7 +113,7 @@ Init <- function(sim) {
   ## Alberta Natural Subregions (ANSRs)
   ml <- mapAdd(map = ml, layerName = "Alberta Natural Subregions",
                useSAcrs = TRUE, poly = TRUE, overwrite = TRUE,
-               url = "https://drive.google.com/file/d/1mCEynahKnFkStJUJC8ho5ndRD41olz9F/view?usp=sharing",
+               url = "https://drive.google.com/file/d/1hW6zy0CpUBdk-K2IAjzW4INjVl1J4aLJ/view?usp=sharing",
                columnNameForLabels = "Name", isStudyArea = FALSE, filename2 = NULL)
 
   ## Caribou Ranges
