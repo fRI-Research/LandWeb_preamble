@@ -14,12 +14,12 @@ defineModule(sim, list(
   citation = list("citation.bib"),
   documentation = list("README.txt", "LandWeb_preamble.Rmd"),
   reqdPkgs = list("achubaty/amc@development",
-                  "crayon", "dplyr", "fasterize", "ggplot2",
+                  "crayon", "dplyr", "fasterize", "ggplot2", "httr",
                   "PredictiveEcology/LandR@development",
                   "magrittr", "PredictiveEcology/map@development", "maptools",
                   "PredictiveEcology/pemisc@development",
                   "raster", "RColorBrewer", "RCurl", "rgeos",
-                  "PredictiveEcology/reproducible@development (>=1.1.1.9004)",
+                  "PredictiveEcology/reproducible@development (>=1.2.0.9017)",
                   "scales", "sf", "sp", "SpaDES.tools", "XML"),
   parameters = rbind(
     defineParameter("bufferDist", "numeric", 25000, 20000, 100000, "Study area buffer distance (m) used to make studyArea."),
@@ -319,18 +319,20 @@ Init <- function(sim) {
   )
   standAgeMapFileName <- basename(standAgeMapURL)
 
-  standAgeMap <- Cache(prepInputs, #notOlderThan = Sys.time(),
-                       targetFile = standAgeMapFileName,
-                       destinationPath = Paths$inputPath,
-                       url = standAgeMapURL,
-                       fun = "raster::raster",
-                       studyArea = sim$studyAreaLarge,
-                       rasterToMatch = sim$rasterToMatchLarge,
-                       maskWithRTM = TRUE,
-                       method = "bilinear",
-                       datatype = "INT2U",
-                       filename2 = NULL, overwrite = TRUE,
-                       userTags = c("stable", currentModule(sim)))
+  httr::with_config(config = httr::config(ssl_verifypeer = 0L), { ## TODO: re-enable verify
+    standAgeMap <- Cache(prepInputs, #notOlderThan = Sys.time(),
+                         targetFile = standAgeMapFileName,
+                         destinationPath = Paths$inputPath,
+                         url = standAgeMapURL,
+                         fun = "raster::raster",
+                         studyArea = sim$studyAreaLarge,
+                         rasterToMatch = sim$rasterToMatchLarge,
+                         maskWithRTM = TRUE,
+                         method = "bilinear",
+                         datatype = "INT2U",
+                         filename2 = NULL, overwrite = TRUE,
+                         userTags = c("stable", currentModule(sim)))
+  })
   ml[[TSFLayerName]][noDataPixelsCC] <- standAgeMap[noDataPixelsCC]
   ml[[TSFLayerName]][sim$nonTreePixels] <- NA
 
