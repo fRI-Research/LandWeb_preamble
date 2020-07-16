@@ -58,7 +58,7 @@ joinReportingPolygons <- function(x, y) {
   return(z)
 }
 
-#' Plot boudary polygon(s) for forest management areas
+#' Plot boundary polygon(s) for forest management areas
 #'
 #' @param x        \code{SpatialPolygons*} object corresponding to the FMA to be plotted
 #'
