@@ -81,13 +81,13 @@ Init <- function(sim) {
   ## LandWeb study area -- LTHFC (aka "fire return interval") map
   ml <- mapAdd(layerName = "LandWeb Study Area",
                targetCRS = targetCRS, overwrite = TRUE,
-               url = "https://drive.google.com/open?id=1JptU0R7qsHOEAEkxybx5MGg650KC98c6", ## landweb_ltfc_v6.shp
+               url = "https://drive.google.com/file/d/1JptU0R7qsHOEAEkxybx5MGg650KC98c6", ## landweb_ltfc_v6.shp
                columnNameForLabels = "NSN", isStudyArea = TRUE, filename2 = NULL)
 
   ## Updated FMA boundaries
   ml <- mapAdd(map = ml, layerName = "FMA Boundaries Updated",
                useSAcrs = TRUE, poly = TRUE, overwrite = TRUE,
-               url = "https://drive.google.com/file/d/1BNsUiMqENJa0I8gzhO68K307ySPHbdGk/view?usp=sharing",
+               url = "https://drive.google.com/file/d/1BNsUiMqENJa0I8gzhO68K307ySPHbdGk",
                columnNameForLabels = "Name", isStudyArea = FALSE, filename2 = NULL)
 
   ## AB FMU boundaries
@@ -99,7 +99,7 @@ Init <- function(sim) {
   ## AB Land Use Framework Planning Regions
   ml <- mapAdd(map = ml, layerName = "AB Land Use Framework Planning Regions",
                useSAcrs = TRUE, poly = TRUE, overwrite = TRUE,
-               url = "https://drive.google.com/file/d/1RnLGnuX0r9EGJ11YL2mov7n-Vgke0uTC/view?usp=sharing",
+               url = "https://drive.google.com/file/d/1RnLGnuX0r9EGJ11YL2mov7n-Vgke0uTC",
                columnNameForLabels = "LUF_NAME", isStudyArea = FALSE, filename2 = NULL)
   ## TODO: clean up these polygons?
 
