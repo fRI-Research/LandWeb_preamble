@@ -113,13 +113,13 @@ Init <- function(sim) {
   ## Alberta Natural Subregions (ANSRs)
   ml <- mapAdd(map = ml, layerName = "Alberta Natural Subregions",
                useSAcrs = TRUE, poly = TRUE, overwrite = TRUE,
-               url = "https://drive.google.com/file/d/1hW6zy0CpUBdk-K2IAjzW4INjVl1J4aLJ/view?usp=sharing",
+               url = "https://drive.google.com/file/d/1hW6zy0CpUBdk-K2IAjzW4INjVl1J4aLJ",
                columnNameForLabels = "Name", isStudyArea = FALSE, filename2 = NULL)
 
   ## Caribou Ranges
   # ml <- mapAdd(map = ml, layerName = "Boreal Caribou Ranges",
   #              useSAcrs = TRUE, poly = TRUE, overwrite = TRUE,
-  #              url = "https://drive.google.com/file/d/1PYLou8J1wcrme7Z2tx1wtA4GvaWnU1Jy/view?usp=sharing",
+  #              url = "https://drive.google.com/file/d/1PYLou8J1wcrme7Z2tx1wtA4GvaWnU1Jy",
   #              columnNameForLabels = "Name", isStudyArea = FALSE, filename2 = NULL)
   # ml <- mapAdd(map = ml, layerName = "AB Caribou Ranges",
   #              useSAcrs = TRUE, poly = TRUE, overwrite = TRUE,
@@ -127,11 +127,11 @@ Init <- function(sim) {
   #              columnNameForLabels = "SUBUNIT", isStudyArea = FALSE, filename2 = NULL) ## untested
   # ml <- mapAdd(map = ml, layerName = "BC Caribou Ranges",
   #              useSAcrs = TRUE, poly = TRUE, overwrite = TRUE,
-  #              url = "https://drive.google.com/file/d/1uqEVID74y4enPMee2w3axBcR1agw_kMT/view?usp=sharing",
+  #              url = "https://drive.google.com/file/d/1uqEVID74y4enPMee2w3axBcR1agw_kMT",
   #              columnNameForLabels = "HERD_NAME", isStudyArea = FALSE, filename2 = NULL) ## untested
   ml <- mapAdd(map = ml, layerName = "LandWeb Caribou Ranges",
                useSAcrs = TRUE, poly = TRUE, overwrite = TRUE,
-               url = "https://drive.google.com/file/d/1mrsxIJfdP-XxEZkO6vs2J6lYbGry67A2/view?usp=sharing",
+               url = "https://drive.google.com/file/d/1mrsxIJfdP-XxEZkO6vs2J6lYbGry67A2",
                columnNameForLabels = "Name", isStudyArea = FALSE, filename2 = NULL)
 
   ## Provincial Boundaries
@@ -231,7 +231,7 @@ Init <- function(sim) {
   ##########################################################
   # Current Conditions
   ##########################################################
-  ccURL <- "https://drive.google.com/file/d/1JnKeXrw0U9LmrZpixCDooIm62qiv4_G1/view?usp=sharing"
+  ccURL <- "https://drive.google.com/file/d/1JnKeXrw0U9LmrZpixCDooIm62qiv4_G1"
   LandTypeFileCC <- file.path(Paths$inputPath, "LandType1.tif")
   sim$LandTypeCC <- Cache(prepInputs, LandTypeFileCC, studyArea = sim$studyAreaLarge,
                           url = ccURL, method = "ngb",
