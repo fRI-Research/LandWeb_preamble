@@ -19,7 +19,7 @@ defineModule(sim, list(
                   "magrittr", "PredictiveEcology/map@development", "maptools",
                   "PredictiveEcology/pemisc@development",
                   "raster", "RColorBrewer", "RCurl", "rgeos",
-                  "PredictiveEcology/reproducible@development (>=1.2.0.9017)",
+                  "PredictiveEcology/reproducible@development (>=1.2.1.9005)",
                   "scales", "sf", "sp", "SpaDES.tools", "XML"),
   parameters = rbind(
     defineParameter("bufferDist", "numeric", 25000, 20000, 100000, "Study area buffer distance (m) used to make studyArea."),
