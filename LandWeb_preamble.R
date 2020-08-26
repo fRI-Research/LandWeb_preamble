@@ -93,15 +93,8 @@ Init <- function(sim) {
   ## AB FMU boundaries
   ml <- mapAdd(map = ml, layerName = "AB FMU Boundaries",
                useSAcrs = TRUE, poly = TRUE, overwrite = TRUE,
-               url = "https://drive.google.com/open?id=1OH3b5pwjumm1ToytDBDI6jthVe2pp0tS",
+               url = "https://drive.google.com/open?id=1OH3b5pwjumm1ToytDBDI6jthVe2pp0tS", # 2020-06
                columnNameForLabels = "FMU_NAME", isStudyArea = FALSE, filename2 = NULL)
-
-  ## AB Land Use Framework Planning Regions
-  ml <- mapAdd(map = ml, layerName = "AB Land Use Framework Planning Regions",
-               useSAcrs = TRUE, poly = TRUE, overwrite = TRUE,
-               url = "https://drive.google.com/file/d/1RnLGnuX0r9EGJ11YL2mov7n-Vgke0uTC",
-               columnNameForLabels = "LUF_NAME", isStudyArea = FALSE, filename2 = NULL)
-  ## TODO: clean up these polygons?
 
   ### Rename some polygons:
   ###   - DMI is now Mercer (MPR)
