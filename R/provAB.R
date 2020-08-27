@@ -31,14 +31,16 @@ provAB <- function(ml, runName, dataDir, canProvs, bufferDist, asStudyArea = FAL
                url = "https://drive.google.com/open?id=1OH3b5pwjumm1ToytDBDI6jthVe2pp0tS", # 2020-06
                analysisGroupReportingPolygon = "AB FMU", isStudyArea = FALSE,
                columnNameForLabels = "FMU_NAME", filename2 = NULL)
+  ml[["AB FMU Boundaries"]][["Name"]] <- ml[["AB FMU Boundaries"]][["shinyLabel"]]
 
   ## AB Land Use Framework Planning Regions
+  # TODO: clean up these polygons?
   ml <- mapAdd(map = ml, layerName = "AB Land Use Framework Planning Regions",
                useSAcrs = TRUE, poly = TRUE, overwrite = TRUE,
                url = "https://drive.google.com/file/d/1RnLGnuX0r9EGJ11YL2mov7n-Vgke0uTC",
                analysisGroupReportingPolygon = "AB LUF", isStudyArea = FALSE,
                columnNameForLabels = "LUF_NAME", filename2 = NULL)
-  ## TODO: clean up these polygons?
+  ml[["AB Land Use Framework Planning Regions"]][["Name"]] <- ml[["AB Land Use Framework Planning Regions"]][["shinyLabel"]]
 
   ## AB regional planning units
   ml <- mapAdd(map = ml, layerName = "AB SUBR Bistcho Lake",
@@ -46,16 +48,21 @@ provAB <- function(ml, runName, dataDir, canProvs, bufferDist, asStudyArea = FAL
                url = "https://drive.google.com/file/d/1taLQF-J69y7qweOsfDJ2f2wvTTvP_n6C",
                analysisGroupReportingPolygon = "AB SUBR Bitcho Lake", isStudyArea = FALSE,
                columnNameForLabels = "SUBR_NAME", filename2 = NULL)
+  ml[["AB SUBR Bistcho Lake"]][["Name"]] <- ml[["AB SUBR Bistcho Lake"]][["shinyLabel"]]
+
   ml <- mapAdd(map = ml, layerName = "AB SUBR Cold Lake",
                useSAcrs = TRUE, poly = TRUE, overwrite = TRUE,
                url = "https://drive.google.com/file/d/1jy4u2OyhnLjj1Wp_t27pPz_MsmMhPoSg",
                analysisGroupReportingPolygon = "AB SUBR Cold Lake", isStudyArea = FALSE,
                columnNameForLabels = "SUBR_NAME", filename2 = NULL)
+  ml[["AB SUBR Cold Lake"]][["Name"]] <- ml[["AB SUBR Cold Lake"]][["shinyLabel"]]
+
   ml <- mapAdd(map = ml, layerName = "AB SUBR Upper Smoky",
                useSAcrs = TRUE, poly = TRUE, overwrite = TRUE,
                url = "https://drive.google.com/file/d/1T2FgfHdHy41GsLnfSxWW0hpEqwo3f5VF",
                analysisGroupReportingPolygon = "AB SUBR Upper Smoky", isStudyArea = FALSE,
                columnNameForLabels = "SUBR_NAME", filename2 = NULL)
+  ml[["AB SUBR Upper Smoky"]][["Name"]] <- ml[["AB SUBR Upper Smoky"]][["shinyLabel"]]
 
   ## studyArea shouldn't use analysisGroup because it's not a reportingPolygon
   AB_sr <- postProcess(ml[["LandWeb Study Area"]],
