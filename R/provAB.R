@@ -41,17 +41,17 @@ provAB <- function(ml, runName, dataDir, canProvs, bufferDist, asStudyArea = FAL
   ## TODO: clean up these polygons?
 
   ## AB regional planning units
-  ml <- mapAdd(map = ml, layerName = "AB Bistcho Lake",
+  ml <- mapAdd(map = ml, layerName = "AB SUBR Bistcho Lake",
                useSAcrs = TRUE, poly = TRUE, overwrite = TRUE,
                url = "https://drive.google.com/file/d/1taLQF-J69y7qweOsfDJ2f2wvTTvP_n6C",
                analysisGroupReportingPolygon = "AB SUBR Bitcho Lake", isStudyArea = FALSE,
                columnNameForLabels = "SUBR_NAME", filename2 = NULL)
-  ml <- mapAdd(map = ml, layerName = "AB Cold Lake",
+  ml <- mapAdd(map = ml, layerName = "AB SUBR Cold Lake",
                useSAcrs = TRUE, poly = TRUE, overwrite = TRUE,
                url = "https://drive.google.com/file/d/1jy4u2OyhnLjj1Wp_t27pPz_MsmMhPoSg",
                analysisGroupReportingPolygon = "AB SUBR Cold Lake", isStudyArea = FALSE,
                columnNameForLabels = "SUBR_NAME", filename2 = NULL)
-  ml <- mapAdd(map = ml, layerName = "AB Upper Smoky",
+  ml <- mapAdd(map = ml, layerName = "AB SUBR Upper Smoky",
                useSAcrs = TRUE, poly = TRUE, overwrite = TRUE,
                url = "https://drive.google.com/file/d/1T2FgfHdHy41GsLnfSxWW0hpEqwo3f5VF",
                analysisGroupReportingPolygon = "AB SUBR Upper Smoky", isStudyArea = FALSE,
