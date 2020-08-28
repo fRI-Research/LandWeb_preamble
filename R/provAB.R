@@ -29,7 +29,7 @@ provAB <- function(ml, runName, dataDir, canProvs, bufferDist, asStudyArea = FAL
   ml <- mapAdd(map = ml, layerName = "AB FMU Boundaries",
                useSAcrs = TRUE, poly = TRUE, overwrite = TRUE,
                url = "https://drive.google.com/open?id=1OH3b5pwjumm1ToytDBDI6jthVe2pp0tS", # 2020-06
-               analysisGroupReportingPolygon = "AB FMU", isStudyArea = FALSE,
+               analysisGroupReportingPolygon = "AB FMU Boundaries", isStudyArea = FALSE,
                columnNameForLabels = "FMU_NAME", filename2 = NULL)
   ml[["AB FMU Boundaries"]][["Name"]] <- ml[["AB FMU Boundaries"]][["shinyLabel"]]
 
@@ -38,7 +38,7 @@ provAB <- function(ml, runName, dataDir, canProvs, bufferDist, asStudyArea = FAL
   ml <- mapAdd(map = ml, layerName = "AB Land Use Framework Planning Regions",
                useSAcrs = TRUE, poly = TRUE, overwrite = TRUE,
                url = "https://drive.google.com/file/d/1RnLGnuX0r9EGJ11YL2mov7n-Vgke0uTC",
-               analysisGroupReportingPolygon = "AB LUF", isStudyArea = FALSE,
+               analysisGroupReportingPolygon = "AB Land Use Framework Planning Regions", isStudyArea = FALSE,
                columnNameForLabels = "LUF_NAME", filename2 = NULL)
   ml[["AB Land Use Framework Planning Regions"]][["Name"]] <- ml[["AB Land Use Framework Planning Regions"]][["shinyLabel"]]
 
@@ -46,7 +46,7 @@ provAB <- function(ml, runName, dataDir, canProvs, bufferDist, asStudyArea = FAL
   ml <- mapAdd(map = ml, layerName = "AB SUBR Bistcho Lake",
                useSAcrs = TRUE, poly = TRUE, overwrite = TRUE,
                url = "https://drive.google.com/file/d/1taLQF-J69y7qweOsfDJ2f2wvTTvP_n6C",
-               analysisGroupReportingPolygon = "AB SUBR Bitcho Lake", isStudyArea = FALSE,
+               analysisGroupReportingPolygon = "AB SUBR Bistcho Lake", isStudyArea = FALSE,
                columnNameForLabels = "SUBR_NAME", filename2 = NULL)
   ml[["AB SUBR Bistcho Lake"]][["Name"]] <- ml[["AB SUBR Bistcho Lake"]][["shinyLabel"]]
 
