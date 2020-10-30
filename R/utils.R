@@ -157,3 +157,58 @@ plotGG <- function(x, provs, caribou = NULL, png = NULL) {
 
   return(x_gg)
 }
+
+#' Extract boundary polygon(s) for planning subregion(s)
+#'
+#' @param ml    A \code{map} object containing 'ab_planning_subregions'
+#'              \code{SpatialPolygonsDataFrame} object with planning subregion boundaries
+#'
+#' @param name  A character (regex) string to match.
+#'
+#' @return \code{SpatialPolygonsDataFrame}
+#'
+#' @export
+#'
+extractPSR <- function(ml, name) {
+  if (is.null(ml[["ab_planning_subregions"]])) stop("'ab_planning_subregions' not found")
+  ml[["ab_planning_subregions"]][grepl(name, ml[["ab_planning_subregions"]][["Name"]]), ]
+}
+
+#' Plot boundary polygon(s) for Alberta planning subregions
+#'
+#' @param x        \code{SpatialPolygons*} object corresponding to the subregion to be plotted
+#'
+#' @param provs    \code{SpatialPolygons*} object corresponding to the provincial
+#'                 (or territorial) boundaries to plot
+#'
+#' @param caribou  Optional \code{SpatialPolygons*} object corresponding to caribou boundaries
+#'
+#' @param xsr      Optional \code{SpatialPolygons*} object corresponding to a buffered \code{studyArea}
+#'
+#' @param title    Character string to use for plot title
+#'
+#' @param png      Optional. If non-NULL, must be a valid file path to a write a png
+#'
+#' @export
+#' @importFrom graphics dev.off png
+#' @importFrom sp crs plot spTransform
+#' @rdname plotFMA
+plotPSR <- function(x, provs, caribou = NULL, xsr = NULL, title = NULL, png = NULL) {
+  provs <- spTransform(provs, crs(x))
+
+  ## regular boring old plot
+  if (!is.null(png)) png(filename = png, width = 1200, height = 800)
+  sp::plot(provs)
+  sp::plot(x[, "Name"], main = title, col = "lightblue", add = TRUE)
+  if (!is.null(caribou)) sp::plot(caribou, col = "magenta", add = TRUE)
+  if (!is.null(xsr)) sp::plot(xsr, add = TRUE)
+  if (!is.null(png)) dev.off()
+
+  ## sexy ggplot version
+  x_gg <- plotGG(x, provs, caribou, png)
+
+  if (!is.null(png)) {
+    png2 <- gsub("[.]png", "_gg.png", png)
+    ggsave(png2, x_gg, width = 6, height = 8) ## a bit slow...
+  }
+}
