@@ -96,6 +96,12 @@ Init <- function(sim) {
                url = "https://drive.google.com/open?id=1OH3b5pwjumm1ToytDBDI6jthVe2pp0tS", # 2020-06
                columnNameForLabels = "FMU_NAME", isStudyArea = FALSE, filename2 = NULL)
 
+  ## AB Planning Subregion boundaries
+  ml <-  mapAdd(map = ml, layerName = "ab_planning_subregions",
+                useSAcrs = TRUE, poly = TRUE, overwrite = TRUE,
+                url = "https://drive.google.com/file/d/1vxbNiftvzP0B_B3tm68pNNccGC2PkWQc", # 2020-10
+                columnNameForLabels = "SUBR_NAME", isStudyArea = FALSE, filename2 = NULL)
+
   ### Rename some polygons:
   ###   - DMI is now Mercer (MPR)
   ids <- grep("Daishowa-Marubeni International Ltd", ml[["FMA Boundaries Updated"]][["Name"]])
@@ -176,6 +182,12 @@ Init <- function(sim) {
     ml <- provNWT(ml, P(sim)$runName, dataDir, sim$canProvs, P(sim)$bufferDist, asStudyArea = TRUE)
   } else if (grepl("provSK", P(sim)$runName)) {
     ml <- provSK(ml, P(sim)$runName, dataDir, sim$canProvs, P(sim)$bufferDist, asStudyArea = TRUE)
+  } else if (grepl("Smoky", P(sim)$runName)) {
+    ml <- processPSR(ml, config::get('studyarea'), dataDir, sim$canProvs, P(sim)$bufferDist, asStudyArea = TRUE)
+  } else if (grepl("Bistcho", P(sim)$runName)) {
+    ml <- processPSR(ml, config::get('studyarea'), dataDir, sim$canProvs, P(sim)$bufferDist, asStudyArea = TRUE)
+  } else if (grepl("Cold", P(sim)$runName)) {
+    ml <- processPSR(ml, config::get('studyarea'), dataDir, sim$canProvs, P(sim)$bufferDist, asStudyArea = TRUE)
   } else {
     ## use a small random study area
     message(crayon::red("Using random study area for runName", runName))
