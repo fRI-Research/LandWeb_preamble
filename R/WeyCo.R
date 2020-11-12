@@ -14,13 +14,21 @@ fmaWeyCo <- function(ml, runName, dataDir, canProvs, bufferDist, asStudyArea = F
                                  filename2 = file.path(dataDir, "WeyCo_GP_ANSR.shp"),
                                  overwrite = TRUE) %>%
       joinReportingPolygons(., weyco_gp)
-    ## NOTE: no caribou areas intersect with this FMA
+
+    weyco_gp.caribou <- postProcess(ml[["LandWeb Caribou Ranges"]],
+                                    studyArea = weyco_gp, useSAcrs = TRUE,
+                                    filename2 = file.path(dataDir, "WeyCo_GP_Caribou.shp"),
+                                    overwrite = TRUE) %>%
+      joinReportingPolygons(., weyco_gp)
 
     ml <- mapAdd(weyco_gp, ml, layerName = "WeyCo GP", useSAcrs = TRUE, poly = TRUE,
                  analysisGroupReportingPolygon = "WeyCo GP", isStudyArea = isTRUE(asStudyArea),
                  columnNameForLabels = "Name", filename2 = NULL)
     ml <- mapAdd(weyco_gp.ansr, ml, layerName = "WeyCo GP ANSR", useSAcrs = TRUE, poly = TRUE,
                  analysisGroupReportingPolygon = "WeyCo GP ANSR",
+                 columnNameForLabels = "Name", filename2 = NULL)
+    ml <- mapAdd(weyco_gp.caribou, ml, layerName = "WeyCo GP Caribou", useSAcrs = TRUE, poly = TRUE,
+                 analysisGroupReportingPolygon = "WeyCo GP Caribou",
                  columnNameForLabels = "Name", filename2 = NULL)
 
     ## studyArea shouldn't use analysisGroup because it's not a reportingPolygon
@@ -30,10 +38,10 @@ fmaWeyCo <- function(ml, runName, dataDir, canProvs, bufferDist, asStudyArea = F
                                filename2 = file.path(dataDir, "WeyCo_GP_SR.shp"),
                                overwrite = TRUE)
 
-    plotFMA(weyco_gp, provs = absk, caribou = NULL, xsr = weyco_gp_sr,
+    plotFMA(weyco_gp, provs = absk, caribou = weyco_gp.caribou, xsr = weyco_gp_sr,
             title = "Weyerhaeuser Company Limited (Grande Prairie)",
             png = file.path(dataDir, "WeyCo_GP.png"))
-    #plotFMA(weyco_gp, provs = absk, caribou = NULL, xsr = weyco_gp_sr,
+    #plotFMA(weyco_gp, provs = absk, caribou = weyco_gp.caribou, xsr = weyco_gp_sr,
     #        title = "Weyerhaeuser Company Limited (Grande Prairie)", png = NULL)
 
     if (isTRUE(asStudyArea)) {
