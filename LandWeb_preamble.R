@@ -40,11 +40,11 @@ defineModule(sim, list(
     defineParameter(".saveInterval", "numeric", NA, NA, NA, "This describes the simulation time interval between save events"),
     defineParameter(".useCache", "logical", FALSE, NA, NA, "Should this entire module be run with caching activated? This is generally intended for data-type modules, where stochasticity and time are not relevant")
   ),
-  inputObjects = bind_rows(
+  inputObjects = bindrows(
     ## TODO: uses CC and fire return interval maps from URL in init
     expectsInput("canProvs", "SpatialPolygonsDataFrame", "Canadian provincial boundaries shapefile", NA)
   ),
-  outputObjects = bind_rows(
+  outputObjects = bindrows(
     createsOutput("CC TSF", "RasterLayer", desc = NA), ## TODO: need descriptions for all outputs
     createsOutput("fireReturnInterval", "RasterLayer", desc = NA),
     createsOutput("LandTypeCC", "RasterLayer", desc = NA),
