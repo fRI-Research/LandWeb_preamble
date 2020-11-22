@@ -74,6 +74,15 @@ doEvent.LandWeb_preamble = function(sim, eventTime, eventType) {
 }
 
 Init <- function(sim) {
+  allowedStudyAreaNames <- c("ANC", "AlPac", "BlueRidge", "DMI", "Edson", "FMANWT", "FMU",
+                             "LandWeb", "LP", "Manning", "MillarWestern", "Mistik", "MPR",
+                             "provAB", "provNWT", "provSK", "random",
+                             "SprayLake", "Sundre", "Tolko", "Vanderwell", "WeyCo", "WestFraser")
+  if (!grepl(paste(allowedStudyAreaNames, collapse = "|"), P(sim)$runName)) {
+    stop("runName, ", P(sim)$runName, ", does not contain valid study area name.\n",
+         "Study area name must be one of:\n", paste(allowedStudyAreaNames, collapse = ", "), ".")
+  }
+
   ## NOTE (2019-11-08): targetCRS needs to be character, not CRS class due to change in data.table
   targetCRS <- paste("+proj=lcc +lat_1=49 +lat_2=77 +lat_0=0 +lon_0=-95",
                      "+x_0=0 +y_0=0 +units=m +no_defs +ellps=GRS80 +towgs84=0,0,0")
@@ -133,7 +142,7 @@ Init <- function(sim) {
                columnNameForLabels = "NAME_1", isStudyArea = FALSE, filename2 = NULL)
 
   ################################################################################
-  ## COMPANY-SPECIFIC STUDY AREAS
+  ## COMPANY-SPECIFIC STUDY AREAS -- be sure to update allowedStudyAreaNames above !!
   dataDir <- checkPath(file.path(inputPath(sim), "studyAreas"), create = TRUE)
 
   if (grepl("ANC", P(sim)$runName)) {
@@ -176,7 +185,7 @@ Init <- function(sim) {
     ml <- provNWT(ml, P(sim)$runName, dataDir, sim$canProvs, P(sim)$bufferDist, asStudyArea = TRUE)
   } else if (grepl("provSK", P(sim)$runName)) {
     ml <- provSK(ml, P(sim)$runName, dataDir, sim$canProvs, P(sim)$bufferDist, asStudyArea = TRUE)
-  } else {
+  } else if (grepl("random", P(sim)$runName)) {
     ## use a small random study area
     message(crayon::red("Using random study area for runName", runName))
     seed <- 863
