@@ -410,7 +410,7 @@ Init <- function(sim) {
   message(currentModule(sim), ": using dataPath '", dPath, "'.")
 
   if (!suppliedElsewhere("canProvs", sim))
-    sim$canProvs <- getData("GADM", country = "CAN", level = 1, path = dPath)
+    sim$canProvs <- raster::getData("GADM", country = "CAN", level = 1, path = dPath)
 
   return(sim)
 }
