@@ -7,7 +7,7 @@ defineModule(sim, list(
     person(c("Alex", "M."), "Chubaty", email = "achubaty@for-cast.ca", role = c("aut"))
   ),
   childModules = character(0),
-  version = list(SpaDES.core = "0.2.3.9009", LandWeb_preamble = "0.0.2", LandR = "0.0.2.9011"),
+  version = list(LandWeb_preamble = "0.0.2"),
   spatialExtent = raster::extent(rep(NA_real_, 4)),
   timeframe = as.POSIXlt(c(NA, NA)),
   timeunit = "year",
@@ -15,11 +15,11 @@ defineModule(sim, list(
   documentation = list("README.txt", "LandWeb_preamble.Rmd"),
   reqdPkgs = list("achubaty/amc@development",
                   "crayon", "dplyr", "fasterize", "ggplot2", "httr",
-                  "PredictiveEcology/LandR@development",
+                  "PredictiveEcology/LandR@development (>= 0.0.2.9011)",
                   "magrittr", "PredictiveEcology/map@development", "maptools",
                   "PredictiveEcology/pemisc@development",
                   "raster", "RColorBrewer", "RCurl", "rgeos",
-                  "PredictiveEcology/reproducible@development (>=1.2.1.9005)",
+                  "PredictiveEcology/reproducible@development (>=1.2.6.9001)",
                   "scales", "sf", "sp", "SpaDES.tools", "XML"),
   parameters = rbind(
     defineParameter("bufferDist", "numeric", 25000, 20000, 100000, "Study area buffer distance (m) used to make studyArea."),
@@ -112,11 +112,29 @@ Init <- function(sim) {
   ml[["FMA Boundaries Updated"]][["Name"]][ids] <- newNames
   ml[["FMA Boundaries Updated"]][["shinyLabel"]][ids] <- newNames
 
+  ## National ecoregions
+  ml <- mapAdd(map = ml, layerName = "National Ecoregions",
+               useSAcrs = TRUE, poly = TRUE, overwrite = TRUE,
+               url = "https://sis.agr.gc.ca/cansis/nsdb/ecostrat/region/ecoregion_shp.zip",
+               columnNameForLabels = "REGION_NAM", isStudyArea = FALSE, filename2 = NULL)
+
   ## Alberta Natural Subregions (ANSRs)
   ml <- mapAdd(map = ml, layerName = "Alberta Natural Subregions",
                useSAcrs = TRUE, poly = TRUE, overwrite = TRUE,
                url = "https://drive.google.com/file/d/1hW6zy0CpUBdk-K2IAjzW4INjVl1J4aLJ",
                columnNameForLabels = "Name", isStudyArea = FALSE, filename2 = NULL)
+
+  ## BC biogeoclimatic zones
+  ml <- mapAdd(map = ml, layerName = "BC Biogeoclimatic zones",
+               useSAcrs = TRUE, poly = TRUE, overwrite = TRUE,
+               url = "https://drive.google.com/file/d/1NS15Gd7dHEhvPOy-Ol_LBtf-4Ch6mPnS",
+               columnNameForLabels = "ZONE_NAME", isStudyArea = FALSE, filename2 = NULL)
+
+  ## NWT ecoregions
+  ml <- mapAdd(map = ml, layerName = "Northwest Territories Ecoregions",
+               useSAcrs = TRUE, poly = TRUE, overwrite = TRUE,
+               url = "https://drive.google.com/file/d/1iRAQfARkmS6-XVHFnTkB-iltzMNPAczC",
+               columnNameForLabels = "ECO4_NAM_1", isStudyArea = FALSE, filename2 = NULL)
 
   ## Caribou Ranges
   # ml <- mapAdd(map = ml, layerName = "Boreal Caribou Ranges",
