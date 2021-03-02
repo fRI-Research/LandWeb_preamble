@@ -6,13 +6,16 @@ allLandWeb <- function(ml, runName, dataDir, canProvs, bufferDist, asStudyArea =
   ab <- canProvs[canProvs$NAME_1 %in% c("Alberta"), ]
   absk <- canProvs[canProvs$NAME_1 %in% c("Alberta", "Saskatchewan"), ]
   nwt <- canProvs[canProvs$NAME_1 %in% c("Northwest Territories"), ]
-  west <- canProvs[canProvs$NAME_1 %in% c("British Columbia", "Alberta",
-                                          "Saskatchewan", "Manitoba"), ]
+  west <- canProvs[canProvs$NAME_1 %in% c("British Columbia", "Alberta", "Saskatchewan", "Manitoba"), ]
 
   lw <- ml[["LandWeb Study Area"]]
   lw.sp <- as(lw, "SpatialPolygons")
 
   ## reportingPolygons
+  lw.natler <- postProcess(ml[["National Ecoregions"]],
+                           studyArea = lw, useSAcrs = TRUE,
+                           filename2 = file.path(dataDir, "LandWeb_NATLER.shp")) %>%
+    joinReportingPolygons(., lwK)
   lw.caribou <- postProcess(ml[["LandWeb Caribou Ranges"]],
                             studyArea = lw.sp, useSAcrs = TRUE,
                             filename2 = file.path(dataDir, "LandWeb_caribou.shp"),
@@ -27,6 +30,9 @@ allLandWeb <- function(ml, runName, dataDir, canProvs, bufferDist, asStudyArea =
                columnNameForLabels = "Name", filename2 = NULL) ## TODO: losing a polygon in NWT
   ml$LandWeb <- lw ## TODO: workaround the problem with lost NWT poly
 
+  ml <- mapAdd(lw.natler, ml, layerName = "LandWeb NATLER", useSAcrs = TRUE, poly = TRUE,
+               analysisGroupReportingPolygon = "LandWeb NATLER",
+               columnNameForLabels = "REGION_NAM", filename2 = NULL)
   ml <- mapAdd(lw.caribou, ml, layerName = "LandWeb Caribou", useSAcrs = TRUE, poly = TRUE,
                analysisGroupReportingPolygon = "LandWeb Caribou",
                columnNameForLabels = "Name", filename2 = NULL)
