@@ -117,6 +117,7 @@ Init <- function(sim) {
                useSAcrs = TRUE, poly = TRUE, overwrite = TRUE,
                url = "https://sis.agr.gc.ca/cansis/nsdb/ecostrat/region/ecoregion_shp.zip",
                columnNameForLabels = "REGION_NAM", isStudyArea = FALSE, filename2 = NULL)
+  ml[["National Ecoregions"]][["Name"]] <- ml[["National Ecoregions"]][["REGION_NAM"]]
 
   ## Alberta Natural Subregions (ANSRs)
   ml <- mapAdd(map = ml, layerName = "Alberta Natural Subregions",
@@ -129,12 +130,14 @@ Init <- function(sim) {
                useSAcrs = TRUE, poly = TRUE, overwrite = TRUE,
                url = "https://drive.google.com/file/d/1NS15Gd7dHEhvPOy-Ol_LBtf-4Ch6mPnS",
                columnNameForLabels = "ZONE_NAME", isStudyArea = FALSE, filename2 = NULL)
+  ml[["BC Biogeoclimatic zones"]][["Name"]] <- ml[["BC Biogeoclimatic zones"]][["ZONE_NAME"]]
 
   ## NWT ecoregions
   ml <- mapAdd(map = ml, layerName = "Northwest Territories Ecoregions",
                useSAcrs = TRUE, poly = TRUE, overwrite = TRUE,
                url = "https://drive.google.com/file/d/1iRAQfARkmS6-XVHFnTkB-iltzMNPAczC",
                columnNameForLabels = "ECO4_NAM_1", isStudyArea = FALSE, filename2 = NULL)
+  ml[["Northwest Territories Ecoregions"]][["Name"]] <- ml[["Northwest Territories Ecoregions"]][["ECO4_NAM_1"]]
 
   ## Caribou Ranges
   # ml <- mapAdd(map = ml, layerName = "Boreal Caribou Ranges",
