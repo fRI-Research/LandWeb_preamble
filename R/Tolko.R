@@ -102,7 +102,7 @@ fmaTolko <- function(ml, runName, dataDir, canProvs, bufferDist, asStudyArea = F
     tolko_sk.natler <- postProcess(ml[["National Ecoregions"]],
                                    studyArea = tolko_sk, useSAcrs = TRUE,
                                    filename2 = file.path(dataDir, "Tolko_SK_NATLER.shp")) %>%
-      joinReportingPolygons(., weyco_sk)
+      joinReportingPolygons(., tolko_sk)
     tolko_sk.caribou <- postProcess(ml[["LandWeb Caribou Ranges"]],
                                     studyArea = tolko_sk, useSAcrs = TRUE,
                                     filename2 = file.path(dataDir, "Tolko_SK_caribou.shp"),
