@@ -94,7 +94,10 @@ fmaWeyCo <- function(ml, runName, dataDir, canProvs, bufferDist, asStudyArea = F
     ## reportingPolygons
     weyco_sk <- extractFMA(ml, "Pasquia-Porcupine")
     shapefile(weyco_sk, filename = file.path(dataDir, "WeyCo_SK.shp"), overwrite = TRUE)
-
+    weyco_sk.natler <- postProcess(ml[["National Ecoregions"]],
+                                   studyArea = weyco_sk, useSAcrs = TRUE,
+                                   filename2 = file.path(dataDir, "WeyCo_SK_NATLER.shp")) %>%
+      joinReportingPolygons(., weyco_sk)
     weyco_sk.caribou <- postProcess(ml[["LandWeb Caribou Ranges"]],
                                     studyArea = weyco_sk, useSAcrs = TRUE,
                                     filename2 = file.path(dataDir, "WeyCo_SK_Caribou.shp"),
@@ -104,6 +107,9 @@ fmaWeyCo <- function(ml, runName, dataDir, canProvs, bufferDist, asStudyArea = F
     ml <- mapAdd(weyco_sk, ml, layerName = "WeyCo SK", useSAcrs = TRUE, poly = TRUE,
                  analysisGroupReportingPolygon = "WeyCo SK", isStudyArea = isTRUE(asStudyArea),
                  columnNameForLabels = "Name", filename2 = NULL)
+    ml <- mapAdd(weyco_sk.natler, ml, layerName = "WeyCo SK NATLER", useSAcrs = TRUE, poly = TRUE,
+                 analysisGroupReportingPolygon = "WeyCo SK NATLER",
+                 columnNameForLabels = "REGION_NAM", filename2 = NULL)
     ml <- mapAdd(weyco_sk.caribou, ml, layerName = "WeyCo SK Caribou", useSAcrs = TRUE, poly = TRUE,
                  analysisGroupReportingPolygon = "WeyCo SK Caribou",
                  columnNameForLabels = "Name", filename2 = NULL)

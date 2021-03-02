@@ -99,7 +99,10 @@ fmaTolko <- function(ml, runName, dataDir, canProvs, bufferDist, asStudyArea = F
     ## reportingPolygons
     tolko_sk <- tolko[1, ]
     shapefile(tolko_sk, filename = file.path(dataDir, "Tolko_SK.shp"), overwrite = TRUE)
-
+    tolko_sk.natler <- postProcess(ml[["National Ecoregions"]],
+                                   studyArea = tolko_sk, useSAcrs = TRUE,
+                                   filename2 = file.path(dataDir, "Tolko_SK_NATLER.shp")) %>%
+      joinReportingPolygons(., weyco_sk)
     tolko_sk.caribou <- postProcess(ml[["LandWeb Caribou Ranges"]],
                                     studyArea = tolko_sk, useSAcrs = TRUE,
                                     filename2 = file.path(dataDir, "Tolko_SK_caribou.shp"),
@@ -109,6 +112,9 @@ fmaTolko <- function(ml, runName, dataDir, canProvs, bufferDist, asStudyArea = F
     ml <- mapAdd(tolko_sk, ml, layerName = "Tolko SK", useSAcrs = TRUE, poly = TRUE,
                  analysisGroupReportingPolygon = "Tolko SK", isStudyArea = isTRUE(asStudyArea),
                  columnNameForLabels = "Name", filename2 = NULL)
+    ml <- mapAdd(tolko_sk.natler, ml, layerName = "Tolko SK NATLER", useSAcrs = TRUE, poly = TRUE,
+                 analysisGroupReportingPolygon = "Tolko SK NATLER",
+                 columnNameForLabels = "REGION_NAM", filename2 = NULL)
     ml <- mapAdd(tolko_sk.caribou, ml, layerName = "Tolko SK Caribou", useSAcrs = TRUE, poly = TRUE,
                  analysisGroupReportingPolygon = "Tolko SK Caribou",
                  columnNameForLabels = "Name", filename2 = NULL)

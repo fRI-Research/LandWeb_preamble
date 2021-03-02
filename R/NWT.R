@@ -9,8 +9,13 @@ fmaNWT <- function(ml, runName, dataDir, canProvs, bufferDist, asStudyArea = FAL
   fmanwt_FR <- extractFMA(ml, "Fort Resolution") # FMANWT1
   shapefile(fmanwt_FR, filename = file.path(dataDir, "FMA_NWT_FR.shp"), overwrite = TRUE)
 
-  if (grepl("FMANWT2", runName)) {
+  if (grepl("LandWeb|FMANWT2", runName)) {
     ## reportingPolygons
+    fmanwt_FP.nwter <- postProcess(ml[["Northwest Territories Ecoregions"]],
+                                   studyArea = fmanwt_FP, useSAcrs = TRUE,
+                                   filename2 = file.path(dataDir, "fmanwt_FP_NWTER.shp")) %>%
+      joinReportingPolygons(., fmanwt_FP)
+
     fmanwt_FP.caribou <- postProcess(ml[["LandWeb Caribou Ranges"]],
                                      studyArea = fmanwt_FP, useSAcrs = TRUE,
                                      filename2 = file.path(dataDir, "FMA_NWT_FP_caribou.shp"),
@@ -20,6 +25,9 @@ fmaNWT <- function(ml, runName, dataDir, canProvs, bufferDist, asStudyArea = FAL
     ml <- mapAdd(fmanwt_FP, ml, layerName = "FMANWT FP", useSAcrs = TRUE, poly = TRUE,
                  analysisGroupReportingPolygon = "FMANWT FP", isStudyArea = isTRUE(asStudyArea),
                  columnNameForLabels = "Name", filename2 = NULL)
+    ml <- mapAdd(fmanwt_FP.nwter, ml, layerName = "FMANWT FP NWTER", useSAcrs = TRUE, poly = TRUE,
+                 analysisGroupReportingPolygon = "FMANWT FP NWTER",
+                 columnNameForLabels = "ECO4_NAM_1", filename2 = NULL)
     ml <- mapAdd(fmanwt_FP.caribou, ml, layerName = "FMANWT FP Caribou", useSAcrs = TRUE, poly = TRUE,
                  analysisGroupReportingPolygon = "FMANWT FP Caribou",
                  columnNameForLabels = "Name", filename2 = NULL)
@@ -43,6 +51,11 @@ fmaNWT <- function(ml, runName, dataDir, canProvs, bufferDist, asStudyArea = FAL
     }
   } else {
     ## reportingPolygons
+    fmanwt_FR.nwter <- postProcess(ml[["Northwest Territories Ecoregions"]],
+                                   studyArea = fmanwt_FR, useSAcrs = TRUE,
+                                   filename2 = file.path(dataDir, "fmanwt_FR_NWTER.shp")) %>%
+      joinReportingPolygons(., fmanwt_FR)
+
     fmanwt_FR.caribou <- postProcess(ml[["LandWeb Caribou Ranges"]],
                                      studyArea = fmanwt_FR, useSAcrs = TRUE,
                                      filename2 = file.path(dataDir, "FMA_NWT_FR_caribou.shp"),
@@ -52,6 +65,9 @@ fmaNWT <- function(ml, runName, dataDir, canProvs, bufferDist, asStudyArea = FAL
     ml <- mapAdd(fmanwt_FR, ml, layerName = "FMANWT FR", useSAcrs = TRUE, poly = TRUE,
                  analysisGroupReportingPolygon = "FMANWT FR", isStudyArea = isTRUE(asStudyArea),
                  columnNameForLabels = "Name", filename2 = NULL)
+    ml <- mapAdd(fmanwt_FR.nwter, ml, layerName = "FMANWT FR NWTER", useSAcrs = TRUE, poly = TRUE,
+                 analysisGroupReportingPolygon = "FMANWT FR NWTER",
+                 columnNameForLabels = "ECO4_NAM_1", filename2 = NULL)
     ml <- mapAdd(fmanwt_FR.caribou, ml, layerName = "FMANWT FR Caribou", useSAcrs = TRUE, poly = TRUE,
                  analysisGroupReportingPolygon = "FMANWT FR Caribou",
                  columnNameForLabels = "Name", filename2 = NULL)

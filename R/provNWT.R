@@ -7,6 +7,10 @@ provNWT <- function(ml, runName, dataDir, canProvs, bufferDist, asStudyArea = FA
 
   ## reportingPolygons
   NWT[["Name"]] <- NWT[["NAME_1"]]
+  NWT.nwter <- postProcess(ml[["Northwest Territories Ecoregions"]],
+                           studyArea = NWT, useSAcrs = TRUE,
+                           filename2 = file.path(dataDir, "NWT_NWTER.shp")) %>%
+    joinReportingPolygons(., NWT)
   NWT.caribou <- postProcess(ml[["LandWeb Caribou Ranges"]],
                              studyArea = NWT, useSAcrs = TRUE,
                              filename2 = file.path(dataDir, "NWT_caribou.shp"),
@@ -16,6 +20,9 @@ provNWT <- function(ml, runName, dataDir, canProvs, bufferDist, asStudyArea = FA
   ml <- mapAdd(NWT, ml, layerName = "NWT", useSAcrs = TRUE, poly = TRUE,
                analysisGroupReportingPolygon = "NWT", isStudyArea = isTRUE(asStudyArea),
                columnNameForLabels = "Name", filename2 = NULL)
+  ml <- mapAdd(fmanwt_FR.nwter, ml, layerName = "NWT NWTER", useSAcrs = TRUE, poly = TRUE,
+               analysisGroupReportingPolygon = "NWT NWTER",
+               columnNameForLabels = "ECO4_NAM_1", filename2 = NULL)
   ml <- mapAdd(NWT.caribou, ml, layerName = "NWT Caribou", useSAcrs = TRUE, poly = TRUE,
                analysisGroupReportingPolygon = "NWT Caribou",
                columnNameForLabels = "Name", filename2 = NULL)

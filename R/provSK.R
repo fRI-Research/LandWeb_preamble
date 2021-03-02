@@ -7,6 +7,10 @@ provSK <- function(ml, runName, dataDir, canProvs, bufferDist, asStudyArea = FAL
 
   ## reportingPolygons
   SK[["Name"]] <- SK[["NAME_1"]]
+  SK.natler <- postProcess(ml[["National Ecoregions"]],
+                           studyArea = SK, useSAcrs = TRUE,
+                           filename2 = file.path(dataDir, "SK_NATLER.shp")) %>%
+    joinReportingPolygons(., SK)
   SK.caribou <- postProcess(ml[["LandWeb Caribou Ranges"]],
                             studyArea = SK, useSAcrs = TRUE,
                             filename2 = file.path(dataDir, "SK_caribou.shp"),
@@ -16,6 +20,9 @@ provSK <- function(ml, runName, dataDir, canProvs, bufferDist, asStudyArea = FAL
   ml <- mapAdd(SK, ml, layerName = "SK", useSAcrs = TRUE, poly = TRUE,
                analysisGroupReportingPolygon = "SK", isStudyArea = isTRUE(asStudyArea),
                columnNameForLabels = "Name", filename2 = NULL)
+  ml <- mapAdd(SK.natler, ml, layerName = "SK NATLER", useSAcrs = TRUE, poly = TRUE,
+               analysisGroupReportingPolygon = "SK NATLER",
+               columnNameForLabels = "REGION_NAM", filename2 = NULL)
   ml <- mapAdd(SK.caribou, ml, layerName = "SK Caribou", useSAcrs = TRUE, poly = TRUE,
                analysisGroupReportingPolygon = "SK Caribou",
                columnNameForLabels = "Name", filename2 = NULL)

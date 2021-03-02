@@ -9,7 +9,10 @@ fmaLP <- function(ml, runName, dataDir, canProvs, bufferDist, asStudyArea = FALS
     ## reportingPolygons
     lp_bc <- extractFMA(ml, "Fort St\\. John|Dawson Creek")
     shapefile(lp_bc, filename = file.path(dataDir, "LP_BC.shp"), overwrite = TRUE)
-
+    lp_bc.bcbgcz <- postProcess(ml[["BC Biogeoclimatic zones"]],
+                             studyArea = lp_bc, useSAcrs = TRUE,
+                             filename2 = file.path(dataDir, "lp_bc_BCBGCZ.shp")) %>%
+      joinReportingPolygons(., lp_bc)
     lp_bc.caribou <- postProcess(ml[["LandWeb Caribou Ranges"]],
                                  studyArea = lp_bc, useSAcrs = TRUE,
                                  filename2 = file.path(dataDir, "LP_BC_caribou.shp"),
@@ -19,6 +22,9 @@ fmaLP <- function(ml, runName, dataDir, canProvs, bufferDist, asStudyArea = FALS
     ml <- mapAdd(lp_bc, ml, layerName = "LP BC", useSAcrs = TRUE, poly = TRUE,
                  analysisGroupReportingPolygon = "LP BC", isStudyArea = isTRUE(asStudyArea),
                  columnNameForLabels = "Name", filename2 = NULL)
+    ml <- mapAdd(lp_bc.bcbgcz, ml, layerName = "LP BC BGCZ", useSAcrs = TRUE, poly = TRUE,
+                 analysisGroupReportingPolygon = "LP BC BGCZ",
+                 columnNameForLabels = "ZONE_NAME", filename2 = NULL)
     ml <- mapAdd(lp_bc.caribou, ml, layerName = "LP BC Caribou", useSAcrs = TRUE, poly = TRUE,
                  analysisGroupReportingPolygon = "LP BC Caribou",
                  columnNameForLabels = "Name", filename2 = NULL)
