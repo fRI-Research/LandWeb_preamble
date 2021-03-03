@@ -44,8 +44,16 @@ joinReportingPolygons <- function(x, y) {
     z[["shinyLabel"]] <- paste(z[["shinyLabel.2"]], z[["shinyLabel.1"]])
     z[["shinyLabel.1"]] <- z[["shinyLabel.2"]] <- NULL
   } else {
-    z <- sf::st_intersection(fixErrors(sf::st_set_precision(sf::st_as_sf(x), 1e5)),
-                             fixErrors(sf::st_set_precision(sf::st_as_sf(y), 1e5)))
+    if (!is(x, "sf")) {
+      x <- sf::st_as_sf(x)
+    }
+    if (!is(y, "sf")) {
+      y <- sf::st_as_sf(y)
+    }
+
+    x <- sf::st_set_precision(x, 1e5) %>% fixErrors(.)
+    y <- sf::st_set_precision(y, 1e5) %>% fixErrors(.)
+    z <- sf::st_intersection(x, y)
 
     ## sfc_GEOMETRY may itself contain points, so filter them out
     z <- suppressWarnings(sf::st_collection_extract(z, "POLYGON"))
