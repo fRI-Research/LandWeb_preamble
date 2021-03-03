@@ -15,7 +15,7 @@ allLandWeb <- function(ml, runName, dataDir, canProvs, bufferDist, asStudyArea =
   lw.natler <- postProcess(ml[["National Ecoregions"]],
                            studyArea = lw, useSAcrs = TRUE,
                            filename2 = file.path(dataDir, "LandWeb_NATLER.shp")) %>%
-    joinReportingPolygons(., lwK)
+    joinReportingPolygons(., lw)
   lw.caribou <- postProcess(ml[["LandWeb Caribou Ranges"]],
                             studyArea = lw.sp, useSAcrs = TRUE,
                             filename2 = file.path(dataDir, "LandWeb_caribou.shp"),
