@@ -51,7 +51,10 @@ fmaLP <- function(ml, runName, dataDir, canProvs, bufferDist, asStudyArea = FALS
     ## reportingPolygons
     lp_mb <- extractFMA(ml, "Mountain")
     shapefile(lp_mb, filename = file.path(dataDir, "LP_MB.shp"), overwrite = TRUE)
-
+    lp_mb.natler <- postProcess(ml[["National Ecoregions"]],
+                                studyArea = lp_mb, useSAcrs = TRUE,
+                                filename2 = file.path(dataDir, "LP_MB_NATLER.shp")) %>%
+      joinReportingPolygons(., lp_mb)
     lp_mb.caribou <- postProcess(ml[["LandWeb Caribou Ranges"]],
                                  studyArea = lp_mb, useSAcrs = TRUE,
                                  filename2 = file.path(dataDir, "LP_MB_caribou.shp"),
@@ -61,6 +64,9 @@ fmaLP <- function(ml, runName, dataDir, canProvs, bufferDist, asStudyArea = FALS
     ml <- mapAdd(lp_mb, ml, layerName = "LP MB", useSAcrs = TRUE, poly = TRUE,
                  analysisGroupReportingPolygon = "LP MB", isStudyArea = isTRUE(asStudyArea),
                  columnNameForLabels = "Name", filename2 = NULL)
+    ml <- mapAdd(lp_mb.natler, ml, layerName = "LP MB NATLER", useSAcrs = TRUE, poly = TRUE,
+                 analysisGroupReportingPolygon = "LP MB NATLER",
+                 columnNameForLabels = "REGION_NAM", filename2 = NULL)
     ml <- mapAdd(lp_mb.caribou, ml, layerName = "LP MB Caribou", useSAcrs = TRUE, poly = TRUE,
                  analysisGroupReportingPolygon = "LP MB Caribou",
                  columnNameForLabels = "Name", filename2 = NULL)
