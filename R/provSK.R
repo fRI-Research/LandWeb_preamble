@@ -11,7 +11,7 @@ provSK <- function(ml, runName, dataDir, canProvs, bufferDist, asStudyArea = FAL
                            studyArea = SK, useSAcrs = TRUE,
                            filename2 = file.path(dataDir, "SK_NATLER.shp")) %>%
     joinReportingPolygons(., SK)
-  SK.caribou <- postProcess(ml[["LandWeb Caribou Ranges"]],
+  SK.caribou <- postProcess(ml[["SK Caribou Ranges"]], ## NOTE: SK updated their ranges ~2018/2019
                             studyArea = SK, useSAcrs = TRUE,
                             filename2 = file.path(dataDir, "SK_caribou.shp"),
                             overwrite = TRUE) %>%

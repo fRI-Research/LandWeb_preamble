@@ -144,14 +144,20 @@ Init <- function(sim) {
   #              useSAcrs = TRUE, poly = TRUE, overwrite = TRUE,
   #              url = "https://drive.google.com/file/d/1PYLou8J1wcrme7Z2tx1wtA4GvaWnU1Jy",
   #              columnNameForLabels = "Name", isStudyArea = FALSE, filename2 = NULL)
-  # ml <- mapAdd(map = ml, layerName = "AB Caribou Ranges",
-  #              useSAcrs = TRUE, poly = TRUE, overwrite = TRUE,
-  #              url = "https://extranet.gov.ab.ca/srd/geodiscover/srd_pub/LAT/FWDSensitivity/CaribouRange.zip",
-  #              columnNameForLabels = "SUBUNIT", isStudyArea = FALSE, filename2 = NULL) ## untested
   # ml <- mapAdd(map = ml, layerName = "BC Caribou Ranges",
   #              useSAcrs = TRUE, poly = TRUE, overwrite = TRUE,
   #              url = "https://drive.google.com/file/d/1uqEVID74y4enPMee2w3axBcR1agw_kMT",
   #              columnNameForLabels = "HERD_NAME", isStudyArea = FALSE, filename2 = NULL) ## untested
+  # ml <- mapAdd(map = ml, layerName = "AB Caribou Ranges",
+  #              useSAcrs = TRUE, poly = TRUE, overwrite = TRUE,
+  #              url = "https://extranet.gov.ab.ca/srd/geodiscover/srd_pub/LAT/FWDSensitivity/CaribouRange.zip",
+  #              columnNameForLabels = "SUBUNIT", isStudyArea = FALSE, filename2 = NULL) ## untested
+  ml <- mapAdd(map = ml, layerName = "SK Caribou Ranges",
+               useSAcrs = TRUE, poly = TRUE, overwrite = TRUE,
+               url = "https://drive.google.com/file/d/1LiizDyXOfJPQ76FQM8SQ1_kYG9hJUDdK",
+               columnNameForLabels = "RGEUNIT", isStudyArea = FALSE, filename2 = NULL)
+  ml[["SK Caribou Ranges"]][["Name"]] <- ml[["SK Caribou Ranges"]][["RGEUNIT"]]
+
   ml <- mapAdd(map = ml, layerName = "LandWeb Caribou Ranges",
                useSAcrs = TRUE, poly = TRUE, overwrite = TRUE,
                url = "https://drive.google.com/file/d/1mrsxIJfdP-XxEZkO6vs2J6lYbGry67A2",
