@@ -242,7 +242,7 @@ Init <- function(sim) {
   ##########################################################
   # LCC 2005 / raster to match
   ##########################################################
-  LCC2005large <- prepInputsLCC(studyArea = sim$studyAreaLarge, destinationPath = Paths$inputPath)
+  LCC2005large <- prepInputsLCC(year = 2005, studyArea = sim$studyAreaLarge, destinationPath = Paths$inputPath)
   if (P(sim)$mapResFact != 1) {
     stopifnot(P(sim)$mapResFact %in% c(2, 5, 10)) ## 125m, 50m, 25m resolutions respectively
     LCC2005large <- Cache(raster::disaggregate, x = LCC2005large, fact = P(sim)$mapResFact)
