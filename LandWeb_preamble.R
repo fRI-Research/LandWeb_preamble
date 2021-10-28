@@ -215,10 +215,11 @@ Init <- function(sim) {
   } else if (grepl("random", P(sim)$runName)) {
     ## use a small random study area
     message(crayon::red("Using random study area for runName", runName))
-    seed <- 863
+    seed <- 123
     ranSeed <- .Random.seed
     set.seed(seed)
-    rnd <- Cache(SpaDES.tools::randomPolygon, ml[[studyAreaName(ml)]], 4e4)
+    rnd <- SpaDES.tools::randomPolygon(ml[[studyAreaName(ml)]], area = 1e5) ## random area in Central-East AB
+
     ml <- mapAdd(rnd, ml, layerName = "Random Study Area", useSAcrs = TRUE, poly = TRUE,
                  analysisGroupReportingPolygon = "Random Study Area", isStudyArea = TRUE,
                  columnNameForLabels = "Name", filename2 = NULL)
