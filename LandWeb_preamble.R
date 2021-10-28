@@ -215,10 +215,16 @@ Init <- function(sim) {
   } else if (grepl("random", P(sim)$runName)) {
     ## use a small random study area
     message(crayon::red("Using random study area for runName", runName))
-    seed <- 123
+    seed <- 867
     ranSeed <- .Random.seed
     set.seed(seed)
-    rnd <- SpaDES.tools::randomPolygon(ml[[studyAreaName(ml)]], area = 1e5) ## random area in Central-East AB
+    #rnd <- SpaDES.tools::randomPolygon(ml[[studyAreaName(ml)]], area = 2e5)
+    rnd <- SpaDES.tools::randomPolygon(ml[["Alberta Natural Subregions"]], area = 4e5) ## random area in Central-East AB
+
+    if (FALSE) {
+      sp::plot(spTransform(sim$canProvs[sim$canProvs$NAME_1 == "Alberta", ], targetCRS))
+      sp::plot(rnd, col = "darkgrey", add = TRUE)
+    }
 
     ml <- mapAdd(rnd, ml, layerName = "Random Study Area", useSAcrs = TRUE, poly = TRUE,
                  analysisGroupReportingPolygon = "Random Study Area", isStudyArea = TRUE,
