@@ -9,7 +9,7 @@ allLandWeb <- function(ml, runName, dataDir, canProvs, bufferDist, asStudyArea =
   west <- canProvs[canProvs$NAME_1 %in% c("British Columbia", "Alberta", "Saskatchewan", "Manitoba"), ]
 
   lw <- ml[["LandWeb Study Area"]]
-  lw.sp <- as(lw, "SpatialPolygons")
+  lw.sp <- as(lw, "SpatialPolygons") %>% raster::aggregate(.) %>% spatialEco::remove.holes(.)
 
   ## reportingPolygons
   lw.natler <- postProcess(ml[["National Ecoregions"]],

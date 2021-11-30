@@ -20,7 +20,7 @@ defineModule(sim, list(
                   "PredictiveEcology/pemisc@development",
                   "raster", "RColorBrewer", "RCurl", "rgeos",
                   "PredictiveEcology/reproducible@development (>=1.2.6.9001)",
-                  "scales", "sf", "sp", "SpaDES.tools", "XML"),
+                  "scales", "sf", "sp", "SpaDES.tools", "spatialEco", "XML"),
   parameters = rbind(
     defineParameter("bufferDist", "numeric", 25000, 20000, 100000, "Study area buffer distance (m) used to make studyArea."),
     defineParameter("bufferDistLarge", "numeric", 50000, 20000, 100000, "Study area buffer distance (m) used to make studyAreaLarge."),
@@ -166,7 +166,7 @@ Init <- function(sim) {
   ## Provincial Boundaries
   ml <- mapAdd(sim$canProvs, map = ml, layerName = "Provincial Boundaries",
                useSAcrs = TRUE, poly = TRUE, overwrite = TRUE,
-               columnNameForLabels = "NAME_1", isStudyArea = FALSE, filename2 = NULL)
+               columnNameForLabels = "NAME_1", isStudyArea = FALSE, filename2 = NULL) ## TODO: slow/hangs
 
   ################################################################################
   ## COMPANY-SPECIFIC STUDY AREAS -- be sure to update allowedStudyAreaNames above !!
