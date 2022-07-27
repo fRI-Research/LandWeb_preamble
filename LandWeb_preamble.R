@@ -90,7 +90,8 @@ Init <- function(sim) {
   ## LandWeb study area -- LTHFC (aka "fire return interval") map
   ml <- mapAdd(layerName = "LandWeb Study Area",
                targetCRS = targetCRS, overwrite = TRUE,
-               url = "https://drive.google.com/file/d/1JptU0R7qsHOEAEkxybx5MGg650KC98c6", ## landweb_ltfc_v6.shp
+               #url = "https://drive.google.com/file/d/1JptU0R7qsHOEAEkxybx5MGg650KC98c6", ## landweb_ltfc_v6.shp
+               url = "https://drive.google.com/file/d/1eu5TJS1NhzqbnDenyiBy2hAnVI1E3lsC/", ## landweb_ltfc_v8.shp
                columnNameForLabels = "NSN", isStudyArea = TRUE, filename2 = NULL)
 
   ## Updated FMA boundaries
