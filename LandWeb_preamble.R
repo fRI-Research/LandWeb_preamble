@@ -447,5 +447,5 @@ Init <- function(sim) {
   if (!suppliedElsewhere("canProvs", sim))
     sim$canProvs <- raster::getData("GADM", country = "CAN", level = 1, path = dPath)
 
-  return(sim)
+  return(invisible(sim))
 }
