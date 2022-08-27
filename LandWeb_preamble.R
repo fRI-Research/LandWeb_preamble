@@ -16,10 +16,12 @@ defineModule(sim, list(
   reqdPkgs = list("achubaty/amc@development",
                   "crayon", "dplyr", "fasterize", "ggplot2", "httr",
                   "PredictiveEcology/LandR@development (>= 0.0.2.9011)",
-                  "magrittr", "PredictiveEcology/map@development", "maptools",
-                  "PredictiveEcology/pemisc@development",
+                  "magrittr",
+                  "PredictiveEcology/map@development (>= 0.0.3.9003)",
+                  "maptools",
+                  "PredictiveEcology/pemisc@development (>= 0.0.3.9007)",
                   "raster", "RColorBrewer", "RCurl", "rgeos",
-                  "PredictiveEcology/reproducible@development (>=1.2.6.9001)",
+                  "PredictiveEcology/reproducible@development (>=1.2.10.9000)",
                   "scales", "sf", "sp", "SpaDES.tools", "spatialEco", "XML"),
   parameters = rbind(
     defineParameter("bufferDist", "numeric", 25000, 20000, 100000, "Study area buffer distance (m) used to make studyArea."),
@@ -76,7 +78,7 @@ doEvent.LandWeb_preamble = function(sim, eventTime, eventType) {
 Init <- function(sim) {
   allowedStudyAreaNames <- c("ANC", "AlPac", "BlueRidge", "DMI", "Edson", "FMANWT", "FMU",
                              "LandWeb", "LP", "Manning", "MillarWestern", "Mistik", "MPR",
-                             "provAB", "provNWT", "provSK", "random",
+                             "provAB", "provMB", "provNWT", "provSK", "random",
                              "SprayLake", "Sundre", "Tolko", "Vanderwell", "WeyCo", "WestFraser")
   if (!grepl(paste(allowedStudyAreaNames, collapse = "|"), P(sim)$runName)) {
     stop("runName, ", P(sim)$runName, ", does not contain valid study area name.\n",
@@ -87,11 +89,11 @@ Init <- function(sim) {
   targetCRS <- paste("+proj=lcc +lat_1=49 +lat_2=77 +lat_0=0 +lon_0=-95",
                      "+x_0=0 +y_0=0 +units=m +no_defs +ellps=GRS80 +towgs84=0,0,0")
 
-  ## LandWeb study area -- LTHFC (aka "fire return interval") map
+    ## LandWeb study area -- LTHFC (aka "fire return interval") map
   ml <- mapAdd(layerName = "LandWeb Study Area",
                targetCRS = targetCRS, overwrite = TRUE,
                #url = "https://drive.google.com/file/d/1JptU0R7qsHOEAEkxybx5MGg650KC98c6", ## landweb_ltfc_v6.shp
-               url = "https://drive.google.com/file/d/1eu5TJS1NhzqbnDenyiBy2hAnVI1E3lsC/", ## landweb_ltfc_v8.shp
+               url = "https://drive.google.com/file/d/1eu5TJS1NhzqbnDenyiBy2hAnVI1E3lsC", ## landweb_ltfc_v8.shp
                columnNameForLabels = "NSN", isStudyArea = TRUE, filename2 = NULL)
 
   ## Updated FMA boundaries
@@ -209,6 +211,8 @@ Init <- function(sim) {
     ml <- fmaWestFraser(ml, P(sim)$runName, dataDir, sim$canProvs, P(sim)$bufferDist, asStudyArea = TRUE)
   } else if (grepl("provAB", P(sim)$runName)) {
     ml <- provAB(ml, P(sim)$runName, dataDir, sim$canProvs, P(sim)$bufferDist, asStudyArea = TRUE)
+  } else if (grepl("provMB", P(sim)$runName)) {
+    ml <- provMB(ml, P(sim)$runName, dataDir, sim$canProvs, P(sim)$bufferDist, asStudyArea = TRUE)
   } else if (grepl("provNWT", P(sim)$runName)) {
     ml <- provNWT(ml, P(sim)$runName, dataDir, sim$canProvs, P(sim)$bufferDist, asStudyArea = TRUE)
   } else if (grepl("provSK", P(sim)$runName)) {
