@@ -259,6 +259,7 @@ Init <- function(sim) {
     stopifnot(P(sim)$mapResFact %in% c(2, 5, 10)) ## 125m, 50m, 25m resolutions respectively
     LCC2005large <- Cache(raster::disaggregate, x = LCC2005large, fact = P(sim)$mapResFact)
   }
+  LCC2005large[] <- as.integer(LCC2005large[])
 
   ml <- mapAdd(LCC2005large, layerName = "LCC2005large", map = ml, filename2 = NULL, leaflet = FALSE,
                isRasterToMatch = TRUE, method = "ngb")
@@ -278,6 +279,7 @@ Init <- function(sim) {
                           url = ccURL, method = "ngb",
                           rasterToMatch = rasterToMatch(ml),
                           filename2 = NULL)
+  sim$LandTypeCC[] <- as.integer(sim$LandTypeCC[])
 
   ##########################################################
   # Non Tree pixels
@@ -393,11 +395,13 @@ Init <- function(sim) {
   # No data class is 5 -- these will be filled in by LCC2005 layer
   # NA_ids <- which(is.na(sim$LandTypeCC[]) | sim$LandTypeCC[] == 5)
   # Only class 4 is considered non-flammable
-  rstFlammableCC <- defineFlammable(sim$LandTypeCC, nonFlammClasses = 4, mask = NULL, filename2 = NULL)
+  rstFlammableCC <- defineFlammable(sim$LandTypeCC, nonFlammClasses = 4L,
+                                    mask = NULL, filename2 = NULL)
   rstFlammableCC <- deratify(rstFlammableCC, complete = TRUE)
 
   # Only classes 36, 37, 38, 39 is considered non-flammable
-  rstFlammableLCC <- defineFlammable(LCC2005large, nonFlammClasses = 36:39, mask = NULL, filename2 = NULL)
+  rstFlammableLCC <- defineFlammable(LCC2005large, nonFlammClasses = 36L:39L,
+                                     mask = NULL, filename2 = NULL)
   rstFlammableLCC <- deratify(rstFlammableLCC, complete = TRUE)
 
   sim$rstFlammable <- rstFlammableCC
