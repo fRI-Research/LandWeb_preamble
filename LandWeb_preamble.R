@@ -16,7 +16,7 @@ defineModule(sim, list(
   reqdPkgs = list("achubaty/amc@development",
                   "crayon", "dplyr", "fasterize", "geodata", "ggplot2", "httr",
                   "PredictiveEcology/LandR@development (>= 0.0.2.9011)",
-                  "PredictiveEcology/map@development (>= 0.0.3.9003)",
+                  "PredictiveEcology/map@development (>= 0.0.3.9004)",
                   "maptools",
                   "PredictiveEcology/pemisc@development (>= 0.0.3.9007)",
                   "raster", "RColorBrewer", "RCurl",
