@@ -14,52 +14,89 @@ defineModule(sim, list(
   citation = list("citation.bib"),
   documentation = list("README.txt", "LandWeb_preamble.Rmd"),
   reqdPkgs = list("achubaty/amc@development",
-                  "crayon", "dplyr", "fasterize", "ggplot2", "httr",
+                  "crayon", "dplyr", "fasterize", "geodata", "ggplot2", "httr",
                   "PredictiveEcology/LandR@development (>= 0.0.2.9011)",
-                  "magrittr",
                   "PredictiveEcology/map@development (>= 0.0.3.9003)",
                   "maptools",
                   "PredictiveEcology/pemisc@development (>= 0.0.3.9007)",
-                  "raster", "RColorBrewer", "RCurl", "rgeos",
-                  "PredictiveEcology/reproducible@development (>=1.2.10.9000)",
+                  "raster", "RColorBrewer", "RCurl",
+                  "PredictiveEcology/reproducible@development (>= 1.2.10.9000)",
                   "scales", "sf", "sp", "SpaDES.tools", "spatialEco", "XML"),
   parameters = rbind(
-    defineParameter("bufferDist", "numeric", 25000, 20000, 100000, "Study area buffer distance (m) used to make studyArea."),
-    defineParameter("bufferDistLarge", "numeric", 50000, 20000, 100000, "Study area buffer distance (m) used to make studyAreaLarge."),
-    defineParameter("friMultiple", "numeric", 1.0, 0.5, 2.0, "Multiplication factor for adjusting fire return intervals."),
+    defineParameter("bufferDist", "numeric", 25000, 20000, 100000,
+                    "Study area buffer distance (m) used to make studyArea."),
+    defineParameter("bufferDistLarge", "numeric", 50000, 20000, 100000,
+                    "Study area buffer distance (m) used to make studyAreaLarge."),
+    defineParameter("friMultiple", "numeric", 1.0, 0.5, 2.0,
+                    "Multiplication factor for adjusting fire return intervals."),
     defineParameter("mapResFact", "numeric", 1, 1, 10,
                     paste("The map resolution factor to use with raster::disaggregate to reduce pixel size below 250 m.",
                           "Should be one of 1, 2, 5, 10, which correspends to pixel size of 250m, 125m, 50m, 25m, repsectively.")),
-    defineParameter("minFRI", "numeric", 40, 0, 200, "The value of fire return interval below which, pixels will be changed to NA, i.e., ignored"),
-    defineParameter("runName", "character", NA, NA, NA, "A description for run; this will form the basis of cache path and output path"),
+    defineParameter("minFRI", "numeric", 40, 0, 200,
+                    "The value of fire return interval below which, pixels will be changed to NA, i.e., ignored"),
+    defineParameter("runName", "character", NA, NA, NA,
+                    "A description for run; this will form the basis of cache path and output path"),
     defineParameter("treeClassesLCC", "numeric", c(1:15, 20, 32, 34:36), 0, 39,
                     "The classes in the LCC2005 layer that are considered 'trees' from the perspective of LandR-Biomass"),
     defineParameter("treeClassesToReplace", "numeric", c(34:36), 0, 39,
                     "The transient classes in the LCC2005 layer that will become 'trees' from the perspective of LandR-Biomass (e.g., burned)"),
-    defineParameter(".plotInitialTime", "numeric", NA, NA, NA, "This describes the simulation time at which the first plot event should occur"),
-    defineParameter(".plotInterval", "numeric", NA, NA, NA, "This describes the simulation time interval between plot events"),
-    defineParameter(".saveInitialTime", "numeric", NA, NA, NA, "This describes the simulation time at which the first save event should occur"),
-    defineParameter(".saveInterval", "numeric", NA, NA, NA, "This describes the simulation time interval between save events"),
-    defineParameter(".useCache", "logical", FALSE, NA, NA, "Should this entire module be run with caching activated? This is generally intended for data-type modules, where stochasticity and time are not relevant")
+    defineParameter(".plotInitialTime", "numeric", NA, NA, NA,
+                    "This describes the simulation time at which the first plot event should occur"),
+    defineParameter(".plotInterval", "numeric", NA, NA, NA,
+                    "This describes the simulation time interval between plot events"),
+    defineParameter(".plots", "character", "object", NA, NA,
+                    paste("Passed to `types` in `Plots` (see `?Plots`). There are a few plots that are made within this module, if set.",
+                          "Note that plots (or their data) saving will ONLY occur at `end(sim)`.",
+                          "If `NA`, plotting is turned off completely (this includes plot saving).")),
+    defineParameter(".saveInitialTime", "numeric", NA, NA, NA,
+                    "This describes the simulation time at which the first save event should occur"),
+    defineParameter(".saveInterval", "numeric", NA, NA, NA,
+                    "This describes the simulation time interval between save events"),
+    defineParameter(".useCache", "logical", FALSE, NA, NA,
+                    paste("Should this entire module be run with caching activated?",
+                          "This is generally intended for data-type modules, where stochasticity and time are not relevant"))
   ),
   inputObjects = bindrows(
     ## TODO: uses CC and fire return interval maps from URL in init
     expectsInput("canProvs", "SpatialPolygonsDataFrame", "Canadian provincial boundaries shapefile", NA)
   ),
   outputObjects = bindrows(
-    createsOutput("CC TSF", "RasterLayer", desc = NA), ## TODO: need descriptions for all outputs
-    createsOutput("fireReturnInterval", "RasterLayer", desc = NA),
-    createsOutput("LandTypeCC", "RasterLayer", desc = NA),
-    createsOutput("LCC2005", "RasterLayer", desc = NA),
-    createsOutput("ml", "map", desc = NA),
-    createsOutput("LCC", "RasterLayer", desc = "A key output from this module: it is the result of LandR::overlayLCCs on LCC2005 and LandTypeCC"),
-    createsOutput("nonTreePixels", "integer", desc = NA),
-    createsOutput("rasterToMatch", "RasterLayer", desc = NA),
-    createsOutput("rasterToMatchReporting", "RasterLayer", desc = NA),
-    createsOutput("rstFlammable", "RasterLayer", desc = NA),
-    createsOutput("studyArea", "SpatialPolygonsDataFrame", desc = NA),
-    createsOutput("studyAreaLarge", "SpatialPolygonsDataFrame", desc = NA),
-    createsOutput("studyAreaReporting", "SpatialPolygonsDataFrame", desc = NA)
+    createsOutput("CC TSF", "RasterLayer",
+                  desc = "Time since fire (aka age) map derived from Current Conditions data."),
+    createsOutput("fireReturnInterval", "RasterLayer",
+                  desc = "fire return interval raster"),
+    createsOutput("LandTypeCC", "RasterLayer",
+                  desc = "Land Cover Classification map derived from Current Conditions data."),
+    createsOutput("LCC2005", "RasterLayer",
+                  desc = "Land Cover Classification map derived from national data."),
+    createsOutput("ml", "map",
+                  desc = "`map` object containing study areas, reporting polygons, etc. for post-processing."),
+    createsOutput("LCC", "RasterLayer",
+                  desc = "A key output from this module: it is the result of LandR::overlayLCCs on LCC2005 and LandTypeCC"),
+    createsOutput("nonTreePixels", "integer",
+                  desc = NA),
+    createsOutput("rasterToMatch", "RasterLayer",
+                  desc = NA),
+    createsOutput("rasterToMatchReporting", "RasterLayer",
+                  desc = NA),
+    createsOutput("rstFlammable", "RasterLayer",
+                  desc = NA),
+    createsOutput("sppColorVect", "character",
+                  desc = paste("A named vector of colors to use for plotting.",
+                               "The names must be in `sim$sppEquiv[[sim$sppEquivCol]]`,",
+                               "and should also contain a color for 'Mixed'")),
+    createsOutput("sppEquiv", "data.table",
+                  desc = "table of species equivalencies. See `LandR::sppEquivalencies_CA`."),
+    createsOutput("studyArea", "SpatialPolygonsDataFrame",
+                  desc = NA),
+    createsOutput("studyAreaLarge", "SpatialPolygonsDataFrame",
+                  desc = paste("Polygon to use as the parametrisation study area.",
+                               "Note that `studyAreaLarge` is only used for parameter estimation, and",
+                               "can be larger than the actual study area used for LandR simulations",
+                               "(e.g, larger than `studyArea` in LandR Biomass_core).")),
+    createsOutput("studyAreaReporting", "SpatialPolygonsDataFrame",
+                  desc = paste("multipolygon (typically smaller/unbuffered than `studyAreaLarge` and `studyArea`",
+                               "in LandR Biomass_core) to use for plotting/reporting."))
   )
 ))
 
@@ -67,7 +104,9 @@ doEvent.LandWeb_preamble = function(sim, eventTime, eventType) {
   switch(
     eventType,
     init = {
-      sim <- Init(sim)
+      sim <- InitMaps(sim)
+      sim <- InitSpecies(sim)
+      sim <- InitLandMine(sim)
     },
     warning(paste("Undefined event type: '", current(sim)[1, "eventType", with = FALSE],
                   "' in module '", current(sim)[1, "moduleName", with = FALSE], "'", sep = ""))
@@ -75,7 +114,7 @@ doEvent.LandWeb_preamble = function(sim, eventTime, eventType) {
   return(invisible(sim))
 }
 
-Init <- function(sim) {
+InitMaps <- function(sim) {
   allowedStudyAreaNames <- c("ANC", "AlPac", "BlueRidge", "DMI", "Edson", "FMANWT", "FMU",
                              "LandWeb", "LP", "Manning", "MillarWestern", "Mistik", "MPR",
                              "provAB", "provMB", "provNWT", "provSK", "random",
@@ -447,13 +486,129 @@ Init <- function(sim) {
   return(invisible(sim))
 }
 
+InitSpecies <- function(sim) {
+  sppEquiv <- LandR::sppEquivalencies_CA
+  sppEquiv[grep("Pin", LandR), `:=`(EN_generic_short = "Pine",
+                                    EN_generic_full = "Pine",
+                                    Leading = "Pine leading")]
+
+  # Make LandWeb spp equivalencies
+  sppEquiv[, LandWeb := c(Pice_mar = "Pice_mar", Pice_gla = "Pice_gla",
+                          Pinu_con = "Pinu_sp", Pinu_ban = "Pinu_sp",
+                          Popu_tre = "Popu_sp", Betu_pap = "Popu_sp",
+                          Abie_bal = "Abie_sp", Abie_las = "Abie_sp", Abie_sp = "Abie_sp")[LandR]]
+
+  sppEquiv[LandWeb == "Abie_sp", EN_generic_full := "Fir"]
+  sppEquiv[LandWeb == "Abie_sp", EN_generic_short := "Fir"]
+  sppEquiv[LandWeb == "Abie_sp", Leading := "Fir leading"]
+
+  sppEquiv[LandWeb == "Popu_sp", EN_generic_full := "Deciduous"]
+  sppEquiv[LandWeb == "Popu_sp", EN_generic_short := "Decid"]
+  sppEquiv[LandWeb == "Popu_sp", Leading := "Deciduous leading"]
+
+  sim$sppEquiv <- sppEquiv[!is.na(LandWeb), ]
+  sim$sppEquivCol <- "LandWeb"
+  sim$sppColorVect <- LandR::sppColors(sppEquiv, sppEquivCol, newVals = "Mixed", palette = "Accent")
+
+  ## species parameter tables
+  sim$speciesTable <- LandR::getSpeciesTable(dPath = mod$dPath) ## uses default URL
+
+  speciesParams <- list(
+    growthcurve = list(Abie_sp = 0, Pice_gla = 1, Pice_mar = 1, Pinu_sp = 0, Popu_sp = 0),
+    mortalityshape = list(Abie_sp = 15L, Pice_gla = 15L, Pice_mar = 15L, Pinu_sp = 15L, Popu_sp = 25L),
+    resproutage_min = list(Popu_sp = 25L), # default 10L
+    #resproutprob = list(Popu_sp = 0.1), # default 0.5
+    shadetolerance = list(Abie_sp = 3, Pice_gla = 2, Pice_mar = 3, Pinu_sp = 1, Popu_sp = 1) # defaults 4, 3, 4, 1, 1
+  )
+  speciesParams <- append(speciesParams, if (grepl("aspenDispersal", P(sim)$runName)) {
+    ## seed dispersal (see LandWeb#96, LandWeb#112)
+    list(
+      postfireregen = list(Abie_sp = "resprout", Pice_gla = "resprout", Pice_mar = "resprout",
+                           Pinu_sp = "resprout", Popu_sp = "resprout"),
+      resproutage_max = list(Abie_sp = 400L, Pice_gla = 400L, Pice_mar = 400L, Pinu_sp = 400L, Popu_sp = 400L),
+      resproutage_min = list(Abie_sp = 0L, Pice_gla = 0L, Pice_mar = 0L, Pinu_sp = 0L, Popu_sp = 0L),
+      resproutprob = list(Abie_sp = 1.0, Pice_gla = 1.0, Pice_mar = 1.0, Pinu_sp = 1.0, Popu_sp = 1.0),
+      seeddistance_eff = list(Abie_sp = 0L, Pice_gla = 0L, Pice_mar = 0L, Pinu_sp = 0L, Popu_sp = 100L),
+      seeddistance_max = list(Abie_sp = 125L, Pice_gla = 125L, Pice_mar = 125L, Pinu_sp = 125L, Popu_sp = 235L)
+    )
+  } else if (grepl("highDispersal", P(sim)$runName)) {
+    list(
+      postfireregen = list(Abie_sp = "resprout", Pice_gla = "resprout", Pice_mar = "resprout",
+                           Pinu_sp = "resprout", Popu_sp = "resprout"),
+      resproutage_max = list(Abie_sp = 400L, Pice_gla = 400L, Pice_mar = 400L, Pinu_sp = 400L, Popu_sp = 400L),
+      resproutage_min = list(Abie_sp = 0L, Pice_gla = 0L, Pice_mar = 0L, Pinu_sp = 0L, Popu_sp = 0L),
+      resproutprob = list(Abie_sp = 1.0, Pice_gla = 1.0, Pice_mar = 1.0, Pinu_sp = 1.0, Popu_sp = 1.0),
+      seeddistance_eff = list(Abie_sp = 250L, Pice_gla = 100L, Pice_mar = 320L, Pinu_sp = 300L, Popu_sp = 500L),
+      seeddistance_max = list(Abie_sp = 1250L, Pice_gla = 1250L, Pice_mar = 1250L, Pinu_sp = 3000L, Popu_sp = 3000L)
+    )
+  } else if (grepl("noDispersal", P(sim)$runName)) {
+    list(
+      postfireregen = list(Abie_sp = "resprout", Pice_gla = "resprout", Pice_mar = "resprout",
+                           Pinu_sp = "resprout", Popu_sp = "resprout"),
+      resproutage_max = list(Abie_sp = 400L, Pice_gla = 400L, Pice_mar = 400L, Pinu_sp = 400L, Popu_sp = 400L),
+      resproutage_min = list(Abie_sp = 0L, Pice_gla = 0L, Pice_mar = 0L, Pinu_sp = 0L, Popu_sp = 0L),
+      resproutprob = list(Abie_sp = 1.0, Pice_gla = 1.0, Pice_mar = 1.0, Pinu_sp = 1.0, Popu_sp = 1.0),
+      seeddistance_eff = list(Abie_sp = 25L, Pice_gla = 100L, Pice_mar = 80L, Pinu_sp = 30L, Popu_sp = 200L),
+      seeddistance_max = list(Abie_sp = 160L, Pice_gla = 303L, Pice_mar = 200L, Pinu_sp = 100L, Popu_sp = 2000L)
+    )
+  } else {
+    ## defaults
+    list(
+      seeddistance_eff = list(Abie_sp = 25L, Pice_gla = 100L, Pice_mar = 80L, Pinu_sp = 30L, Popu_sp = 200L),
+      seeddistance_max = list(Abie_sp = 160L, Pice_gla = 303L, Pice_mar = 200L, Pinu_sp = 100L, Popu_sp = 2000L)
+    )
+  })
+
+  if (grepl("SprayLake", P(sim)$runName)) {
+    message(crayon::red("Fir shade tolerance lowered below default (3). Using value 2."))
+    message(crayon::red("Spruce shade tolerance raised above default (2, 3). Using values 3, 4."))
+    speciesParams <- append(speciesParams, list(
+      shadetolerance = list(Abie_sp = 2, Pice_gla = 3, Pice_mar = 4))
+    )
+  }
+
+  sim$speciesParams <- speciesParams
+
+  return(invisible(sim))
+}
+
+InitLandMine <- function(sim) {
+  LandMineROStable <- data.table::rbindlist(list(
+    list("mature", "decid", 9L),
+    list("immature_young", "decid", 6L),
+    list("immature_young", "mixed", 12L),
+    list("mature", "mixed", 17L),
+    list("immature", "pine", 14L),
+    list("mature", "pine", 21L),
+    list("young", "pine", 22L),
+    list("immature_young", "softwood", 18L),
+    list("mature", "softwood", 27L),
+    list("immature_young", "spruce", 20L),
+    list("mature", "spruce", 30L)
+  ))
+  data.table::setnames(LandMineROStable, old = 1:3, new = c("age", "leading", "ros"))
+
+  if (grepl("equalROS", P(sim)$runName)) {
+    LandMineROStable$ros <- 1L
+  } else if (grepl("logROS", P(sim)$runName)) {
+    LandMineROStable$ros <- log(LandMineROStable$ros)
+  }
+
+  sim$LandMineROStable <- LandMineROStable
+
+  return(invisible(sim))
+}
+
 .inputObjects <- function(sim) {
   cacheTags <- c(currentModule(sim), "function:.inputObjects")
-  dPath <- asPath(getOption("reproducible.destinationPath", dataPath(sim)), 1)
-  message(currentModule(sim), ": using dataPath '", dPath, "'.")
+  mod$dPath <- asPath(getOption("reproducible.destinationPath", dataPath(sim)), 1)
+  message(currentModule(sim), ": using dataPath '", mod$dPath, "'.")
 
-  if (!suppliedElsewhere("canProvs", sim))
-    sim$canProvs <- raster::getData("GADM", country = "CAN", level = 1, path = dPath)
+  if (!suppliedElsewhere("canProvs", sim)) {
+    sim$canProvs <- geodata::gadm(country = "CAN", level = 1, path = mod$dPath) %>%
+      sf::st_as_sf() %>%
+      sf::as_Spatial()
+  }
 
   return(invisible(sim))
 }
