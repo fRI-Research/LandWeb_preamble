@@ -508,7 +508,7 @@ InitSpecies <- function(sim) {
 
   sim$sppEquiv <- sppEquiv[!is.na(LandWeb), ]
   sim$sppEquivCol <- "LandWeb"
-  sim$sppColorVect <- LandR::sppColors(sppEquiv, sppEquivCol, newVals = "Mixed", palette = "Accent")
+  sim$sppColorVect <- LandR::sppColors(sim$sppEquiv, sim$sppEquivCol, newVals = "Mixed", palette = "Accent")
 
   ## species parameter tables
   sim$speciesTable <- LandR::getSpeciesTable(dPath = mod$dPath) ## uses default URL
