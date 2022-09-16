@@ -11,7 +11,8 @@ provMB <- function(ml, runName, dataDir, canProvs, bufferDist, asStudyArea = FAL
                            studyArea = MB, useSAcrs = TRUE,
                            filename2 = file.path(dataDir, "SK_NATLER.shp")) %>%
     joinReportingPolygons(., MB)
-  MB.caribou <- postProcess(ml[["LandWeb Caribou Ranges"]],
+
+  MB.caribou <- postProcess(ml[["MB Caribou Ranges"]],
                             studyArea = MB, useSAcrs = TRUE,
                             filename2 = file.path(dataDir, "MB_caribou.shp"),
                             overwrite = TRUE) %>%
@@ -37,8 +38,8 @@ provMB <- function(ml, runName, dataDir, canProvs, bufferDist, asStudyArea = FAL
   plotFMA(MB, provs = mb, caribou = MB.caribou, xsr = MB_sr,
           title = "Manitoba",
           png = file.path(dataDir, "MB.png"))
-  #plotFMA(MB, provs = mb, caribou = MB.caribou, xsr = MB_sr,
-  #        title = "Manitoba", png = NULL)
+  # plotFMA(MB, provs = mb, caribou = MB.caribou, xsr = MB_sr,
+  #         title = "Manitoba", png = NULL)
 
   if (isTRUE(asStudyArea)) {
     ml <- mapAdd(MB_sr, ml, isStudyArea = TRUE, layerName = "MB SR",
