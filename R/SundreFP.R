@@ -2,7 +2,7 @@ fmaSundreFP <- function(ml, runName, dataDir, canProvs, bufferDist, asStudyArea 
   ## There are 3 parts to the SundreFP FMA: 2 in BC and one in MB.
   ab <- canProvs[canProvs$NAME_1 == "Alberta", ]
   sundre <- extractFMA(ml, "Sundre Forest Products Inc.")
-  shapefile(sundre, filename = file.path(dataDir, "SundreFP.shp"), overwrite = TRUE)
+  raster::shapefile(sundre, filename = file.path(dataDir, "SundreFP.shp"), overwrite = TRUE)
 
   ## reportingPolygons
   sundre.ansr <- postProcess(ml[["Alberta Natural Subregions"]],

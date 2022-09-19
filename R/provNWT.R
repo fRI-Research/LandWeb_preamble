@@ -3,7 +3,7 @@ provNWT <- function(ml, runName, dataDir, canProvs, bufferDist, asStudyArea = FA
 
   id <- which(ml[["Provincial Boundaries"]][["NAME_1"]] == "Northwest Territories")
   NWT <- ml[["Provincial Boundaries"]][id, ]
-  shapefile(NWT, filename = file.path(dataDir, "NWT_full.shp"), overwrite = TRUE)
+  raster::shapefile(NWT, filename = file.path(dataDir, "NWT_full.shp"), overwrite = TRUE)
 
   ## reportingPolygons
   NWT[["Name"]] <- NWT[["NAME_1"]]

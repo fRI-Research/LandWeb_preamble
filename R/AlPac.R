@@ -1,7 +1,7 @@
 fmaAlpac <- function(ml, runName, dataDir, canProvs, bufferDist, asStudyArea = FALSE) {
   ab <- canProvs[canProvs$NAME_1 == "Alberta", ]
   alpac <- extractFMA(ml, "ALPAC")
-  shapefile(alpac, filename = file.path(dataDir, "Alpac.shp"), overwrite = TRUE)
+  raster::shapefile(alpac, filename = file.path(dataDir, "Alpac.shp"), overwrite = TRUE)
 
   ## reportingPolygons
   alpac.ansr <- postProcess(ml[["Alberta Natural Subregions"]],

@@ -4,7 +4,7 @@ fmaVanderwell <- function(ml, runName, dataDir, canProvs, bufferDist, asStudyAre
   ## - the other is just south of the first
   ab <- canProvs[canProvs$NAME_1 == "Alberta", ]
   vanderwell <- extractFMA(ml, "Vanderwell Contractors")
-  shapefile(vanderwell, filename = file.path(dataDir, "Vanderwell_full.shp"), overwrite = TRUE)
+  raster::shapefile(vanderwell, filename = file.path(dataDir, "Vanderwell_full.shp"), overwrite = TRUE)
 
   ## reportingPolygons
   vanderwell.ansr <- postProcess(ml[["Alberta Natural Subregions"]],

@@ -1,7 +1,7 @@
 fmaManning <- function(ml, runName, dataDir, canProvs, bufferDist, asStudyArea = FALSE) {
   ab <- canProvs[canProvs$NAME_1 == "Alberta", ]
   manning <- extractFMA(ml, "Manning")
-  shapefile(manning, filename = file.path(dataDir, "Manning_full.shp"), overwrite = TRUE)
+  raster::shapefile(manning, filename = file.path(dataDir, "Manning_full.shp"), overwrite = TRUE)
 
   ## reportingPolygons
   manning.ansr <- postProcess(ml[["Alberta Natural Subregions"]],

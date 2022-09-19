@@ -3,12 +3,12 @@ fmaLP <- function(ml, runName, dataDir, canProvs, bufferDist, asStudyArea = FALS
   west <- canProvs[canProvs$NAME_1 %in% c("British Columbia", "Alberta",
                                           "Saskatchewan", "Manitoba"), ]
   lp <- extractFMA(ml, "Fort St\\. John|Dawson Creek|Mountain")
-  shapefile(lp, filename = file.path(dataDir, "LP_full.shp"), overwrite = TRUE)
+  raster::shapefile(lp, filename = file.path(dataDir, "LP_full.shp"), overwrite = TRUE)
 
   if (grepl("LandWeb|LP_BC", runName)) {
     ## reportingPolygons
     lp_bc <- extractFMA(ml, "Fort St\\. John|Dawson Creek")
-    shapefile(lp_bc, filename = file.path(dataDir, "LP_BC.shp"), overwrite = TRUE)
+    raster::shapefile(lp_bc, filename = file.path(dataDir, "LP_BC.shp"), overwrite = TRUE)
     lp_bc.bcbgcz <- postProcess(ml[["BC Biogeoclimatic zones"]],
                              studyArea = lp_bc, useSAcrs = TRUE,
                              filename2 = file.path(dataDir, "lp_bc_BCBGCZ.shp")) %>%
@@ -50,7 +50,7 @@ fmaLP <- function(ml, runName, dataDir, canProvs, bufferDist, asStudyArea = FALS
   if (grepl("LandWeb|LP_MB", runName)) {
     ## reportingPolygons
     lp_mb <- extractFMA(ml, "Mountain")
-    shapefile(lp_mb, filename = file.path(dataDir, "LP_MB.shp"), overwrite = TRUE)
+    raster::shapefile(lp_mb, filename = file.path(dataDir, "LP_MB.shp"), overwrite = TRUE)
     lp_mb.natler <- postProcess(ml[["National Ecoregions"]],
                                 studyArea = lp_mb, useSAcrs = TRUE,
                                 filename2 = file.path(dataDir, "LP_MB_NATLER.shp")) %>%

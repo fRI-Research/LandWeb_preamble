@@ -2,12 +2,12 @@ fmaWeyCo <- function(ml, runName, dataDir, canProvs, bufferDist, asStudyArea = F
   ## There are 3 parts to the WeyCo FMA: two in AB and one in SK
   absk <- canProvs[canProvs$NAME_1 %in% c("Alberta", "Saskatchewan"), ]
   weyco <- extractFMA(ml, "Weyerhaeuser|Pasquia-Porcupine")
-  shapefile(weyco, filename = file.path(dataDir, "WeyCo_full.shp"), overwrite = TRUE)
+  raster::shapefile(weyco, filename = file.path(dataDir, "WeyCo_full.shp"), overwrite = TRUE)
 
   if (grepl("LandWeb|WeyCo_GP", runName)) {
     ## reportingPolygons
     weyco_gp <- extractFMA(ml, "Weyerhaeuser Company Limited \\(Grande Prairie\\)")
-    shapefile(weyco_gp, filename = file.path(dataDir, "WeyCo_GP.shp"), overwrite = TRUE)
+    raster::shapefile(weyco_gp, filename = file.path(dataDir, "WeyCo_GP.shp"), overwrite = TRUE)
 
     weyco_gp.ansr <- postProcess(ml[["Alberta Natural Subregions"]],
                                  studyArea = weyco_gp, useSAcrs = TRUE,
@@ -54,7 +54,7 @@ fmaWeyCo <- function(ml, runName, dataDir, canProvs, bufferDist, asStudyArea = F
   if (grepl("LandWeb|WeyCo_PT|WeyCo_Pembina", runName)) {
     ## reportingPolygons
     weyco_pt <- extractFMA(ml, "Weyerhaeuser Company Limited \\(Pembina Timberland\\)")
-    shapefile(weyco_pt, filename = file.path(dataDir, "WeyCo_PT.shp"), overwrite = TRUE)
+    raster::shapefile(weyco_pt, filename = file.path(dataDir, "WeyCo_PT.shp"), overwrite = TRUE)
 
     weyco_pt.ansr <- postProcess(ml[["Alberta Natural Subregions"]],
                                  studyArea = weyco_pt, useSAcrs = TRUE,
@@ -93,7 +93,7 @@ fmaWeyCo <- function(ml, runName, dataDir, canProvs, bufferDist, asStudyArea = F
   if (grepl("LandWeb|WeyCo_SK", runName)) {
     ## reportingPolygons
     weyco_sk <- extractFMA(ml, "Pasquia-Porcupine")
-    shapefile(weyco_sk, filename = file.path(dataDir, "WeyCo_SK.shp"), overwrite = TRUE)
+    raster::shapefile(weyco_sk, filename = file.path(dataDir, "WeyCo_SK.shp"), overwrite = TRUE)
     weyco_sk.natler <- postProcess(ml[["National Ecoregions"]],
                                    studyArea = weyco_sk, useSAcrs = TRUE,
                                    filename2 = file.path(dataDir, "WeyCo_SK_NATLER.shp")) %>%

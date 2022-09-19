@@ -2,7 +2,7 @@ fmaMistik <- function(ml, runName, dataDir, canProvs, bufferDist, asStudyArea = 
   ## reportingPolygons
   absk <- canProvs[canProvs$NAME_1 %in% c("Alberta", "Saskatchewan"), ]
   mistik <- extractFMA(ml, "Mistik")
-  shapefile(mistik, filename = file.path(dataDir, "Mistik.shp"), overwrite = TRUE)
+  raster::shapefile(mistik, filename = file.path(dataDir, "Mistik.shp"), overwrite = TRUE)
 
   mistik.caribou <- postProcess(ml[["LandWeb Caribou Ranges"]],
                                 studyArea = mistik, useSAcrs = TRUE,

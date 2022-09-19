@@ -1,7 +1,7 @@
 fmaSprayLake <- function(ml, runName, dataDir, canProvs, bufferDist, asStudyArea = FALSE) {
   ab <- canProvs[canProvs$NAME_1 == "Alberta", ]
   spraylake <- extractFMA(ml, "Spray Lake")
-  shapefile(spraylake, filename = file.path(dataDir, "SprayLake.shp"), overwrite = TRUE)
+  raster::shapefile(spraylake, filename = file.path(dataDir, "SprayLake.shp"), overwrite = TRUE)
 
   ## reportingPolygons
   spraylake.ansr <- postProcess(ml[["Alberta Natural Subregions"]],

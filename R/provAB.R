@@ -3,7 +3,7 @@ provAB <- function(ml, runName, dataDir, canProvs, bufferDist, asStudyArea = FAL
 
   id <- which(ml[["Provincial Boundaries"]][["NAME_1"]] == "Alberta")
   AB <- ml[["Provincial Boundaries"]][id, ]
-  shapefile(AB, filename = file.path(dataDir, "AB_full.shp"), overwrite = TRUE)
+  raster::shapefile(AB, filename = file.path(dataDir, "AB_full.shp"), overwrite = TRUE)
 
   ## reportingPolygons
   AB.ansr <- ml[["Alberta Natural Subregions"]]

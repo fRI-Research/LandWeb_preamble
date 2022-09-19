@@ -3,19 +3,19 @@ fmaDMI <- function(ml, runName, dataDir, canProvs, bufferDist, asStudyArea = FAL
   ab <- canProvs[canProvs$NAME_1 == "Alberta", ]
   dmi <- extractFMA(ml, "Mercer Peace River")
   dmi.full <- maptools::unionSpatialPolygons(dmi, rep(1, 2))
-  shapefile(dmi.full, filename = file.path(dataDir, "DMI_Full.shp"), overwrite = TRUE)
+  raster::shapefile(dmi.full, filename = file.path(dataDir, "DMI_Full.shp"), overwrite = TRUE)
 
   dmi.e <- extractFMA(ml, "Mercer Peace River.*East")
-  shapefile(dmi.e, filename = file.path(dataDir, "DMI_East.shp"), overwrite = TRUE)
+  raster::shapefile(dmi.e, filename = file.path(dataDir, "DMI_East.shp"), overwrite = TRUE)
 
   dmi.w <- extractFMA(ml, "Mercer Peace River.*West")
-  shapefile(dmi.w, filename = file.path(dataDir, "DMI_West.shp"), overwrite = TRUE)
+  raster::shapefile(dmi.w, filename = file.path(dataDir, "DMI_West.shp"), overwrite = TRUE)
 
   dmi.nw <- disaggregate(dmi.w)[2, ]
-  shapefile(dmi.nw, filename = file.path(dataDir, "DMI_West_North.shp"), overwrite = TRUE)
+  raster::shapefile(dmi.nw, filename = file.path(dataDir, "DMI_West_North.shp"), overwrite = TRUE)
 
   dmi.sw <- disaggregate(dmi.w)[1, ]
-  shapefile(dmi.sw, filename = file.path(dataDir, "DMI_West_South.shp"), overwrite = TRUE)
+  raster::shapefile(dmi.sw, filename = file.path(dataDir, "DMI_West_South.shp"), overwrite = TRUE)
 
   ## reporting polygons
   dmi.ansr <- postProcess(ml[["Alberta Natural Subregions"]],

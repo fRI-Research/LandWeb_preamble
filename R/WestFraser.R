@@ -4,12 +4,12 @@ fmaWestFraser <- function(ml, runName, dataDir, canProvs, bufferDist, asStudyAre
   ## - also includes Blue Ridge
   ab <- canProvs[canProvs$NAME_1 == "Alberta", ]
   wf <- extractFMA(ml, "West Fraser|Blue Ridge")
-  shapefile(wf, filename = file.path(dataDir, "WestFraser_full.shp"), overwrite = TRUE)
+  raster::shapefile(wf, filename = file.path(dataDir, "WestFraser_full.shp"), overwrite = TRUE)
 
   if (grepl("LandWeb|BlueRidge", runName)) {
     ## reportingPolygons
     wf_br <- wf[grepl("Blue Ridge", wf$Name), ] ## first subpolygon
-    shapefile(wf_br, filename = file.path(dataDir, "WestFraser_BlueRidge.shp"), overwrite = TRUE)
+    raster::shapefile(wf_br, filename = file.path(dataDir, "WestFraser_BlueRidge.shp"), overwrite = TRUE)
 
     wf_br.ansr <- postProcess(ml[["Alberta Natural Subregions"]],
                               studyArea = wf_br, useSAcrs = TRUE,
@@ -47,7 +47,7 @@ fmaWestFraser <- function(ml, runName, dataDir, canProvs, bufferDist, asStudyAre
   if (grepl("LandWeb|WestFraser_N", runName)) {
     ## reportingPolygons
     wf_n <- wf[c(2:3, 6), ] ## 3 FMAs: Slave Lake; shared w/ Tolko; shared vith Tolko & Vanderwell.
-    shapefile(wf_n, filename = file.path(dataDir, "WestFraser_N.shp"), overwrite = TRUE)
+    raster::shapefile(wf_n, filename = file.path(dataDir, "WestFraser_N.shp"), overwrite = TRUE)
 
     wf_n.ansr <- postProcess(ml[["Alberta Natural Subregions"]],
                              studyArea = wf_n, useSAcrs = TRUE,
@@ -92,7 +92,7 @@ fmaWestFraser <- function(ml, runName, dataDir, canProvs, bufferDist, asStudyAre
   if (grepl("LandWeb|WestFraser_S", runName)) {
     ## reportingPolygons
     wf_s <- wf[4:5, ] ## Hinton and Edson FMAs
-    shapefile(wf_s, filename = file.path(dataDir, "WestFraser_S.shp"), overwrite = TRUE)
+    raster::shapefile(wf_s, filename = file.path(dataDir, "WestFraser_S.shp"), overwrite = TRUE)
 
     wf_s.ansr <- postProcess(ml[["Alberta Natural Subregions"]],
                              studyArea = wf_s, useSAcrs = TRUE,

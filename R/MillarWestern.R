@@ -1,7 +1,7 @@
 fmaMillarWestern <- function(ml, runName, dataDir, canProvs, bufferDist, asStudyArea = FALSE) {
   ab <- canProvs[canProvs$NAME_1 == "Alberta", ]
   mw <- extractFMA(ml, "Millar Western Forest Products")
-  shapefile(mw, filename = file.path(dataDir, "Millar_Western.shp"), overwrite = TRUE)
+  raster::shapefile(mw, filename = file.path(dataDir, "Millar_Western.shp"), overwrite = TRUE)
 
   ## reportingPolygons
   mw.ansr <- postProcess(ml[["Alberta Natural Subregions"]],

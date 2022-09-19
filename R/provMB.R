@@ -3,7 +3,7 @@ provMB <- function(ml, runName, dataDir, canProvs, bufferDist, asStudyArea = FAL
 
   id <- which(ml[["Provincial Boundaries"]][["NAME_1"]] == "Manitoba")
   MB <- ml[["Provincial Boundaries"]][id, ]
-  shapefile(MB, filename = file.path(dataDir, "MB_full.shp"), overwrite = TRUE)
+  raster::shapefile(MB, filename = file.path(dataDir, "MB_full.shp"), overwrite = TRUE)
 
   ## reportingPolygons
   MB[["Name"]] <- MB[["NAME_1"]]

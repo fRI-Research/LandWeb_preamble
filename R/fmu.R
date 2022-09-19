@@ -4,7 +4,7 @@ fmu <- function(ml, runName, dataDir, canProvs, bufferDist, asStudyArea = FALSE)
   ab <- canProvs[canProvs$NAME_1 == "Alberta", ]
   fmu <- extractFMU(ml, fmuNum)
   fmu[["Name"]] <- fmu[["FMU_NAME"]]
-  shapefile(fmu, filename = file.path(dataDir, paste0("FMU_", fmuNum, ".shp")), overwrite = TRUE)
+  raster::shapefile(fmu, filename = file.path(dataDir, paste0("FMU_", fmuNum, ".shp")), overwrite = TRUE)
 
   ## reporting polygons
   fmu.ansr <- postProcess(ml[["Alberta Natural Subregions"]],
