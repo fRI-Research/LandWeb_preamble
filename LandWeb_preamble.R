@@ -7,14 +7,14 @@ defineModule(sim, list(
     person(c("Alex", "M."), "Chubaty", email = "achubaty@for-cast.ca", role = c("aut"))
   ),
   childModules = character(0),
-  version = list(LandWeb_preamble = "0.0.2"),
+  version = list(LandWeb_preamble = "0.0.3"),
   spatialExtent = raster::extent(rep(NA_real_, 4)),
   timeframe = as.POSIXlt(c(NA, NA)),
   timeunit = "year",
   citation = list("citation.bib"),
   documentation = list("README.txt", "LandWeb_preamble.Rmd"),
   reqdPkgs = list("achubaty/amc@development",
-                  "crayon", "dplyr", "fasterize", "geodata", "ggplot2", "httr",
+                  "crayon", "curl", "dplyr", "fasterize", "geodata", "ggplot2", "httr",
                   "PredictiveEcology/LandR@development (>= 1.1.0.9000)",
                   "PredictiveEcology/map@development (>= 0.0.3.9004)",
                   "maptools",
@@ -27,17 +27,25 @@ defineModule(sim, list(
                     "Study area buffer distance (m) used to make studyArea."),
     defineParameter("bufferDistLarge", "numeric", 50000, 20000, 100000,
                     "Study area buffer distance (m) used to make studyAreaLarge."),
+    defineParameter("forceResprout", "logical", FALSE, NA, NA,
+                    paste("`TRUE` forces all species to resprout, setting `resproutage_min` to zero,",
+                          "`resproutage_max` to 400, and `resproutProb` to 1.0.")),
     defineParameter("friMultiple", "numeric", 1.0, 0.5, 2.0,
                     "Multiplication factor for adjusting fire return intervals."),
+    defineParameter("dispersalType", "character", "default", NA, NA,
+                    "One of 'aspen', 'high', 'none', or 'default'."),
     defineParameter("mapResFact", "numeric", 1, 1, 10,
                     paste("The map resolution factor to use with raster::disaggregate to reduce pixel size below 250 m.",
                           "Should be one of 1, 2, 5, 10, which correspends to pixel size of 250m, 125m, 50m, 25m, repsectively.")),
     defineParameter("minFRI", "numeric", 40, 0, 200,
-                    "The value of fire return interval below which, pixels will be changed to NA, i.e., ignored"),
-    defineParameter("runName", "character", NA, NA, NA,
-                    "A description for run; this will form the basis of cache path and output path"),
+                    "The value of fire return interval below which, pixels will be changed to `NA`, i.e., ignored"),
+    defineParameter("ROStype", "character", "default", NA, NA,
+                    "One of 'equal', 'log', or 'default'."),
+    defineParameter("sppEquivCol", "character", "LandWeb", NA, NA,
+                    "The column in `sim$sppEquiv` data.table to use as a naming convention"),
     defineParameter("treeClassesLCC", "numeric", c(1:15, 20, 32, 34:36), 0, 39,
-                    "The classes in the LCC2005 layer that are considered 'trees' from the perspective of LandR-Biomass"),
+                    paste("AKA forestedLCCClasses. The classes in the LCC2005 layer that are",
+                          "considered 'trees' from the perspective of LandR-Biomass.")),
     defineParameter("treeClassesToReplace", "numeric", c(34:36), 0, 39,
                     "The transient classes in the LCC2005 layer that will become 'trees' from the perspective of LandR-Biomass (e.g., burned)"),
     defineParameter(".plotInitialTime", "numeric", NA, NA, NA,
@@ -56,6 +64,8 @@ defineModule(sim, list(
                     paste("Passed to `httr::config(ssl_verifypeer = P(sim)$sslVerify)` when downloading KNN",
                           "(NFI) datasets. Set to 0L if necessary to bypass checking the SSL certificate (this",
                           "may be necessary when NFI's website SSL certificate is not correctly configured).")),
+    defineParameter(".studyAreaName", "character", NA, NA, NA,
+                    "Human-readable name for the study area used. If `NA`, a hash of `studyAreaLarge` will be used."),
     defineParameter(".useCache", "logical", FALSE, NA, NA,
                     paste("Should this entire module be run with caching activated?",
                           "This is generally intended for data-type modules, where stochasticity and time are not relevant"))
@@ -87,7 +97,7 @@ defineModule(sim, list(
                   desc = NA),
     createsOutput("sppColorVect", "character",
                   desc = paste("A named vector of colors to use for plotting.",
-                               "The names must be in `sim$sppEquiv[[sim$sppEquivCol]]`,",
+                               "The names must be in `sim$sppEquiv[[P(sim)$sppEquivCol]]`,",
                                "and should also contain a color for 'Mixed'")),
     createsOutput("sppEquiv", "data.table",
                   desc = "table of species equivalencies. See `LandR::sppEquivalencies_CA`."),
@@ -123,8 +133,8 @@ InitMaps <- function(sim) {
                              "LandWeb", "LP", "Manning", "MillarWestern", "Mistik", "MPR",
                              "provAB", "provMB", "provNWT", "provSK", "random",
                              "SprayLake", "Sundre", "Tolko", "Vanderwell", "WeyCo", "WestFraser")
-  if (!grepl(paste(allowedStudyAreaNames, collapse = "|"), P(sim)$runName)) {
-    stop("runName, ", P(sim)$runName, ", does not contain valid study area name.\n",
+  if (!grepl(paste(allowedStudyAreaNames, collapse = "|"), P(sim)$.studyAreaName)) {
+    stop(".studyAreaName, ", P(sim)$.studyAreaName, ", does not contain valid study area name.\n",
          "Study area name must be one of:\n", paste(allowedStudyAreaNames, collapse = ", "), ".")
   }
 
@@ -236,51 +246,51 @@ InitMaps <- function(sim) {
   ## COMPANY-SPECIFIC STUDY AREAS -- be sure to update allowedStudyAreaNames above !!
   dataDir <- checkPath(file.path(inputPath(sim), "studyAreas"), create = TRUE)
 
-  if (grepl("ANC", P(sim)$runName)) {
-    ml <- fmaANC(ml, P(sim)$runName, dataDir, sim$canProvs, P(sim)$bufferDist, asStudyArea = TRUE)
-  } else if (grepl("AlPac", P(sim)$runName)) {
-    ml <- fmaAlpac(ml, P(sim)$runName, dataDir, sim$canProvs, P(sim)$bufferDist, asStudyArea = TRUE)
-  } else if (grepl("DMI|MPR", P(sim)$runName)) {
-    ml <- fmaDMI(ml, P(sim)$runName, dataDir, sim$canProvs, P(sim)$bufferDist, asStudyArea = TRUE)
-  } else if (grepl("Edson", P(sim)$runName)) {
-    ml <- fmaEdsonFP(ml, P(sim)$runName, dataDir, sim$canProvs, P(sim)$bufferDist, asStudyArea = TRUE)
-  } else if (grepl("FMANWT", P(sim)$runName)) {
-    ml <- fmaNWT(ml, P(sim)$runName, dataDir, sim$canProvs, P(sim)$bufferDist, asStudyArea = TRUE)
-  } else if (grepl("FMU", P(sim)$runName)) {
-    ml <- fmu(ml, P(sim)$runName, dataDir, sim$canProvs, P(sim)$bufferDist, asStudyArea = TRUE)
-  } else if (grepl("LandWeb", P(sim)$runName)) {
-    ml <- allLandWeb(ml, P(sim)$runName, dataDir, sim$canProvs, P(sim)$bufferDist, asStudyArea = TRUE)
-  } else if (grepl("LP", P(sim)$runName)) {
-    ml <- fmaLP(ml, P(sim)$runName, dataDir, sim$canProvs, P(sim)$bufferDist, asStudyArea = TRUE)
-  } else if (grepl("Manning", P(sim)$runName)) {
-    ml <- fmaManning(ml, P(sim)$runName, dataDir, sim$canProvs, P(sim)$bufferDist, asStudyArea = TRUE)
-  } else if (grepl("MillarWestern", P(sim)$runName)) {
-    ml <- fmaMillarWestern(ml, P(sim)$runName, dataDir, sim$canProvs, P(sim)$bufferDist, asStudyArea = TRUE)
-  } else if (grepl("Mistik", P(sim)$runName)) {
-    ml <- fmaMistik(ml, P(sim)$runName, dataDir, sim$canProvs, P(sim)$bufferDist, asStudyArea = TRUE)
-  } else if (grepl("SprayLake", P(sim)$runName)) {
-    ml <- fmaSprayLake(ml, P(sim)$runName, dataDir, sim$canProvs, P(sim)$bufferDist, asStudyArea = TRUE)
-  } else if (grepl("Sundre", P(sim)$runName)) {
-    ml <- fmaSundreFP(ml, P(sim)$runName, dataDir, sim$canProvs, P(sim)$bufferDist, asStudyArea = TRUE)
-  } else if (grepl("Tolko|tolko", P(sim)$runName)) {
-    ml <- fmaTolko(ml, P(sim)$runName, dataDir, sim$canProvs, P(sim)$bufferDist, asStudyArea = TRUE)
-  } else if (grepl("Vanderwell", P(sim)$runName)) {
-    ml <- fmaVanderwell(ml, P(sim)$runName, dataDir, sim$canProvs, P(sim)$bufferDist, asStudyArea = TRUE)
-  } else if (grepl("WeyCo", P(sim)$runName)) {
-    ml <- fmaWeyCo(ml, P(sim)$runName, dataDir, sim$canProvs, P(sim)$bufferDist, asStudyArea = TRUE)
-  } else if (grepl("WestFraser|BlueRidge", P(sim)$runName)) {
-    ml <- fmaWestFraser(ml, P(sim)$runName, dataDir, sim$canProvs, P(sim)$bufferDist, asStudyArea = TRUE)
-  } else if (grepl("provAB", P(sim)$runName)) {
-    ml <- provAB(ml, P(sim)$runName, dataDir, sim$canProvs, P(sim)$bufferDist, asStudyArea = TRUE)
-  } else if (grepl("provMB", P(sim)$runName)) {
-    ml <- provMB(ml, P(sim)$runName, dataDir, sim$canProvs, P(sim)$bufferDist, asStudyArea = TRUE)
-  } else if (grepl("provNWT", P(sim)$runName)) {
-    ml <- provNWT(ml, P(sim)$runName, dataDir, sim$canProvs, P(sim)$bufferDist, asStudyArea = TRUE)
-  } else if (grepl("provSK", P(sim)$runName)) {
-    ml <- provSK(ml, P(sim)$runName, dataDir, sim$canProvs, P(sim)$bufferDist, asStudyArea = TRUE)
-  } else if (grepl("random", P(sim)$runName)) {
+  if (grepl("ANC", P(sim)$.studyAreaName)) {
+    ml <- fmaANC(ml, P(sim)$.studyAreaName, dataDir, sim$canProvs, P(sim)$bufferDist, asStudyArea = TRUE)
+  } else if (grepl("AlPac", P(sim)$.studyAreaName)) {
+    ml <- fmaAlpac(ml, P(sim)$.studyAreaName, dataDir, sim$canProvs, P(sim)$bufferDist, asStudyArea = TRUE)
+  } else if (grepl("DMI|MPR", P(sim)$.studyAreaName)) {
+    ml <- fmaDMI(ml, P(sim)$.studyAreaName, dataDir, sim$canProvs, P(sim)$bufferDist, asStudyArea = TRUE)
+  } else if (grepl("Edson", P(sim)$.studyAreaName)) {
+    ml <- fmaEdsonFP(ml, P(sim)$.studyAreaName, dataDir, sim$canProvs, P(sim)$bufferDist, asStudyArea = TRUE)
+  } else if (grepl("FMANWT", P(sim)$.studyAreaName)) {
+    ml <- fmaNWT(ml, P(sim)$.studyAreaName, dataDir, sim$canProvs, P(sim)$bufferDist, asStudyArea = TRUE)
+  } else if (grepl("FMU", P(sim)$.studyAreaName)) {
+    ml <- fmu(ml, P(sim)$.studyAreaName, dataDir, sim$canProvs, P(sim)$bufferDist, asStudyArea = TRUE)
+  } else if (grepl("LandWeb", P(sim)$.studyAreaName)) {
+    ml <- allLandWeb(ml, P(sim)$.studyAreaName, dataDir, sim$canProvs, P(sim)$bufferDist, asStudyArea = TRUE)
+  } else if (grepl("LP", P(sim)$.studyAreaName)) {
+    ml <- fmaLP(ml, P(sim)$.studyAreaName, dataDir, sim$canProvs, P(sim)$bufferDist, asStudyArea = TRUE)
+  } else if (grepl("Manning", P(sim)$.studyAreaName)) {
+    ml <- fmaManning(ml, P(sim)$.studyAreaName, dataDir, sim$canProvs, P(sim)$bufferDist, asStudyArea = TRUE)
+  } else if (grepl("MillarWestern", P(sim)$.studyAreaName)) {
+    ml <- fmaMillarWestern(ml, P(sim)$.studyAreaName, dataDir, sim$canProvs, P(sim)$bufferDist, asStudyArea = TRUE)
+  } else if (grepl("Mistik", P(sim)$.studyAreaName)) {
+    ml <- fmaMistik(ml, P(sim)$.studyAreaName, dataDir, sim$canProvs, P(sim)$bufferDist, asStudyArea = TRUE)
+  } else if (grepl("SprayLake", P(sim)$.studyAreaName)) {
+    ml <- fmaSprayLake(ml, P(sim)$.studyAreaName, dataDir, sim$canProvs, P(sim)$bufferDist, asStudyArea = TRUE)
+  } else if (grepl("Sundre", P(sim)$.studyAreaName)) {
+    ml <- fmaSundreFP(ml, P(sim)$.studyAreaName, dataDir, sim$canProvs, P(sim)$bufferDist, asStudyArea = TRUE)
+  } else if (grepl("Tolko|tolko", P(sim)$.studyAreaName)) {
+    ml <- fmaTolko(ml, P(sim)$.studyAreaName, dataDir, sim$canProvs, P(sim)$bufferDist, asStudyArea = TRUE)
+  } else if (grepl("Vanderwell", P(sim)$.studyAreaName)) {
+    ml <- fmaVanderwell(ml, P(sim)$.studyAreaName, dataDir, sim$canProvs, P(sim)$bufferDist, asStudyArea = TRUE)
+  } else if (grepl("WeyCo", P(sim)$.studyAreaName)) {
+    ml <- fmaWeyCo(ml, P(sim)$.studyAreaName, dataDir, sim$canProvs, P(sim)$bufferDist, asStudyArea = TRUE)
+  } else if (grepl("WestFraser|BlueRidge", P(sim)$.studyAreaName)) {
+    ml <- fmaWestFraser(ml, P(sim)$.studyAreaName, dataDir, sim$canProvs, P(sim)$bufferDist, asStudyArea = TRUE)
+  } else if (grepl("provAB", P(sim)$.studyAreaName)) {
+    ml <- provAB(ml, P(sim)$.studyAreaName, dataDir, sim$canProvs, P(sim)$bufferDist, asStudyArea = TRUE)
+  } else if (grepl("provMB", P(sim)$.studyAreaName)) {
+    ml <- provMB(ml, P(sim)$.studyAreaName, dataDir, sim$canProvs, P(sim)$bufferDist, asStudyArea = TRUE)
+  } else if (grepl("provNWT", P(sim)$.studyAreaName)) {
+    ml <- provNWT(ml, P(sim)$.studyAreaName, dataDir, sim$canProvs, P(sim)$bufferDist, asStudyArea = TRUE)
+  } else if (grepl("provSK", P(sim)$.studyAreaName)) {
+    ml <- provSK(ml, P(sim)$.studyAreaName, dataDir, sim$canProvs, P(sim)$bufferDist, asStudyArea = TRUE)
+  } else if (grepl("random", P(sim)$.studyAreaName)) {
     ## use a small random study area
-    message(crayon::red("Using random study area for runName", runName))
+    message(crayon::red("Using random study area."))
     seed <- 867
     ranSeed <- .Random.seed
     set.seed(seed)
@@ -331,7 +341,7 @@ InitMaps <- function(sim) {
 
   ## Manitoba uses current conditions layers (2016) which cover the province;
   ## otherwise, use the original CC layers
-  if (grepl("provMB", P(sim)$runName)) {
+  if (grepl("provMB", P(sim)$.studyAreaName)) {
     ccURL <- "https://drive.google.com/file/d/1KTqNBntNrEsDL6jk-5bchsBOcraDqNHe/"
     fname_age <- "MB_Age2016_NRV.tif"
     LandTypeFileCC <- file.path(Paths$inputPath, "MB_Landtype2016_NRV.tif")
@@ -523,8 +533,7 @@ InitSpecies <- function(sim) {
   sppEquiv[LandWeb == "Popu_sp", Leading := "Deciduous leading"]
 
   sim$sppEquiv <- sppEquiv[!is.na(LandWeb), ]
-  sim$sppEquivCol <- "LandWeb"
-  sim$sppColorVect <- LandR::sppColors(sim$sppEquiv, sim$sppEquivCol, newVals = "Mixed", palette = "Accent")
+  sim$sppColorVect <- LandR::sppColors(sim$sppEquiv, P(sim)$sppEquivCol, newVals = "Mixed", palette = "Accent")
 
   ## species parameter tables
   sim$speciesTable <- LandR::getSpeciesTable(dPath = mod$dPath) ## uses default URL
@@ -536,46 +545,41 @@ InitSpecies <- function(sim) {
     #resproutprob = list(Popu_sp = 0.1), # default 0.5
     shadetolerance = list(Abie_sp = 3, Pice_gla = 2, Pice_mar = 3, Pinu_sp = 1, Popu_sp = 1) # defaults 4, 3, 4, 1, 1
   )
-  speciesParams <- append(speciesParams, if (grepl("aspenDispersal", P(sim)$runName)) {
-    ## seed dispersal (see LandWeb#96, LandWeb#112)
-    list(
+
+  ## seed dispersal (see LandWeb#96, LandWeb#112)
+  stopifnot(P(sim)$dispersalType %in% c("default", "aspen", "high", "none"))
+
+  if (isTRUE(P(sim)$forceResprout)) {
+    speciesParams <- append(speciesParams, list(
       postfireregen = list(Abie_sp = "resprout", Pice_gla = "resprout", Pice_mar = "resprout",
                            Pinu_sp = "resprout", Popu_sp = "resprout"),
       resproutage_max = list(Abie_sp = 400L, Pice_gla = 400L, Pice_mar = 400L, Pinu_sp = 400L, Popu_sp = 400L),
       resproutage_min = list(Abie_sp = 0L, Pice_gla = 0L, Pice_mar = 0L, Pinu_sp = 0L, Popu_sp = 0L),
-      resproutprob = list(Abie_sp = 1.0, Pice_gla = 1.0, Pice_mar = 1.0, Pinu_sp = 1.0, Popu_sp = 1.0),
+      resproutprob = list(Abie_sp = 1.0, Pice_gla = 1.0, Pice_mar = 1.0, Pinu_sp = 1.0, Popu_sp = 1.0)
+    ))
+  }
+
+  speciesParams <- append(speciesParams, switch(
+    P(sim)$dispersalType,
+    aspen = list(
       seeddistance_eff = list(Abie_sp = 0L, Pice_gla = 0L, Pice_mar = 0L, Pinu_sp = 0L, Popu_sp = 100L),
       seeddistance_max = list(Abie_sp = 125L, Pice_gla = 125L, Pice_mar = 125L, Pinu_sp = 125L, Popu_sp = 235L)
-    )
-  } else if (grepl("highDispersal", P(sim)$runName)) {
-    list(
-      postfireregen = list(Abie_sp = "resprout", Pice_gla = "resprout", Pice_mar = "resprout",
-                           Pinu_sp = "resprout", Popu_sp = "resprout"),
-      resproutage_max = list(Abie_sp = 400L, Pice_gla = 400L, Pice_mar = 400L, Pinu_sp = 400L, Popu_sp = 400L),
-      resproutage_min = list(Abie_sp = 0L, Pice_gla = 0L, Pice_mar = 0L, Pinu_sp = 0L, Popu_sp = 0L),
-      resproutprob = list(Abie_sp = 1.0, Pice_gla = 1.0, Pice_mar = 1.0, Pinu_sp = 1.0, Popu_sp = 1.0),
+    ),
+    high = list(
       seeddistance_eff = list(Abie_sp = 250L, Pice_gla = 100L, Pice_mar = 320L, Pinu_sp = 300L, Popu_sp = 500L),
       seeddistance_max = list(Abie_sp = 1250L, Pice_gla = 1250L, Pice_mar = 1250L, Pinu_sp = 3000L, Popu_sp = 3000L)
-    )
-  } else if (grepl("noDispersal", P(sim)$runName)) {
-    list(
-      postfireregen = list(Abie_sp = "resprout", Pice_gla = "resprout", Pice_mar = "resprout",
-                           Pinu_sp = "resprout", Popu_sp = "resprout"),
-      resproutage_max = list(Abie_sp = 400L, Pice_gla = 400L, Pice_mar = 400L, Pinu_sp = 400L, Popu_sp = 400L),
-      resproutage_min = list(Abie_sp = 0L, Pice_gla = 0L, Pice_mar = 0L, Pinu_sp = 0L, Popu_sp = 0L),
-      resproutprob = list(Abie_sp = 1.0, Pice_gla = 1.0, Pice_mar = 1.0, Pinu_sp = 1.0, Popu_sp = 1.0),
+    ),
+    none = list(
+      seeddistance_eff = list(Abie_sp = 25L, Pice_gla = 100L, Pice_mar = 80L, Pinu_sp = 30L, Popu_sp = 200L), ## default but disabled downstream
+      seeddistance_max = list(Abie_sp = 160L, Pice_gla = 303L, Pice_mar = 200L, Pinu_sp = 100L, Popu_sp = 2000L) ## default but disabled downstream
+    ),
+    default = list(
       seeddistance_eff = list(Abie_sp = 25L, Pice_gla = 100L, Pice_mar = 80L, Pinu_sp = 30L, Popu_sp = 200L),
       seeddistance_max = list(Abie_sp = 160L, Pice_gla = 303L, Pice_mar = 200L, Pinu_sp = 100L, Popu_sp = 2000L)
     )
-  } else {
-    ## defaults
-    list(
-      seeddistance_eff = list(Abie_sp = 25L, Pice_gla = 100L, Pice_mar = 80L, Pinu_sp = 30L, Popu_sp = 200L),
-      seeddistance_max = list(Abie_sp = 160L, Pice_gla = 303L, Pice_mar = 200L, Pinu_sp = 100L, Popu_sp = 2000L)
-    )
-  })
+  ))
 
-  if (grepl("SprayLake", P(sim)$runName)) {
+  if (P(sim)$.studyAreaName == "SprayLake") {
     message(crayon::red("Fir shade tolerance lowered below default (3). Using value 2."))
     message(crayon::red("Spruce shade tolerance raised above default (2, 3). Using values 3, 4."))
     speciesParams <- append(speciesParams, list(
@@ -589,6 +593,8 @@ InitSpecies <- function(sim) {
 }
 
 InitLandMine <- function(sim) {
+  stopifnot(P(sim)$ROStype %in% c("default", "equal", "log"))
+
   LandMineROStable <- data.table::rbindlist(list(
     list("mature", "decid", 9L),
     list("immature_young", "decid", 6L),
@@ -604,9 +610,9 @@ InitLandMine <- function(sim) {
   ))
   data.table::setnames(LandMineROStable, old = 1:3, new = c("age", "leading", "ros"))
 
-  if (grepl("equalROS", P(sim)$runName)) {
+  if (P(sim)$ROStype == "equal") {
     LandMineROStable$ros <- 1L
-  } else if (grepl("logROS", P(sim)$runName)) {
+  } else if (P(sim)$ROStype == "log") {
     LandMineROStable$ros <- log(LandMineROStable$ros)
   }
 
