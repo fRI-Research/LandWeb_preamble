@@ -1,4 +1,4 @@
-allLandWeb <- function(ml, runName, dataDir, canProvs, bufferDist, asStudyArea = FALSE) {
+allLandWeb <- function(ml, studyAreaName, dataDir, canProvs, bufferDist, asStudyArea = FALSE) {
   ## LandWeb area extends a bit into Yukon, Nunavut, Ontario, but not relevant here
   provs <- canProvs[canProvs$NAME_1 %in% c("British Columbia", "Alberta",
                                            "Saskatchewan", "Manitoba",
@@ -40,19 +40,19 @@ allLandWeb <- function(ml, runName, dataDir, canProvs, bufferDist, asStudyArea =
                analysisGroupReportingPolygon = "LandWeb Provinces",
                columnNameForLabels = "NAME_1", filename2 = NULL)
 
-  ml <- fmaANC(ml, runName, dataDir, canProvs, bufferDist, asStudyArea = FALSE)
-  ml <- fmaDMI(ml, runName, dataDir, canProvs, bufferDist, asStudyArea = FALSE)
-  ml <- fmaEdsonFP(ml, runName, dataDir, canProvs, bufferDist, asStudyArea = FALSE)
-  ml <- fmaLP(ml, runName, dataDir, canProvs, bufferDist, asStudyArea = FALSE)
-  ml <- fmaManning(ml, runName, dataDir, canProvs, bufferDist, asStudyArea = FALSE)
-  ml <- fmaMillarWestern(ml, runName, dataDir, canProvs, bufferDist, asStudyArea = FALSE)
-  ml <- fmaMistik(ml, runName, dataDir, canProvs, bufferDist, asStudyArea = FALSE)
-  ml <- fmaNWT(ml, runName, dataDir, canProvs, bufferDist, asStudyArea = FALSE)
-  ml <- fmaSundreFP(ml, runName, dataDir, canProvs, bufferDist, asStudyArea = FALSE)
-  ml <- fmaTolko(ml, runName, dataDir, canProvs, bufferDist, asStudyArea = FALSE)
-  ml <- fmaVanderwell(ml, runName, dataDir, canProvs, bufferDist, asStudyArea = FALSE)
-  ml <- fmaWestFraser(ml, runName, dataDir, canProvs, bufferDist, asStudyArea = FALSE)
-  ml <- fmaWeyCo(ml, runName, dataDir, canProvs, bufferDist, asStudyArea = FALSE)
+  ml <- fmaANC(ml, studyAreaName, dataDir, canProvs, bufferDist, asStudyArea = FALSE)
+  ml <- fmaDMI(ml, studyAreaName, dataDir, canProvs, bufferDist, asStudyArea = FALSE)
+  ml <- fmaEdsonFP(ml, studyAreaName, dataDir, canProvs, bufferDist, asStudyArea = FALSE)
+  ml <- fmaLP(ml, studyAreaName, dataDir, canProvs, bufferDist, asStudyArea = FALSE)
+  ml <- fmaManning(ml, studyAreaName, dataDir, canProvs, bufferDist, asStudyArea = FALSE)
+  ml <- fmaMillarWestern(ml, studyAreaName, dataDir, canProvs, bufferDist, asStudyArea = FALSE)
+  ml <- fmaMistik(ml, studyAreaName, dataDir, canProvs, bufferDist, asStudyArea = FALSE)
+  ml <- fmaNWT(ml, studyAreaName, dataDir, canProvs, bufferDist, asStudyArea = FALSE)
+  ml <- fmaSundreFP(ml, studyAreaName, dataDir, canProvs, bufferDist, asStudyArea = FALSE)
+  ml <- fmaTolko(ml, studyAreaName, dataDir, canProvs, bufferDist, asStudyArea = FALSE)
+  ml <- fmaVanderwell(ml, studyAreaName, dataDir, canProvs, bufferDist, asStudyArea = FALSE)
+  ml <- fmaWestFraser(ml, studyAreaName, dataDir, canProvs, bufferDist, asStudyArea = FALSE)
+  ml <- fmaWeyCo(ml, studyAreaName, dataDir, canProvs, bufferDist, asStudyArea = FALSE)
 
   if (isTRUE(asStudyArea)) {
     ## studyArea shouldn't use analysisGroup because it's not a reportingPolygon

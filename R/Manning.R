@@ -1,4 +1,4 @@
-fmaManning <- function(ml, runName, dataDir, canProvs, bufferDist, asStudyArea = FALSE) {
+fmaManning <- function(ml, studyAreaName, dataDir, canProvs, bufferDist, asStudyArea = FALSE) {
   ab <- canProvs[canProvs$NAME_1 == "Alberta", ]
   manning <- extractFMA(ml, "Manning")
   raster::shapefile(manning, filename = file.path(dataDir, "Manning_full.shp"), overwrite = TRUE)
@@ -15,7 +15,7 @@ fmaManning <- function(ml, runName, dataDir, canProvs, bufferDist, asStudyArea =
                                  overwrite = TRUE) %>%
     joinReportingPolygons(., manning)
 
-  if (!grepl("LandWeb", runName)) {
+  if (!grepl("LandWeb", studyAreaName)) {
     ## workaround issue with LBstatus when unning full LandWeb area; TODO: diagnose and fix
     manning.lbstatus <- Cache(
       prepInputs,
@@ -41,7 +41,7 @@ fmaManning <- function(ml, runName, dataDir, canProvs, bufferDist, asStudyArea =
                analysisGroupReportingPolygon = "Manning Caribou",
                columnNameForLabels = "Name", filename2 = NULL)
 
-  if (!grepl("LandWeb", runName)) {
+  if (!grepl("LandWeb", studyAreaName)) {
     ml <- mapAdd(manning.lbstatus, ml, layerName = "Manning LBstatus", useSAcrs = TRUE, poly = TRUE,
                  analysisGroupReportingPolygon = "Manning LBstatus",
                  columnNameForLabels = "Name", filename2 = NULL)

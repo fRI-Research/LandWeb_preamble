@@ -1,4 +1,4 @@
-fmaMillarWestern <- function(ml, runName, dataDir, canProvs, bufferDist, asStudyArea = FALSE) {
+fmaMillarWestern <- function(ml, studyAreaName, dataDir, canProvs, bufferDist, asStudyArea = FALSE) {
   ab <- canProvs[canProvs$NAME_1 == "Alberta", ]
   mw <- extractFMA(ml, "Millar Western Forest Products")
   raster::shapefile(mw, filename = file.path(dataDir, "Millar_Western.shp"), overwrite = TRUE)

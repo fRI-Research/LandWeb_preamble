@@ -1,4 +1,4 @@
-fmaDMI <- function(ml, runName, dataDir, canProvs, bufferDist, asStudyArea = FALSE) {
+fmaDMI <- function(ml, studyAreaName, dataDir, canProvs, bufferDist, asStudyArea = FALSE) {
   ## There are 3 parts to the DMI FMA: an East and two West areas (North and South)
   ab <- canProvs[canProvs$NAME_1 == "Alberta", ]
   dmi <- extractFMA(ml, "Mercer Peace River")

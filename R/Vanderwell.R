@@ -1,4 +1,4 @@
-fmaVanderwell <- function(ml, runName, dataDir, canProvs, bufferDist, asStudyArea = FALSE) {
+fmaVanderwell <- function(ml, studyAreaName, dataDir, canProvs, bufferDist, asStudyArea = FALSE) {
   ## NOTE: Vanderwell has 2 FMAS (close enough we can run all together):
   ## - one shared vith Tolko/WestFraser (Tolko_AB_S)
   ## - the other is just south of the first

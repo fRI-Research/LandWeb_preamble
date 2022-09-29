@@ -1,10 +1,10 @@
-fmaWeyCo <- function(ml, runName, dataDir, canProvs, bufferDist, asStudyArea = FALSE) {
+fmaWeyCo <- function(ml, studyAreaName, dataDir, canProvs, bufferDist, asStudyArea = FALSE) {
   ## There are 3 parts to the WeyCo FMA: two in AB and one in SK
   absk <- canProvs[canProvs$NAME_1 %in% c("Alberta", "Saskatchewan"), ]
   weyco <- extractFMA(ml, "Weyerhaeuser|Pasquia-Porcupine")
   raster::shapefile(weyco, filename = file.path(dataDir, "WeyCo_full.shp"), overwrite = TRUE)
 
-  if (grepl("LandWeb|WeyCo_GP", runName)) {
+  if (grepl("LandWeb|WeyCo_GP", studyAreaName)) {
     ## reportingPolygons
     weyco_gp <- extractFMA(ml, "Weyerhaeuser Company Limited \\(Grande Prairie\\)")
     raster::shapefile(weyco_gp, filename = file.path(dataDir, "WeyCo_GP.shp"), overwrite = TRUE)
@@ -51,7 +51,7 @@ fmaWeyCo <- function(ml, runName, dataDir, canProvs, bufferDist, asStudyArea = F
     }
   }
 
-  if (grepl("LandWeb|WeyCo_PT|WeyCo_Pembina", runName)) {
+  if (grepl("LandWeb|WeyCo_PT|WeyCo_Pembina", studyAreaName)) {
     ## reportingPolygons
     weyco_pt <- extractFMA(ml, "Weyerhaeuser Company Limited \\(Pembina Timberland\\)")
     raster::shapefile(weyco_pt, filename = file.path(dataDir, "WeyCo_PT.shp"), overwrite = TRUE)
@@ -90,7 +90,7 @@ fmaWeyCo <- function(ml, runName, dataDir, canProvs, bufferDist, asStudyArea = F
     }
   }
 
-  if (grepl("LandWeb|WeyCo_SK", runName)) {
+  if (grepl("LandWeb|WeyCo_SK", studyAreaName)) {
     ## reportingPolygons
     weyco_sk <- extractFMA(ml, "Pasquia-Porcupine")
     raster::shapefile(weyco_sk, filename = file.path(dataDir, "WeyCo_SK.shp"), overwrite = TRUE)

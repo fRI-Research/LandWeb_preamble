@@ -1,11 +1,11 @@
-fmaTolko <- function(ml, runName, dataDir, canProvs, bufferDist, asStudyArea = FALSE) {
+fmaTolko <- function(ml, studyAreaName, dataDir, canProvs, bufferDist, asStudyArea = FALSE) {
   ## There are 3 parts to the Tolko FMA in AB and one in SK
   bcabsk <- canProvs[canProvs$NAME_1 %in% c("British Columbia", "Alberta", "Saskatchewan"), ]
   tolko <- extractFMA(ml, "Tolko|Meadow Lake OSB")
   tolko.full <- maptools::unionSpatialPolygons(tolko, rep(1, 5))
   raster::shapefile(tolko.full, filename = file.path(dataDir, "Tolko_Full.shp"), overwrite = TRUE)
 
-  if (grepl("LandWeb|Tolko_AB_N|tolko_AB_N", runName)) {
+  if (grepl("LandWeb|Tolko_AB_N|tolko_AB_N", studyAreaName)) {
     ## reporting polygons
     tolko_ab_n <- tolko[4, ]
     raster::shapefile(tolko_ab_n, filename = file.path(dataDir, "Tolko_AB_N.shp"), overwrite = TRUE)
@@ -50,7 +50,7 @@ fmaTolko <- function(ml, runName, dataDir, canProvs, bufferDist, asStudyArea = F
     }
   }
 
-  if (grepl("LandWeb|Tolko_AB_S|tolko_AB_S", runName)) {
+  if (grepl("LandWeb|Tolko_AB_S|tolko_AB_S", studyAreaName)) {
     ## reportingPolygons
     tolko_ab_s <- tolko[c(2, 3, 5), ]
     raster::shapefile(tolko_ab_s, filename = file.path(dataDir, "Tolko_AB_S.shp"), overwrite = TRUE)
@@ -95,7 +95,7 @@ fmaTolko <- function(ml, runName, dataDir, canProvs, bufferDist, asStudyArea = F
     }
   }
 
-  if (grepl("LandWeb|Tolko_SK|tolko_SK", runName)) {
+  if (grepl("LandWeb|Tolko_SK|tolko_SK", studyAreaName)) {
     ## reportingPolygons
     tolko_sk <- tolko[1, ]
     raster::shapefile(tolko_sk, filename = file.path(dataDir, "Tolko_SK.shp"), overwrite = TRUE)

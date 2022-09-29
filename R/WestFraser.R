@@ -1,4 +1,4 @@
-fmaWestFraser <- function(ml, runName, dataDir, canProvs, bufferDist, asStudyArea = FALSE) {
+fmaWestFraser <- function(ml, studyAreaName, dataDir, canProvs, bufferDist, asStudyArea = FALSE) {
   ## There are multiple parts to the WestFraser FMAs:
   ## - also includes Tolko_AB_S
   ## - also includes Blue Ridge
@@ -6,7 +6,7 @@ fmaWestFraser <- function(ml, runName, dataDir, canProvs, bufferDist, asStudyAre
   wf <- extractFMA(ml, "West Fraser|Blue Ridge")
   raster::shapefile(wf, filename = file.path(dataDir, "WestFraser_full.shp"), overwrite = TRUE)
 
-  if (grepl("LandWeb|BlueRidge", runName)) {
+  if (grepl("LandWeb|BlueRidge", studyAreaName)) {
     ## reportingPolygons
     wf_br <- wf[grepl("Blue Ridge", wf$Name), ] ## first subpolygon
     raster::shapefile(wf_br, filename = file.path(dataDir, "WestFraser_BlueRidge.shp"), overwrite = TRUE)
@@ -44,7 +44,7 @@ fmaWestFraser <- function(ml, runName, dataDir, canProvs, bufferDist, asStudyAre
     #         title = "West Fraser Blue Ridge", png = NULL)
   }
 
-  if (grepl("LandWeb|WestFraser_N", runName)) {
+  if (grepl("LandWeb|WestFraser_N", studyAreaName)) {
     ## reportingPolygons
     wf_n <- wf[c(2:3, 6), ] ## 3 FMAs: Slave Lake; shared w/ Tolko; shared vith Tolko & Vanderwell.
     raster::shapefile(wf_n, filename = file.path(dataDir, "WestFraser_N.shp"), overwrite = TRUE)
@@ -89,7 +89,7 @@ fmaWestFraser <- function(ml, runName, dataDir, canProvs, bufferDist, asStudyAre
     #         title = "West Fraser North", png = NULL)
   }
 
-  if (grepl("LandWeb|WestFraser_S", runName)) {
+  if (grepl("LandWeb|WestFraser_S", studyAreaName)) {
     ## reportingPolygons
     wf_s <- wf[4:5, ] ## Hinton and Edson FMAs
     raster::shapefile(wf_s, filename = file.path(dataDir, "WestFraser_S.shp"), overwrite = TRUE)

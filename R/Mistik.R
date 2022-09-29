@@ -1,4 +1,4 @@
-fmaMistik <- function(ml, runName, dataDir, canProvs, bufferDist, asStudyArea = FALSE) {
+fmaMistik <- function(ml, studyAreaName, dataDir, canProvs, bufferDist, asStudyArea = FALSE) {
   ## reportingPolygons
   absk <- canProvs[canProvs$NAME_1 %in% c("Alberta", "Saskatchewan"), ]
   mistik <- extractFMA(ml, "Mistik")

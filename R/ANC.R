@@ -1,4 +1,4 @@
-fmaANC <- function(ml, runName, dataDir, canProvs, bufferDist, asStudyArea = FALSE) {
+fmaANC <- function(ml, studyAreaName, dataDir, canProvs, bufferDist, asStudyArea = FALSE) {
   ab <- canProvs[canProvs$NAME_1 == "Alberta", ]
   anc <- extractFMA(ml, "ANC")
   raster::shapefile(anc, filename = file.path(dataDir, "ANC.shp"), overwrite = TRUE)

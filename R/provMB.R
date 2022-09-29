@@ -1,4 +1,4 @@
-provMB <- function(ml, runName, dataDir, canProvs, bufferDist, asStudyArea = FALSE) {
+provMB <- function(ml, studyAreaName, dataDir, canProvs, bufferDist, asStudyArea = FALSE) {
   mb <- canProvs[canProvs$NAME_1 == "Manitoba", ]
 
   id <- which(ml[["Provincial Boundaries"]][["NAME_1"]] == "Manitoba")

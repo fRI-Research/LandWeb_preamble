@@ -1,4 +1,4 @@
-provSK <- function(ml, runName, dataDir, canProvs, bufferDist, asStudyArea = FALSE) {
+provSK <- function(ml, studyAreaName, dataDir, canProvs, bufferDist, asStudyArea = FALSE) {
   sk <- canProvs[canProvs$NAME_1 == "Saskatchewan", ]
 
   id <- which(ml[["Provincial Boundaries"]][["NAME_1"]] == "Saskatchewan")

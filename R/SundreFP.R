@@ -1,4 +1,4 @@
-fmaSundreFP <- function(ml, runName, dataDir, canProvs, bufferDist, asStudyArea = FALSE) {
+fmaSundreFP <- function(ml, studyAreaName, dataDir, canProvs, bufferDist, asStudyArea = FALSE) {
   ## There are 3 parts to the SundreFP FMA: 2 in BC and one in MB.
   ab <- canProvs[canProvs$NAME_1 == "Alberta", ]
   sundre <- extractFMA(ml, "Sundre Forest Products Inc.")

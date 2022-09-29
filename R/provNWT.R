@@ -1,4 +1,4 @@
-provNWT <- function(ml, runName, dataDir, canProvs, bufferDist, asStudyArea = FALSE) {
+provNWT <- function(ml, studyAreaName, dataDir, canProvs, bufferDist, asStudyArea = FALSE) {
   nwt <- canProvs[canProvs$NAME_1 %in% c("Northwest Territories"), ]
 
   id <- which(ml[["Provincial Boundaries"]][["NAME_1"]] == "Northwest Territories")

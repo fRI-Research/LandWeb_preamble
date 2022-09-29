@@ -1,5 +1,5 @@
-fmu <- function(ml, runName, dataDir, canProvs, bufferDist, asStudyArea = FALSE) {
-  fmuNum <- strsplit(runName, "_")[[1]][2]
+fmu <- function(ml, studyAreaName, dataDir, canProvs, bufferDist, asStudyArea = FALSE) {
+  fmuNum <- strsplit(studyAreaName, "_")[[1]][2]
 
   ab <- canProvs[canProvs$NAME_1 == "Alberta", ]
   fmu <- extractFMU(ml, fmuNum)

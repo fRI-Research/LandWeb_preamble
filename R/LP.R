@@ -1,11 +1,11 @@
-fmaLP <- function(ml, runName, dataDir, canProvs, bufferDist, asStudyArea = FALSE) {
+fmaLP <- function(ml, studyAreaName, dataDir, canProvs, bufferDist, asStudyArea = FALSE) {
   ## There are 3 parts to the LP FMA: 2 in BC and one in MB.
   west <- canProvs[canProvs$NAME_1 %in% c("British Columbia", "Alberta",
                                           "Saskatchewan", "Manitoba"), ]
   lp <- extractFMA(ml, "Fort St\\. John|Dawson Creek|Mountain")
   raster::shapefile(lp, filename = file.path(dataDir, "LP_full.shp"), overwrite = TRUE)
 
-  if (grepl("LandWeb|LP_BC", runName)) {
+  if (grepl("LandWeb|LP_BC", studyAreaName)) {
     ## reportingPolygons
     lp_bc <- extractFMA(ml, "Fort St\\. John|Dawson Creek")
     raster::shapefile(lp_bc, filename = file.path(dataDir, "LP_BC.shp"), overwrite = TRUE)
@@ -47,7 +47,7 @@ fmaLP <- function(ml, runName, dataDir, canProvs, bufferDist, asStudyArea = FALS
     }
   }
 
-  if (grepl("LandWeb|LP_MB", runName)) {
+  if (grepl("LandWeb|LP_MB", studyAreaName)) {
     ## reportingPolygons
     lp_mb <- extractFMA(ml, "Mountain")
     raster::shapefile(lp_mb, filename = file.path(dataDir, "LP_MB.shp"), overwrite = TRUE)

@@ -1,4 +1,4 @@
-fmaEdsonFP <- function(ml, runName, dataDir, canProvs, bufferDist, asStudyArea = FALSE) {
+fmaEdsonFP <- function(ml, studyAreaName, dataDir, canProvs, bufferDist, asStudyArea = FALSE) {
   ab <- canProvs[canProvs$NAME_1 == "Alberta", ]
   edson <- extractFMA(ml, "Edson")
   raster::shapefile(edson, filename = file.path(dataDir, "EdsonFP.shp"), overwrite = TRUE)

@@ -1,4 +1,4 @@
-fmaSprayLake <- function(ml, runName, dataDir, canProvs, bufferDist, asStudyArea = FALSE) {
+fmaSprayLake <- function(ml, studyAreaName, dataDir, canProvs, bufferDist, asStudyArea = FALSE) {
   ab <- canProvs[canProvs$NAME_1 == "Alberta", ]
   spraylake <- extractFMA(ml, "Spray Lake")
   raster::shapefile(spraylake, filename = file.path(dataDir, "SprayLake.shp"), overwrite = TRUE)

@@ -1,4 +1,4 @@
-fmaAlpac <- function(ml, runName, dataDir, canProvs, bufferDist, asStudyArea = FALSE) {
+fmaAlpac <- function(ml, studyAreaName, dataDir, canProvs, bufferDist, asStudyArea = FALSE) {
   ab <- canProvs[canProvs$NAME_1 == "Alberta", ]
   alpac <- extractFMA(ml, "ALPAC")
   raster::shapefile(alpac, filename = file.path(dataDir, "Alpac.shp"), overwrite = TRUE)

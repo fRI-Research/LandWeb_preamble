@@ -1,4 +1,4 @@
-fmaNWT <- function(ml, runName, dataDir, canProvs, bufferDist, asStudyArea = FALSE) {
+fmaNWT <- function(ml, studyAreaName, dataDir, canProvs, bufferDist, asStudyArea = FALSE) {
   nwt <- canProvs[canProvs$NAME_1 %in% c("Northwest Territories"), ]
   fmanwt <- extractFMA(ml, "Fort Resolution|Fort Providence")
   raster::shapefile(fmanwt, filename = file.path(dataDir, "FMA_NWT.shp"), overwrite = TRUE)
@@ -9,7 +9,7 @@ fmaNWT <- function(ml, runName, dataDir, canProvs, bufferDist, asStudyArea = FAL
   fmanwt_FR <- extractFMA(ml, "Fort Resolution") # FMANWT1
   raster::shapefile(fmanwt_FR, filename = file.path(dataDir, "FMA_NWT_FR.shp"), overwrite = TRUE)
 
-  if (grepl("LandWeb|FMANWT2", runName)) {
+  if (grepl("LandWeb|FMANWT2", studyAreaName)) {
     ## reportingPolygons
     fmanwt_FP.nwter <- postProcess(ml[["Northwest Territories Ecoregions"]],
                                    studyArea = fmanwt_FP, useSAcrs = TRUE,
