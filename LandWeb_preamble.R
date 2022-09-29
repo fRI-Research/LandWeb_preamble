@@ -12,7 +12,7 @@ defineModule(sim, list(
   timeframe = as.POSIXlt(c(NA, NA)),
   timeunit = "year",
   citation = list("citation.bib"),
-  documentation = list("README.txt", "LandWeb_preamble.Rmd"),
+  documentation = list("README.md", "LandWeb_preamble.Rmd"),
   reqdPkgs = list("achubaty/amc@development",
                   "crayon", "curl", "dplyr", "fasterize", "geodata", "ggplot2", "httr",
                   "PredictiveEcology/LandR@development (>= 1.1.0.9000)",
@@ -34,11 +34,10 @@ defineModule(sim, list(
                     "Multiplication factor for adjusting fire return intervals."),
     defineParameter("dispersalType", "character", "default", NA, NA,
                     "One of 'aspen', 'high', 'none', or 'default'."),
-    defineParameter("mapResFact", "numeric", 1, 1, 10,
-                    paste("The map resolution factor to use with raster::disaggregate to reduce pixel size below 250 m.",
-                          "Should be one of 1, 2, 5, 10, which correspends to pixel size of 250m, 125m, 50m, 25m, repsectively.")),
     defineParameter("minFRI", "numeric", 40, 0, 200,
                     "The value of fire return interval below which, pixels will be changed to `NA`, i.e., ignored"),
+    defineParameter("pixelSize", "numeric", 250, NA, NA,
+                    paste("Pixel size in metres. Should be one of 250, 125, 50, 25.")),
     defineParameter("ROStype", "character", "default", NA, NA,
                     "One of 'equal', 'log', or 'default'."),
     defineParameter("sppEquivCol", "character", "LandWeb", NA, NA,
@@ -322,9 +321,10 @@ InitMaps <- function(sim) {
 
   ## LCC 2005 / raster to match ------------------------------------------------------------------
   LCC2005large <- prepInputsLCC(year = 2005, studyArea = sim$studyAreaLarge, destinationPath = Paths$inputPath)
-  if (P(sim)$mapResFact != 1) {
-    stopifnot(P(sim)$mapResFact %in% c(2, 5, 10)) ## 125m, 50m, 25m resolutions respectively
-    LCC2005large <- Cache(raster::disaggregate, x = LCC2005large, fact = P(sim)$mapResFact)
+  if (P(sim)$pixelSize != 250) {
+    stopifnot(P(sim)$pixelSize %in% c(125, 50, 25))
+    LCC2005large <- Cache(raster::disaggregate, x = LCC2005large,
+                          fact = as.integer(250 / P(sim)$pixelSize))
   }
   LCC2005large[] <- as.integer(LCC2005large[])
 
