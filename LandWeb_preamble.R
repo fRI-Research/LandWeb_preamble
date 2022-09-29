@@ -47,9 +47,9 @@ defineModule(sim, list(
                           "considered 'trees' from the perspective of LandR-Biomass.")),
     defineParameter("treeClassesToReplace", "numeric", c(34:36), 0, 39,
                     "The transient classes in the LCC2005 layer that will become 'trees' from the perspective of LandR-Biomass (e.g., burned)"),
-    defineParameter(".plotInitialTime", "numeric", NA, NA, NA,
+    defineParameter(".plotInitialTime", "numeric", start(sim), NA, NA,
                     "This describes the simulation time at which the first plot event should occur"),
-    defineParameter(".plotInterval", "numeric", NA, NA, NA,
+    defineParameter(".plotInterval", "numeric", 1, NA, NA,
                     "This describes the simulation time interval between plot events"),
     defineParameter(".plots", "character", "object", NA, NA,
                     paste("Passed to `types` in `Plots` (see `?Plots`). There are a few plots that are made within this module, if set.",
@@ -122,6 +122,15 @@ doEvent.LandWeb_preamble = function(sim, eventTime, eventType) {
       sim <- InitMaps(sim)
       sim <- InitSpecies(sim)
       sim <- InitLandMine(sim)
+
+      if (anyPlotting(P(sim)$.plots)) {
+        if ("screen" %in% P(sim)$.plots) {
+          sim <- scheduleEvent(sim, time(sim) + P(sim)$.plotInterval, "LandWeb_preamble", "plotMaps")
+        }
+      }
+    },
+    plotMaps = {
+      PlotMaps(sim)
     },
     warning(paste("Undefined event type: '", current(sim)[1, "eventType", with = FALSE],
                   "' in module '", current(sim)[1, "moduleName", with = FALSE], "'", sep = ""))
@@ -621,6 +630,19 @@ InitLandMine <- function(sim) {
   sim$LandMineROStable <- LandMineROStable
 
   return(invisible(sim))
+}
+
+PlotMaps <- function(sim) {
+  lapply(dev.list(), function(x) {
+    try(quickPlot::clearPlot(force = TRUE))
+    try(dev.off())
+  })
+  quickPlot::dev(2, width = 18, height = 10)
+  grid::grid.rect(0.90, 0.03, width = 0.2, height = 0.06, gp = gpar(fill = "white", col = "white"))
+  grid::grid.text(label = P(sim)$.studyAreaName, x = 0.90, y = 0.03)
+
+  Plot(sim$studyAreaReporting, sim$studyArea, sim$studyAreaLarge,
+       sim$rasterToMatchReporting, sim$rasterToMatch, sim$rasterToMatchLarge)
 }
 
 .inputObjects <- function(sim) {
