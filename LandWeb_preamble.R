@@ -90,6 +90,8 @@ defineModule(sim, list(
                   desc = NA),
     createsOutput("rasterToMatch", "RasterLayer",
                   desc = NA),
+    createsOutput("rasterToMatchLarge", "RasterLayer",
+                  desc = NA),
     createsOutput("rasterToMatchReporting", "RasterLayer",
                   desc = NA),
     createsOutput("rstFlammable", "RasterLayer",
