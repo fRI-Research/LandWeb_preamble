@@ -40,8 +40,6 @@ defineModule(sim, list(
                     paste("Pixel size in metres. Should be one of 250, 125, 50, 25.")),
     defineParameter("ROStype", "character", "default", NA, NA,
                     "One of 'equal', 'log', or 'default'."),
-    defineParameter("sppEquivCol", "character", "LandWeb", NA, NA,
-                    "The column in `sim$sppEquiv` data.table to use as a naming convention"),
     defineParameter("treeClassesLCC", "integer", c(1L:15L, 20L, 32L, 34L:36L), 0L, 39L,
                     paste("AKA forestedLCCClasses. The classes in the LCC2005 layer that are",
                           "considered 'trees' from the perspective of LandR-Biomass.")),
@@ -98,7 +96,7 @@ defineModule(sim, list(
                   desc = NA),
     createsOutput("sppColorVect", "character",
                   desc = paste("A named vector of colors to use for plotting.",
-                               "The names must be in `sim$sppEquiv[[P(sim)$sppEquivCol]]`,",
+                               "The names must be in `sim$sppEquiv[['LandWeb']]`,",
                                "and should also contain a color for 'Mixed'")),
     createsOutput("sppEquiv", "data.table",
                   desc = "table of species equivalencies. See `LandR::sppEquivalencies_CA`."),
@@ -544,7 +542,7 @@ InitSpecies <- function(sim) {
   sppEquiv[LandWeb == "Popu_sp", Leading := "Deciduous leading"]
 
   sim$sppEquiv <- sppEquiv[!is.na(LandWeb), ]
-  sim$sppColorVect <- LandR::sppColors(sim$sppEquiv, P(sim)$sppEquivCol, newVals = "Mixed", palette = "Accent")
+  sim$sppColorVect <- LandR::sppColors(sim$sppEquiv, "LandWeb", newVals = "Mixed", palette = "Accent")
 
   ## species parameter tables
   sim$speciesTable <- LandR::getSpeciesTable(dPath = mod$dPath) ## uses default URL
