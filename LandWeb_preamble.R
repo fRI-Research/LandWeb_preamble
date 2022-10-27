@@ -641,7 +641,7 @@ InitLandMine <- function(sim) {
     LandMineROStable$ros <- log(LandMineROStable$ros)
   }
 
-  sim$ROStable <- LandMineROStable
+  sim$ROSTable <- LandMineROStable
 
   return(invisible(sim))
 }
