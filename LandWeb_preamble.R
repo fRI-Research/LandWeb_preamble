@@ -7,7 +7,7 @@ defineModule(sim, list(
     person(c("Alex", "M."), "Chubaty", email = "achubaty@for-cast.ca", role = c("aut"))
   ),
   childModules = character(0),
-  version = list(LandWeb_preamble = "0.0.3"),
+  version = list(LandWeb_preamble = "0.0.4"),
   spatialExtent = raster::extent(rep(NA_real_, 4)),
   timeframe = as.POSIXlt(c(NA, NA)),
   timeunit = "year",
@@ -474,6 +474,7 @@ InitMaps <- function(sim) {
   })
   ml[[TSFLayerName]][noDataPixelsCC] <- standAgeMap[noDataPixelsCC]
   ml[[TSFLayerName]][sim$nonTreePixels] <- NA
+  attr(ml[[TSFLayerName]], "imputedPixID") <- integer(0) ## TODO: reassess whether overlay counts as imputation
 
   ## Flammability and Fire Return Interval rasters -----------------------------------------------
 
