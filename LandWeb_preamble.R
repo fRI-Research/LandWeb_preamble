@@ -72,6 +72,8 @@ defineModule(sim, list(
     expectsInput("canProvs", "SpatialPolygonsDataFrame", "Canadian provincial boundaries shapefile", NA)
   ),
   outputObjects = bindrows(
+    createsOutput("CC TSF", "RasterLayer",
+                  desc = "Time since fire (aka age) map derived from Current Conditions data."),
     createsOutput("fireReturnInterval", "RasterLayer",
                   desc = "fire return interval raster"),
     createsOutput("LandTypeCC", "RasterLayer",
