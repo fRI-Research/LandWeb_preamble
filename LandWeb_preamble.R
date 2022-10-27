@@ -72,14 +72,10 @@ defineModule(sim, list(
     expectsInput("canProvs", "SpatialPolygonsDataFrame", "Canadian provincial boundaries shapefile", NA)
   ),
   outputObjects = bindrows(
-    createsOutput("CC TSF", "RasterLayer",
-                  desc = "Time since fire (aka age) map derived from Current Conditions data."),
     createsOutput("fireReturnInterval", "RasterLayer",
                   desc = "fire return interval raster"),
     createsOutput("LandTypeCC", "RasterLayer",
                   desc = "Land Cover Classification map derived from Current Conditions data."),
-    createsOutput("LCC2005", "RasterLayer",
-                  desc = "Land Cover Classification map derived from national data."),
     createsOutput("ml", "map",
                   desc = "`map` object containing study areas, reporting polygons, etc. for post-processing."),
     createsOutput("LCC", "RasterLayer",
@@ -92,6 +88,13 @@ defineModule(sim, list(
                   desc = NA),
     createsOutput("rasterToMatchReporting", "RasterLayer",
                   desc = NA),
+    createsOutput("ROSTable", "data.table",
+                  desc = paste("A data.table with 3 columns, 'age', 'leading', and 'ros'.",
+                               "The values under the 'age' column can be 'mature', 'immature',",
+                               "'young' and compound versions of these, e.g., 'immature_young'",
+                               "which can be used when 2 or more age classes share same 'ros'.",
+                               "'leading' should be vegetation type.",
+                               "'ros' gives the rate of spread values for each age and type.")),
     createsOutput("rstFlammable", "RasterLayer",
                   desc = NA),
     createsOutput("sppColorVect", "character",
@@ -100,8 +103,19 @@ defineModule(sim, list(
                                "and should also contain a color for 'Mixed'")),
     createsOutput("sppEquiv", "data.table",
                   desc = "table of species equivalencies. See `LandR::sppEquivalencies_CA`."),
+    createsOutput("speciesParams", "list",
+                  desc = paste("list of updated species trait values to be used to updated",
+                               "`speciesTable` to create `species`.")),
+    createsOutput("speciesTable", "data.table",
+                  desc = paste("a table of invariant species traits with the following trait colums:",
+                               "'species', 'Area', 'longevity', 'sexualmature', 'shadetolerance',",
+                               "'firetolerance', 'seeddistance_eff', 'seeddistance_max', 'resproutprob',",
+                               "'resproutage_min', 'resproutage_max', 'postfireregen', 'leaflongevity',",
+                               "'wooddecayrate', 'mortalityshape', 'growthcurve', 'leafLignin',",
+                               "'hardsoft'. Names can differ, but not the column order.",
+                               "Default is from Dominic Cyr and Yan Boulanger's project.")),
     createsOutput("studyArea", "SpatialPolygonsDataFrame",
-                  desc = NA),
+                  desc = "Polygon to use as the simulation study area."),
     createsOutput("studyAreaLarge", "SpatialPolygonsDataFrame",
                   desc = paste("Polygon to use as the parametrisation study area.",
                                "Note that `studyAreaLarge` is only used for parameter estimation, and",
@@ -299,11 +313,10 @@ InitMaps <- function(sim) {
   } else if (grepl("random", P(sim)$.studyAreaName)) {
     ## use a small random study area
     message(crayon::red("Using random study area."))
-    seed <- 867
     ranSeed <- .Random.seed
-    set.seed(seed)
-    #rnd <- SpaDES.tools::randomPolygon(ml[[studyAreaName(ml)]], area = 2e5)
+    set.seed(867)
     rnd <- SpaDES.tools::randomPolygon(ml[["Alberta Natural Subregions"]], area = 4e5) ## random area in Central-East AB
+    set.seed(ranSeed)
 
     if (FALSE) {
       sp::plot(spTransform(sim$canProvs[sim$canProvs$NAME_1 == "Alberta", ], targetCRS))
@@ -394,17 +407,17 @@ InitMaps <- function(sim) {
   remapDT[LCC2005 %in% P(sim)$treeClassesToReplace, newLCC := 99] ## reclassification needed
 
   message("Overlaying land cover maps...")
-  sim$LCClarge <- Cache(overlayLCCs,
-                        LCCs = list(CC = sim$LandTypeCC, LCC2005 = ml$LCC2005large),
-                        forestedList = list(CC = 0, LCC2005 = P(sim)$treeClassesLCC),
-                        outputLayer = "LCC2005",
-                        remapTable = remapDT,
-                        classesToReplace = c(P(sim)$treeClassesToReplace, 99),
-                        availableERC_by_Sp = NULL)
+  LCClarge <- Cache(overlayLCCs,
+                    LCCs = list(CC = sim$LandTypeCC, LCC2005 = ml$LCC2005large),
+                    forestedList = list(CC = 0, LCC2005 = P(sim)$treeClassesLCC),
+                    outputLayer = "LCC2005",
+                    remapTable = remapDT,
+                    classesToReplace = c(P(sim)$treeClassesToReplace, 99),
+                    availableERC_by_Sp = NULL)
   message("...done.")
 
-  treePixelsLCC <- which(sim$LCClarge[] %in% P(sim)$treeClassesLCC)
-  nonTreePixels <- which(sim$LCClarge[] %in% nontreeClassesLCC)
+  treePixelsLCC <- which(LCClarge[] %in% P(sim)$treeClassesLCC)
+  nonTreePixels <- which(LCClarge[] %in% nontreeClassesLCC)
 
   sim$nonTreePixels <- nonTreePixels
 
@@ -487,7 +500,7 @@ InitMaps <- function(sim) {
   rstFireReturnInterval <- fasterize::fasterize(sf::st_as_sf(ml[["LTHFC"]]),
                                                 raster = rasterToMatch(ml),
                                                 field = "fireReturnInterval")
-  sim$rstFireReturnInterval <- crop(rstFireReturnInterval, sim$rasterToMatch) ## ensure it matches studyArea
+  rstFireReturnInterval <- crop(rstFireReturnInterval, sim$rasterToMatch) ## ensure it matches studyArea
 
   if (!is.integer(rstFireReturnInterval[]))
     rstFireReturnInterval[] <- as.integer(rstFireReturnInterval[])
@@ -501,7 +514,7 @@ InitMaps <- function(sim) {
   }
 
   sim$fireReturnInterval <- ml$fireReturnInterval
-  sim$LCC <- sim$LCClarge
+  sim$LCC <- LCClarge
   sim[[TSFLayerName]] <- ml[[TSFLayerName]]
 
   sim$ml <- ml
@@ -515,7 +528,7 @@ InitMaps <- function(sim) {
       stop("LandWeb_preamble: ", paste0("sim$", x, " returned NULL."), call. = FALSE)
   })
 
-  compareRaster(sim$rasterToMatch, sim$rstFireReturnInterval, sim$rstFlammable)
+  compareRaster(sim$rasterToMatch, rstFireReturnInterval, sim$rstFlammable)
   ## end assertions
 
   return(invisible(sim))
@@ -625,26 +638,27 @@ InitLandMine <- function(sim) {
     LandMineROStable$ros <- log(LandMineROStable$ros)
   }
 
-  sim$LandMineROStable <- LandMineROStable
+  sim$ROStable <- LandMineROStable
 
   return(invisible(sim))
 }
 
 PlotMaps <- function(sim) {
-  lapply(dev.list(), function(x) {
-    try(quickPlot::clearPlot(force = TRUE))
-    try(dev.off())
-  })
-  quickPlot::dev(2, width = 18, height = 10)
-  grid::grid.rect(0.90, 0.03, width = 0.2, height = 0.06, gp = gpar(fill = "white", col = "white"))
-  grid::grid.text(label = P(sim)$.studyAreaName, x = 0.90, y = 0.03)
-
+  if (isFALSE(quickPlot::isRstudioServer())) {
+    lapply(dev.list(), function(x) {
+      try(quickPlot::clearPlot(force = TRUE))
+      try(dev.off())
+    })
+    quickPlot::dev(2, width = 18, height = 10)
+    grid::grid.rect(0.90, 0.03, width = 0.2, height = 0.06, gp = gpar(fill = "white", col = "white"))
+    grid::grid.text(label = P(sim)$.studyAreaName, x = 0.90, y = 0.03)
+  }
   Plot(sim$studyAreaReporting, sim$studyArea, sim$studyAreaLarge,
        sim$rasterToMatchReporting, sim$rasterToMatch, sim$rasterToMatchLarge)
 }
 
 .inputObjects <- function(sim) {
-  cacheTags <- c(currentModule(sim), "function:.inputObjects")
+  #cacheTags <- c(currentModule(sim), "function:.inputObjects")
   mod$dPath <- asPath(getOption("reproducible.destinationPath", dataPath(sim)), 1)
   message(currentModule(sim), ": using dataPath '", mod$dPath, "'.")
 
