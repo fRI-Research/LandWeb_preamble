@@ -535,13 +535,13 @@ InitSpecies <- function(sim) {
                           Popu_tre = "Popu_sp", Betu_pap = "Popu_sp",
                           Abie_bal = "Abie_sp", Abie_las = "Abie_sp", Abie_sp = "Abie_sp")[LandR]]
 
-  sppEquiv[LandWeb == "Abie_sp", EN_generic_full := "Fir"]
-  sppEquiv[LandWeb == "Abie_sp", EN_generic_short := "Fir"]
-  sppEquiv[LandWeb == "Abie_sp", Leading := "Fir leading"]
+  sppEquiv[LandWeb == "Abie_sp", `:=`(EN_generic_full = "Fir",
+                                      EN_generic_short = "Fir",
+                                      Leading = "Fir leading")]
 
-  sppEquiv[LandWeb == "Popu_sp", EN_generic_full := "Deciduous"]
-  sppEquiv[LandWeb == "Popu_sp", EN_generic_short := "Decid"]
-  sppEquiv[LandWeb == "Popu_sp", Leading := "Deciduous leading"]
+  sppEquiv[LandWeb == "Popu_sp", `:=`(EN_generic_full = "Deciduous",
+                                      EN_generic_short = "Decid",
+                                      Leading = "Deciduous leading")]
 
   sim$sppEquiv <- sppEquiv[!is.na(LandWeb), ]
   sim$sppColorVect <- LandR::sppColors(sim$sppEquiv, P(sim)$sppEquivCol, newVals = "Mixed", palette = "Accent")
