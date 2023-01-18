@@ -7,9 +7,15 @@ provMB <- function(ml, studyAreaName, dataDir, canProvs, bufferDist, asStudyArea
 
   ## reportingPolygons
   MB[["Name"]] <- MB[["NAME_1"]]
+
+  MB.natlez <- postProcess(ml[["National Ecozones"]],
+                           studyArea = MB, useSAcrs = TRUE,
+                           filename2 = file.path(dataDir, "MB_NATLEZ.shp")) %>%
+    joinReportingPolygons(., MB)
+
   MB.natler <- postProcess(ml[["National Ecoregions"]],
                            studyArea = MB, useSAcrs = TRUE,
-                           filename2 = file.path(dataDir, "SK_NATLER.shp")) %>%
+                           filename2 = file.path(dataDir, "MB_NATLER.shp")) %>%
     joinReportingPolygons(., MB)
 
   MB.caribou <- postProcess(ml[["MB Caribou Ranges"]],
@@ -18,8 +24,29 @@ provMB <- function(ml, studyAreaName, dataDir, canProvs, bufferDist, asStudyArea
                             overwrite = TRUE) %>%
     joinReportingPolygons(., MB)
 
+  MB.fmla1 <- prepInputs(url = "https://drive.google.com/file/d/1cHt9irGx9PhoMhP3oSrTG758-vrzog--/",
+                         studyArea = MB, useSAcrs = TRUE,
+                         filename2 = file.path(dataDir, "MB_FMLA.shp")) %>%
+    joinReportingPolygons(., MB)
+  MB.fmla1$FML_NAME <- MB.fmla1$FMLNO
+
+  MB.fmla23 <- prepInputs(url = "https://drive.google.com/file/d/18Uwivkqt97WYAse_cM2uC7Op-GmXUo6V/",
+                          studyArea = MB, useSAcrs = TRUE,
+                          filename2 = file.path(dataDir, "MB_FMLA.shp")) %>%
+    joinReportingPolygons(., MB)
+
+  MB.fmla <- bind(MB.fmla1, MB.fmla23)
+
+  MB.fmu <- prepInputs(url = "https://drive.google.com/file/d/18IXDtSyrakMS5QKRi6IU4UWOwhR2fYxn/",
+                       studyArea = MB, useSAcrs = TRUE,
+                       filename2 = file.path(dataDir, "MB_FMU.shp")) %>%
+    joinReportingPolygons(., MB)
+
   ml <- mapAdd(MB, ml, layerName = "MB", useSAcrs = TRUE, poly = TRUE,
                analysisGroupReportingPolygon = "MB", isStudyArea = isTRUE(asStudyArea),
+               columnNameForLabels = "Name", filename2 = NULL)
+  ml <- mapAdd(MB.natlez, ml, layerName = "MB NATLEZ", useSAcrs = TRUE, poly = TRUE,
+               analysisGroupReportingPolygon = "MB NATLEZ",
                columnNameForLabels = "Name", filename2 = NULL)
   ml <- mapAdd(MB.natler, ml, layerName = "MB NATLER", useSAcrs = TRUE, poly = TRUE,
                analysisGroupReportingPolygon = "MB NATLER",
@@ -27,6 +54,12 @@ provMB <- function(ml, studyAreaName, dataDir, canProvs, bufferDist, asStudyArea
   ml <- mapAdd(MB.caribou, ml, layerName = "MB Caribou", useSAcrs = TRUE, poly = TRUE,
                analysisGroupReportingPolygon = "MB Caribou",
                columnNameForLabels = "Name", filename2 = NULL)
+  ml <- mapAdd(MB.fmla, ml, layerName = "MB FMLA", useSAcrs = TRUE, poly = TRUE,
+               analysisGroupReportingPolygon = "MB FMLA",
+               columnNameForLabels = "FML_NAME", filename2 = NULL)
+  ml <- mapAdd(MB.fmu, ml, layerName = "MB FMS", useSAcrs = TRUE, poly = TRUE,
+               analysisGroupReportingPolygon = "MB FMS",
+               columnNameForLabels = "SEC_NAME", filename2 = NULL)
 
   ## studyArea shouldn't use analysisGroup because it's not a reportingPolygon
   MB_sr <- postProcess(ml[["LandWeb Study Area"]],

@@ -15,12 +15,12 @@ defineModule(sim, list(
   documentation = list("README.md", "LandWeb_preamble.Rmd"),
   reqdPkgs = list("achubaty/amc@development",
                   "crayon", "curl", "dplyr", "fasterize", "geodata", "ggplot2", "httr",
-                  "PredictiveEcology/LandR@development (>= 1.1.0.9000)",
+                  "PredictiveEcology/LandR@development (>= 1.1.0.9015)",
                   "PredictiveEcology/map@development (>= 0.0.3.9004)",
                   "maptools",
                   "PredictiveEcology/pemisc@development (>= 0.0.3.9007)",
                   "raster", "RColorBrewer", "RCurl",
-                  "PredictiveEcology/reproducible@development (>= 1.2.10.9000)",
+                  "PredictiveEcology/reproducible@development (>= 1.2.16.9018)",
                   "scales", "sf", "sp", "SpaDES.tools", "spatialEco", "XML"),
   parameters = rbind(
     defineParameter("bufferDist", "numeric", 25000, 20000, 100000,
@@ -174,7 +174,7 @@ InitMaps <- function(sim) {
                #url = "https://drive.google.com/file/d/1JptU0R7qsHOEAEkxybx5MGg650KC98c6", ## landweb_ltfc_v6.shp
                url = "https://drive.google.com/file/d/1eu5TJS1NhzqbnDenyiBy2hAnVI1E3lsC", ## landweb_ltfc_v8.shp
                columnNameForLabels = "NSN", isStudyArea = FALSE, filename2 = NULL)
-  ml[["LTHFC"]] <- polygonClean(ml[["LTHFC"]], type = "LandWeb", minFRI = P(sim)$minFRI)
+  ml[["LTHFC"]] <- LandWebUtils::polygonClean(ml[["LTHFC"]], type = "LandWeb", minFRI = P(sim)$minFRI)
 
   ml <- mapAdd(map = ml, layerName = "LandWeb Study Area",
                targetCRS = targetCRS, overwrite = TRUE,
@@ -182,7 +182,11 @@ InitMaps <- function(sim) {
                url = "https://drive.google.com/file/d/1eu5TJS1NhzqbnDenyiBy2hAnVI1E3lsC", ## landweb_ltfc_v8.shp
                columnNameForLabels = "NSN", isStudyArea = TRUE, filename2 = NULL)
   ml[["LandWeb Study Area"]] <- raster::aggregate(ml[["LandWeb Study Area"]]) %>%
-    spatialEco::remove.holes(.)
+    sf::st_as_sf(.) %>%
+    sf::st_cast("POLYGON") %>%
+    spatialEco::remove.holes(.) %>% ## removes crs
+    sf::`st_crs<-`(., targetCRS) %>%
+    sf::as_Spatial(.)
 
   ## Updated FMA boundaries
   ml <- mapAdd(map = ml, layerName = "FMA Boundaries Updated",
@@ -202,6 +206,13 @@ InitMaps <- function(sim) {
   newNames <- c("Mercer Peace River Pulp Ltd. (East)", "Mercer Peace River Pulp Ltd. (West)")
   ml[["FMA Boundaries Updated"]][["Name"]][ids] <- newNames
   ml[["FMA Boundaries Updated"]][["shinyLabel"]][ids] <- newNames
+
+  ## National ecozones
+  ml <- mapAdd(map = ml, layerName = "National Ecozones",
+               useSAcrs = TRUE, poly = TRUE, overwrite = TRUE,
+               url = "https://sis.agr.gc.ca/cansis/nsdb/ecostrat/zone/ecozone_shp.zip",
+               columnNameForLabels = "REGION_NAM", isStudyArea = FALSE, filename2 = NULL)
+  ml[["National Ecozones"]][["Name"]] <- tools::toTitleCase(tolower(ml[["National Ecozones"]][["ZONE_NAME"]]))
 
   ## National ecoregions
   ml <- mapAdd(map = ml, layerName = "National Ecoregions",
