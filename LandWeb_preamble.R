@@ -17,7 +17,7 @@ defineModule(sim, list(
                   "crayon", "curl", "dplyr", "fasterize", "geodata", "ggplot2", "httr",
                   "PredictiveEcology/LandR@development (>= 1.1.0.9015)",
                   "PredictiveEcology/LandWebUtils@development (>= 0.1.5.9000)",
-                  "PredictiveEcology/map@development (>= 0.0.3.9004)",
+                  "PredictiveEcology/map@development (>= 0.0.5)",
                   "maptools",
                   "PredictiveEcology/pemisc@development (>= 0.0.3.9007)",
                   "raster", "RColorBrewer", "RCurl",
