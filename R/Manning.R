@@ -16,16 +16,24 @@ fmaManning <- function(ml, studyAreaName, dataDir, canProvs, bufferDist, asStudy
     joinReportingPolygons(., manning)
 
   if (!grepl("LandWeb", studyAreaName)) {
-    ## workaround issue with LBstatus when unning full LandWeb area; TODO: diagnose and fix
-    manning.lbstatus <- Cache(
-      prepInputs,
-      ## use custom clean version with non-polygon geometries removed
-      url = "https://drive.google.com/file/d/1lY0p6Ms84paja9p1lmGXz5jaCgv2_VkY/",
-      destinationPath = dataDir,
-      targetFile = "Manning_LBStatus_clean.shp", alsoExtract = "similar",
-      fun = "sf::st_read"
-    )
-      manning.lbstatus <- manning.lbstatus[!st_is_empty(manning.lbstatus), ] ## remove 29 empty polygons
+    ## workaround issue with LBstatus when running full LandWeb area; TODO: diagnose and fix
+    manning.lbstatus <- Cache({
+      prepInputs(
+        ## use custom clean version with non-polygon geometries removed
+        url = "https://drive.google.com/file/d/1lY0p6Ms84paja9p1lmGXz5jaCgv2_VkY/",
+        destinationPath = dataDir,
+        targetFile = "Manning_LBStatus_clean.shp", alsoExtract = "similar",
+        fun = "sf::st_read"
+      )
+    })
+    manning.lbstatus <- manning.lbstatus[st_is_valid(manning.lbstatus), ] ## remove invalid geometries
+    manning.lbstatus <- manning.lbstatus[!st_is_empty(manning.lbstatus), ] ## remove empty polygons
+    manning.lbstatus <- Cache({
+      mutate(manning.lbstatus, LBC_LBStat = LBC_LBStat, geometry = geometry, .keep = "used") |>
+        group_by(LBC_LBStat) |>
+        summarise(geometry = sf::st_union(geometry)) |>
+        ungroup()
+    })
     manning.lbstatus <- as_Spatial(manning.lbstatus)
     names(manning.lbstatus) <- "Name" ## rename LBC_LBStat to Name for use downstream
     manning.lbstatus[["shinyLabel"]] <- manning.lbstatus[["Name"]] ## need shinyLabel downstream

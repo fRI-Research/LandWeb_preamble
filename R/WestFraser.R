@@ -16,13 +16,37 @@ fmaWestFraser <- function(ml, studyAreaName, dataDir, canProvs, bufferDist, asSt
                               filename2 = file.path(dataDir, "WestFraser_BlueRidge_ANSR"),
                               overwrite = TRUE) %>%
       joinReportingPolygons(., wf_br)
+
     ## NOTE: no intersecting caribou areas
+
+    wf_br.lbstatus <- Cache(
+      prepInputs,
+      url = "https://drive.google.com/file/d/1A7N_EIbO2wMBI_YTmU2Z-bQwqC9sY_EC/",
+      destinationPath = dataDir,
+      targetFile = "BRL_Landbase.shp", alsoExtract = "similar",
+      fun = "sf::st_read"
+    )
+    wf_br.lbstatus <- wf_br.lbstatus[st_is_valid(wf_br.lbstatus), ] ## remove invalid geometries
+    wf_br.lbstatus <- wf_br.lbstatus[!st_is_empty(wf_br.lbstatus), ] ## remove empty polygons
+    wf_br.lbstatus <- Cache({
+      mutate(wf_br.lbstatus, LBC_LBStat = LBC_LBStat, geometry = geometry, .keep = "used") |>
+        group_by(LBC_LBStat) |>
+        summarise(geometry = sf::st_union(geometry)) |>
+        ungroup()
+    })
+
+    wf_br.lbstatus <- as_Spatial(wf_br.lbstatus)
+    names(wf_br.lbstatus) <- "Name" ## rename to Name for use downstream
+    wf_br.lbstatus[["shinyLabel"]] <- wf_br.lbstatus[["Name"]] ## need shinyLabel downstream
 
     ml <- mapAdd(wf_br, ml, layerName = "West Fraser Blue Ridge", useSAcrs = TRUE, poly = TRUE,
                  analysisGroupReportingPolygon = "West Fraser Blue Ridge", isStudyArea = isTRUE(asStudyArea),
                  columnNameForLabels = "Name", filename2 = NULL)
     ml <- mapAdd(wf_br.ansr, ml, layerName = "West Fraser Blue Ridge ANSR", useSAcrs = TRUE, poly = TRUE,
                  analysisGroupReportingPolygon = "West Fraser Blue Ridge ANSR",
+                 columnNameForLabels = "Name", filename2 = NULL)
+    ml <- mapAdd(wf_br.lbstatus, ml, layerName = "West Fraser Blue Ridge LBstatus", useSAcrs = TRUE, poly = TRUE,
+                 analysisGroupReportingPolygon = "West Fraser Blue Ridge LBstatus",
                  columnNameForLabels = "Name", filename2 = NULL)
 
     ## studyArea shouldn't use analysisGroup because it's not a reportingPolygon
@@ -60,6 +84,64 @@ fmaWestFraser <- function(ml, studyAreaName, dataDir, canProvs, bufferDist, asSt
                                 overwrite = TRUE) %>%
       joinReportingPolygons(., wf_n)
 
+    s17 <- Cache({
+      prepInputs(
+        url = "https://drive.google.com/file/d/1XrF9ygQruC2FsUulWhDxR-nD3Cd4eu7B/", ## S17
+        destinationPath = dataDir,
+        filename1 = "CLS_Clipped_S17.shp",
+        targetFile = "CLS_Clipped_S17.shp", alsoExtract = "similar",
+        fun = "sf::st_read"
+      )
+    })
+    s17 <- s17[st_is_valid(s17), ] ## remove invalid geometries
+    s17 <- s17[!st_is_empty(s17), ] ## remove empty polygons
+    s17 <- Cache({
+      mutate(s17, F_CONDITIO = F_CONDITIO, geometry = geometry, .keep = "used") |>
+        group_by(F_CONDITIO) |>
+        summarise(geometry = sf::st_union(geometry)) |>
+        ungroup()
+    })
+
+    s20 <- Cache({
+      prepInputs(
+        url = "https://drive.google.com/file/d/17fZw80w3n2jIKRP1-X6gq8tyOjSWh0ky/", ## S20
+        destinationPath = dataDir,
+        filename1 = "CLS_Clipped_S20.shp",
+        targetFile = "CLS_Clipped_S20.shp", alsoExtract = "similar",
+        fun = "sf::st_read"
+      )
+    })
+    s20 <- s20[st_is_valid(s20), ] ## remove invalid geometries
+    s20 <- s20[!st_is_empty(s20), ] ## remove empty polygons
+    s20 <- Cache({
+      mutate(s20, F_CONDITIO = F_CONDITIO, geometry = geometry, .keep = "used") |>
+        group_by(F_CONDITIO) |>
+        summarise(geometry = sf::st_union(geometry)) |>
+        ungroup()
+    })
+
+    s21 <- Cache({
+      prepInputs(
+        url = "https://drive.google.com/file/d/1akMUL-lRumTfmmWG7WF7-9KDrFxTPN3Z/", ## S21
+        destinationPath = dataDir,
+        filename1 = "CLS_Clipped_S21.shp",
+        targetFile = "CLS_Clipped_S21.shp", alsoExtract = "similar",
+        fun = "sf::st_read"
+      )
+    })
+    s21 <- s21[st_is_valid(s21), ] ## remove invalid geometries
+    s21 <- s21[!st_is_empty(s21), ] ## remove empty polygons
+    s21 <- Cache({
+      mutate(s21, F_CONDITIO = F_CONDITIO, geometry = geometry, .keep = "used") |>
+        group_by(F_CONDITIO) |>
+        summarise(geometry = sf::st_union(geometry)) |>
+        ungroup()
+    })
+
+    wf_n.lbstatus <- rbind(s17, s20, s21) %>% as_Spatial()
+    names(wf_n.lbstatus) <- "Name" ## rename to Name for use downstream
+    wf_n.lbstatus[["shinyLabel"]] <- wf_n.lbstatus[["Name"]] ## need shinyLabel downstream
+
     ml <- mapAdd(wf_n, ml, layerName = "West Fraser N", useSAcrs = TRUE, poly = TRUE,
                  analysisGroupReportingPolygon = "West Fraser N", isStudyArea = isTRUE(asStudyArea),
                  columnNameForLabels = "Name", filename2 = NULL)
@@ -68,6 +150,9 @@ fmaWestFraser <- function(ml, studyAreaName, dataDir, canProvs, bufferDist, asSt
                  columnNameForLabels = "Name", filename2 = NULL)
     ml <- mapAdd(wf_n.caribou, ml, layerName = "West Fraser N Caribou", useSAcrs = TRUE, poly = TRUE,
                  analysisGroupReportingPolygon = "West Fraser N Caribou",
+                 columnNameForLabels = "Name", filename2 = NULL)
+    ml <- mapAdd(wf_n.lbstatus, ml, layerName = "West Fraser N LBstatus", useSAcrs = TRUE, poly = TRUE,
+                 analysisGroupReportingPolygon = "West Fraser N LBstatus",
                  columnNameForLabels = "Name", filename2 = NULL)
 
     ## studyArea shouldn't use analysisGroup because it's not a reportingPolygon

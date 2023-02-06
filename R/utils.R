@@ -139,33 +139,20 @@ plotLandWeb <- function(x, provs, caribou = NULL, xsr = NULL, title = NULL, png 
 #' @importFrom reproducible Cache
 #' @rdname plotFMA
 plotGG <- function(x, provs, caribou = NULL, png = NULL) {
-  ## sexy ggplot version
-  x@data$id <- rownames(x@data)
-  x_pnts <- fortify(x, region = "id")
-  x_df <- left_join(x_pnts, x@data, by = "id")
+  x.sf <- st_as_sf(x)
+  provs.sf <- st_as_sf(provs)
 
-  provs@data$id <- rownames(provs@data)
-  provs_pnts <- Cache(fortify, model = provs, region = "id") ## really freakin' slow!
-  provs_df <- left_join(provs_pnts, provs@data, by = "id")
-
-  #show_col(hue_pal()(16)) ## show some ggplot colours to choose from
-  x_gg <- ggplot(provs_df) +
-    aes(long, lat, group = group) +
-    geom_polygon() +
-    geom_path(color = "white") +
-    coord_equal() +
-    geom_polygon(data = x_df, color = "white", fill = hue_pal()(16)[11])
+  x_gg <- ggplot(provs.sf) +
+    geom_sf() +
+    geom_sf(data = x.sf, color = "white", fill = hue_pal()(16)[11]) +
+    coord_sf() +
+    theme_bw()
 
   if (!is.null(caribou)) {
-    caribou@data$id <- rownames(caribou@data)
-    caribou_pnts <- fortify(caribou, region = "id")
-    caribou_df <- left_join(caribou_pnts, caribou@data, by = "id")
+    caribou.sf <- st_as_sf(caribou)
 
-    x_gg <- x_gg + geom_polygon(data = caribou_df, color = "white", fill = hue_pal()(16)[15])
+    x_gg <- x_gg + geom_sf(data = caribou.sf, color = "white", fill = hue_pal()(16)[15])
   }
-
-  x_gg <- x_gg + theme(axis.title.x = element_blank(), axis.title.y = element_blank(),
-                       axis.text.x = element_blank(), axis.text.y = element_blank())
 
   return(x_gg)
 }

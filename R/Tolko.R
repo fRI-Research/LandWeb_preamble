@@ -21,6 +21,27 @@ fmaTolko <- function(ml, studyAreaName, dataDir, canProvs, bufferDist, asStudyAr
                                       overwrite = TRUE) %>%
       joinReportingPolygons(., tolko_ab_n)
 
+    tolko_ab_n.lbstatus <- Cache({
+      prepInputs(
+        url = "https://drive.google.com/file/d/1ALFFNmh_Z7W_PDiDnVfFnXu1V_dwDeQJ/", ## F26
+        destinationPath = dataDir,
+        targetFile = "SFP_Landbase.shp", alsoExtract = "similar",
+        fun = "sf::st_read"
+      )
+    })
+    tolko_ab_n.lbstatus <- tolko_ab_n.lbstatus[st_is_valid(tolko_ab_n.lbstatus), ] ## remove invalid geometries
+    tolko_ab_n.lbstatus <- tolko_ab_n.lbstatus[!st_is_empty(tolko_ab_n.lbstatus), ] ## remove empty polygons
+    tolko_ab_n.lbstatus <- Cache({
+      mutate(tolko_ab_n.lbstatus, LBC_LBStat = LBC_LBStat, geometry = geometry, .keep = "used") |>
+        group_by(LBC_LBStat) |>
+        summarise(geometry = sf::st_union(geometry)) |>
+        ungroup()
+    })
+
+    tolko_ab_n.lbstatus <- as_Spatial(tolko_ab_n.lbstatus)
+    names(tolko_ab_n.lbstatus) <- "Name" ## rename to Name for use downstream
+    tolko_ab_n.lbstatus[["shinyLabel"]] <- tolko_ab_n.lbstatus[["Name"]] ## need shinyLabel downstream
+
     ml <- mapAdd(tolko_ab_n, ml, layerName = "Tolko AB North", useSAcrs = TRUE, poly = TRUE,
                  analysisGroupReportingPolygon = "Tolko AB North", isStudyArea = isTRUE(asStudyArea),
                  columnNameForLabels = "Name", filename2 = NULL)
@@ -30,6 +51,9 @@ fmaTolko <- function(ml, studyAreaName, dataDir, canProvs, bufferDist, asStudyAr
     ml <- mapAdd(tolko_ab_n.caribou, ml, layerName = "Tolko AB North Caribou", useSAcrs = TRUE, poly = TRUE,
                  analysisGroupReportingPolygon = "Tolko AB North Caribou",
                  columnNameForLabels = "Name", filename2 = NULL)
+    ml <- mapAdd(tolko_ab_n, ml, layerName = "Tolko AB North LBstatus", useSAcrs = TRUE, poly = TRUE,
+                 analysisGroupReportingPolygon = "Tolko AB North LBstatus",
+                 columnNameForLabels = "Name", filename2 = NULL)
 
     ## studyArea shouldn't use analysisGroup because it's not a reportingPolygon
     tolko_ab_n_sr <- postProcess(ml[["LandWeb Study Area"]],
@@ -38,16 +62,16 @@ fmaTolko <- function(ml, studyAreaName, dataDir, canProvs, bufferDist, asStudyAr
                                  filename2 = file.path(dataDir, "Tolko_AB_N_SR.shp"),
                                  overwrite = TRUE)
 
-    plotFMA(tolko_ab_n, provs = bcabsk, caribou = tolko_ab_n.caribou, xsr = tolko_ab_n_sr,
-            title = "Tolko AB N", png = file.path(dataDir, "Tolko_AB_N.png"))
-    #plotFMA(tolko_ab_n, provs = bcabsk, caribou = tolko_ab_n.caribou, xsr = tolko_ab_n_sr,
-    #        title = "Tolko AB N", png = NULL)
-
     if (isTRUE(asStudyArea)) {
       ml <- mapAdd(tolko_ab_n_sr, ml, isStudyArea = TRUE, layerName = "Tolko AB North SR",
                    useSAcrs = TRUE, poly = TRUE, studyArea = NULL, # don't crop/mask to studyArea(ml, 2)
                    columnNameForLabels = "NSN", filename2 = NULL)
     }
+
+    plotFMA(tolko_ab_n, provs = bcabsk, caribou = tolko_ab_n.caribou, xsr = tolko_ab_n_sr,
+            title = "Tolko AB N", png = file.path(dataDir, "Tolko_AB_N.png"))
+    #plotFMA(tolko_ab_n, provs = bcabsk, caribou = tolko_ab_n.caribou, xsr = tolko_ab_n_sr,
+    #        title = "Tolko AB N", png = NULL)
   }
 
   if (grepl("LandWeb|Tolko_AB_S|tolko_AB_S", studyAreaName)) {
