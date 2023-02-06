@@ -21,7 +21,7 @@ defineModule(sim, list(
                   "maptools",
                   "PredictiveEcology/pemisc@development (>= 0.0.3.9007)",
                   "raster", "RColorBrewer", "RCurl",
-                  "PredictiveEcology/reproducible@development (>= 1.2.16.9018)",
+                  "PredictiveEcology/reproducible@development (>= 1.2.16.9024)",
                   "scales", "sf", "sp", "SpaDES.tools", "spatialEco", "XML"),
   parameters = rbind(
     defineParameter("bufferDist", "numeric", 25000, 20000, 100000,
@@ -40,7 +40,7 @@ defineModule(sim, list(
     defineParameter("pixelSize", "numeric", 250, NA, NA,
                     paste("Pixel size in metres. Should be one of 250, 125, 50, 25.")),
     defineParameter("ROStype", "character", "default", NA, NA,
-                    "One of 'equal', 'log', or 'default'."),
+                    "One of 'burny', 'equal', 'log', or 'default'."),
     defineParameter("treeClassesLCC", "integer", c(1L:15L, 20L, 32L, 34L:36L), 0L, 39L,
                     paste("AKA forestedLCCClasses. The classes in the LCC2005 layer that are",
                           "considered 'trees' from the perspective of LandR-Biomass.")),
@@ -630,7 +630,7 @@ InitSpecies <- function(sim) {
 }
 
 InitLandMine <- function(sim) {
-  stopifnot(P(sim)$ROStype %in% c("default", "equal", "log"))
+  stopifnot(P(sim)$ROStype %in% c("default", "burny", "equal", "log"))
 
   LandMineROStable <- data.table::rbindlist(list(
     list("mature", "decid", 9L),
