@@ -21,26 +21,25 @@ fmaTolko <- function(ml, studyAreaName, dataDir, canProvs, bufferDist, asStudyAr
                                       overwrite = TRUE) %>%
       joinReportingPolygons(., tolko_ab_n)
 
-    tolko_ab_n.lbstatus <- Cache({
-      prepInputs(
-        url = "https://drive.google.com/file/d/1ALFFNmh_Z7W_PDiDnVfFnXu1V_dwDeQJ/", ## F26
-        destinationPath = dataDir,
-        targetFile = "SFP_Landbase.shp", alsoExtract = "similar",
-        fun = "sf::st_read"
-      )
-    })
+    ## TODO: fails to download & extract files
+    tolko_ab_n.lbstatus <- Cache(
+      prepInputs,
+      url = "https://drive.google.com/file/d/1ALFFNmh_Z7W_PDiDnVfFnXu1V_dwDeQJ/", ## F26
+      destinationPath = dataDir,
+      targetFile = "F26.shp", alsoExtract = "similar",
+      fun = "sf::st_read", studyArea = tolko_ab_n, useSAcrs = TRUE
+    )
     tolko_ab_n.lbstatus <- tolko_ab_n.lbstatus[st_is_valid(tolko_ab_n.lbstatus), ] ## remove invalid geometries
     tolko_ab_n.lbstatus <- tolko_ab_n.lbstatus[!st_is_empty(tolko_ab_n.lbstatus), ] ## remove empty polygons
-    tolko_ab_n.lbstatus <- Cache({
-      mutate(tolko_ab_n.lbstatus, LBC_LBStat = LBC_LBStat, geometry = geometry, .keep = "used") |>
-        group_by(LBC_LBStat) |>
-        summarise(geometry = sf::st_union(geometry)) |>
-        ungroup()
-    })
 
-    tolko_ab_n.lbstatus <- as_Spatial(tolko_ab_n.lbstatus)
-    names(tolko_ab_n.lbstatus) <- "Name" ## rename to Name for use downstream
-    tolko_ab_n.lbstatus[["shinyLabel"]] <- tolko_ab_n.lbstatus[["Name"]] ## need shinyLabel downstream
+    tolko_ab_n.lbstatus <- Cache({
+      mutate(tolko_ab_n.lbstatus, Name = Landbase, geometry = geometry, .keep = "used") |>
+        group_by(Name) |>
+        summarise(geometry = sf::st_union(geometry)) |>
+        ungroup() |>
+        mutate(shinyLabel = Name, .before = geometry) |>
+        joinReportingPolygons(tolko_ab_n)
+    })
 
     ml <- mapAdd(tolko_ab_n, ml, layerName = "Tolko AB North", useSAcrs = TRUE, poly = TRUE,
                  analysisGroupReportingPolygon = "Tolko AB North", isStudyArea = isTRUE(asStudyArea),
@@ -51,7 +50,7 @@ fmaTolko <- function(ml, studyAreaName, dataDir, canProvs, bufferDist, asStudyAr
     ml <- mapAdd(tolko_ab_n.caribou, ml, layerName = "Tolko AB North Caribou", useSAcrs = TRUE, poly = TRUE,
                  analysisGroupReportingPolygon = "Tolko AB North Caribou",
                  columnNameForLabels = "Name", filename2 = NULL)
-    ml <- mapAdd(tolko_ab_n, ml, layerName = "Tolko AB North LBstatus", useSAcrs = TRUE, poly = TRUE,
+    ml <- mapAdd(tolko_ab_n.lbstatus, ml, layerName = "Tolko AB North LBstatus", useSAcrs = TRUE, poly = TRUE,
                  analysisGroupReportingPolygon = "Tolko AB North LBstatus",
                  columnNameForLabels = "Name", filename2 = NULL)
 

@@ -16,21 +16,19 @@ fmaSundreFP <- function(ml, studyAreaName, dataDir, canProvs, bufferDist, asStud
       url = "https://drive.google.com/file/d/1FcIogFQ8veA25T1HEIgw-SyG_Dk21rw4/",
       destinationPath = dataDir,
       targetFile = "SFP_Landbase.shp", alsoExtract = "similar",
-      fun = "sf::st_read"
+      fun = "sf::st_read", studyArea = sundre, useSAcrs = TRUE
     )
   })
   sundre.lbstatus <- sundre.lbstatus[st_is_valid(sundre.lbstatus), ] ## remove invalid geometries
   sundre.lbstatus <- sundre.lbstatus[!st_is_empty(sundre.lbstatus), ] ## remove empty polygons
   sundre.lbstatus <- Cache({
-    mutate(sundre.lbstatus, LBC_LBStat = LBC_LBStat, geometry = geometry, .keep = "used") |>
-      group_by(LBC_LBStat) |>
+    mutate(sundre.lbstatus, Name = LBC_LBStat, geometry = geometry, .keep = "used") |>
+      group_by(Name) |>
       summarise(geometry = sf::st_union(geometry)) |>
-      ungroup()
+      ungroup() |>
+      mutate(shinyLabel = Name) |>
+      joinReportingPolygons(sundre)
   })
-
-  sundre.lbstatus <- as_Spatial(sundre.lbstatus)
-  names(sundre.lbstatus) <- "Name" ## rename to Name for use downstream
-  sundre.lbstatus[["shinyLabel"]] <- sundre.lbstatus[["Name"]] ## need shinyLabel downstream
 
   ml <- mapAdd(sundre, ml, layerName = "SundreFP", useSAcrs = TRUE, poly = TRUE,
                analysisGroupReportingPolygon = "SundreFP", isStudyArea = isTRUE(asStudyArea),

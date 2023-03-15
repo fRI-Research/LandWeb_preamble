@@ -24,20 +24,18 @@ fmaWestFraser <- function(ml, studyAreaName, dataDir, canProvs, bufferDist, asSt
       url = "https://drive.google.com/file/d/1A7N_EIbO2wMBI_YTmU2Z-bQwqC9sY_EC/",
       destinationPath = dataDir,
       targetFile = "BRL_Landbase.shp", alsoExtract = "similar",
-      fun = "sf::st_read"
+      fun = "sf::st_read", studyArea = wf_br, useSAcrs = TRUE
     )
     wf_br.lbstatus <- wf_br.lbstatus[st_is_valid(wf_br.lbstatus), ] ## remove invalid geometries
     wf_br.lbstatus <- wf_br.lbstatus[!st_is_empty(wf_br.lbstatus), ] ## remove empty polygons
     wf_br.lbstatus <- Cache({
-      mutate(wf_br.lbstatus, LBC_LBStat = LBC_LBStat, geometry = geometry, .keep = "used") |>
-        group_by(LBC_LBStat) |>
+      mutate(wf_br.lbstatus, Name = LBC_LBStat, geometry = geometry, .keep = "used") |>
+        group_by(Name) |>
         summarise(geometry = sf::st_union(geometry)) |>
-        ungroup()
+        ungroup() |>
+        mutate(shinyLabel = Name, .before = geometry) |>
+        joinReportingPolygons(wf_br)
     })
-
-    wf_br.lbstatus <- as_Spatial(wf_br.lbstatus)
-    names(wf_br.lbstatus) <- "Name" ## rename to Name for use downstream
-    wf_br.lbstatus[["shinyLabel"]] <- wf_br.lbstatus[["Name"]] ## need shinyLabel downstream
 
     ml <- mapAdd(wf_br, ml, layerName = "West Fraser Blue Ridge", useSAcrs = TRUE, poly = TRUE,
                  analysisGroupReportingPolygon = "West Fraser Blue Ridge", isStudyArea = isTRUE(asStudyArea),
@@ -90,16 +88,18 @@ fmaWestFraser <- function(ml, studyAreaName, dataDir, canProvs, bufferDist, asSt
         destinationPath = dataDir,
         filename1 = "CLS_Clipped_S17.shp",
         targetFile = "CLS_Clipped_S17.shp", alsoExtract = "similar",
-        fun = "sf::st_read"
+        fun = "sf::st_read", studyArea = wf_n, useSAcrs = TRUE
       )
     })
     s17 <- s17[st_is_valid(s17), ] ## remove invalid geometries
     s17 <- s17[!st_is_empty(s17), ] ## remove empty polygons
     s17 <- Cache({
-      mutate(s17, F_CONDITIO = F_CONDITIO, geometry = geometry, .keep = "used") |>
-        group_by(F_CONDITIO) |>
+      mutate(s17, Name = F_CONDITIO, geometry = geometry, .keep = "used") |>
+        group_by(Name) |>
         summarise(geometry = sf::st_union(geometry)) |>
-        ungroup()
+        ungroup() |>
+        mutate(shinyLabel = Name, .before = geometry) |>
+        joinReportingPolygons(wf_n)
     })
 
     s20 <- Cache({
@@ -108,16 +108,18 @@ fmaWestFraser <- function(ml, studyAreaName, dataDir, canProvs, bufferDist, asSt
         destinationPath = dataDir,
         filename1 = "CLS_Clipped_S20.shp",
         targetFile = "CLS_Clipped_S20.shp", alsoExtract = "similar",
-        fun = "sf::st_read"
+        fun = "sf::st_read", studyArea = wf_n, useSAcrs = TRUE
       )
     })
     s20 <- s20[st_is_valid(s20), ] ## remove invalid geometries
     s20 <- s20[!st_is_empty(s20), ] ## remove empty polygons
     s20 <- Cache({
-      mutate(s20, F_CONDITIO = F_CONDITIO, geometry = geometry, .keep = "used") |>
-        group_by(F_CONDITIO) |>
+      mutate(s20, Name = F_CONDITIO, geometry = geometry, .keep = "used") |>
+        group_by(Name) |>
         summarise(geometry = sf::st_union(geometry)) |>
-        ungroup()
+        ungroup() |>
+        mutate(shinyLabel = Name, .before = geometry) |>
+        joinReportingPolygons(wf_n)
     })
 
     s21 <- Cache({
@@ -126,21 +128,19 @@ fmaWestFraser <- function(ml, studyAreaName, dataDir, canProvs, bufferDist, asSt
         destinationPath = dataDir,
         filename1 = "CLS_Clipped_S21.shp",
         targetFile = "CLS_Clipped_S21.shp", alsoExtract = "similar",
-        fun = "sf::st_read"
+        fun = "sf::st_read", studyArea = wf_n, useSAcrs = TRUE
       )
     })
     s21 <- s21[st_is_valid(s21), ] ## remove invalid geometries
     s21 <- s21[!st_is_empty(s21), ] ## remove empty polygons
     s21 <- Cache({
-      mutate(s21, F_CONDITIO = F_CONDITIO, geometry = geometry, .keep = "used") |>
-        group_by(F_CONDITIO) |>
+      mutate(s21, Name = F_CONDITIO, geometry = geometry, .keep = "used") |>
+        group_by(Name) |>
         summarise(geometry = sf::st_union(geometry)) |>
-        ungroup()
+        ungroup() |>
+        mutate(shinyLabel = Name, .before = geometry) |>
+        joinReportingPolygons(wf_n)
     })
-
-    wf_n.lbstatus <- rbind(s17, s20, s21) %>% as_Spatial()
-    names(wf_n.lbstatus) <- "Name" ## rename to Name for use downstream
-    wf_n.lbstatus[["shinyLabel"]] <- wf_n.lbstatus[["Name"]] ## need shinyLabel downstream
 
     ml <- mapAdd(wf_n, ml, layerName = "West Fraser N", useSAcrs = TRUE, poly = TRUE,
                  analysisGroupReportingPolygon = "West Fraser N", isStudyArea = isTRUE(asStudyArea),
@@ -151,16 +151,22 @@ fmaWestFraser <- function(ml, studyAreaName, dataDir, canProvs, bufferDist, asSt
     ml <- mapAdd(wf_n.caribou, ml, layerName = "West Fraser N Caribou", useSAcrs = TRUE, poly = TRUE,
                  analysisGroupReportingPolygon = "West Fraser N Caribou",
                  columnNameForLabels = "Name", filename2 = NULL)
-    ml <- mapAdd(wf_n.lbstatus, ml, layerName = "West Fraser N LBstatus", useSAcrs = TRUE, poly = TRUE,
-                 analysisGroupReportingPolygon = "West Fraser N LBstatus",
+    ml <- mapAdd(s17, ml, layerName = "West Fraser N LBstatus S17", useSAcrs = TRUE, poly = TRUE,
+                 analysisGroupReportingPolygon = "West Fraser N LBstatus S17",
+                 columnNameForLabels = "Name", filename2 = NULL)
+    ml <- mapAdd(s20, ml, layerName = "West Fraser N LBstatus S20", useSAcrs = TRUE, poly = TRUE,
+                 analysisGroupReportingPolygon = "West Fraser N LBstatus S20",
+                 columnNameForLabels = "Name", filename2 = NULL)
+    ml <- mapAdd(s21, ml, layerName = "West Fraser N LBstatus S21", useSAcrs = TRUE, poly = TRUE,
+                 analysisGroupReportingPolygon = "West Fraser N LBstatus S21",
                  columnNameForLabels = "Name", filename2 = NULL)
 
     ## studyArea shouldn't use analysisGroup because it's not a reportingPolygon
     wf_n_sr <- postProcess(ml[["LandWeb Study Area"]],
-                            studyArea = amc::outerBuffer(wf_n, bufferDist),
-                            useSAcrs = TRUE,
-                            filename2 = file.path(dataDir, "WestFraser_N_SR.shp"),
-                            overwrite = TRUE)
+                           studyArea = amc::outerBuffer(wf_n, bufferDist),
+                           useSAcrs = TRUE,
+                           filename2 = file.path(dataDir, "WestFraser_N_SR.shp"),
+                           overwrite = TRUE)
 
     if (isTRUE(asStudyArea)) {
       ml <- mapAdd(wf_n_sr, ml, isStudyArea = TRUE, layerName = "West Fraser N SR",

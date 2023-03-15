@@ -196,6 +196,7 @@ InitMaps <- function(sim) {
                columnNameForLabels = "Name", isStudyArea = FALSE, filename2 = NULL)
 
   ## AB FMU boundaries
+  ## TODO: only add if studyAreaReporting in AB
   ml <- mapAdd(map = ml, layerName = "AB FMU Boundaries",
                useSAcrs = TRUE, poly = TRUE, overwrite = TRUE,
                url = "https://drive.google.com/open?id=1OH3b5pwjumm1ToytDBDI6jthVe2pp0tS", # 2020-06
@@ -223,12 +224,14 @@ InitMaps <- function(sim) {
   ml[["National Ecoregions"]][["Name"]] <- ml[["National Ecoregions"]][["REGION_NAM"]]
 
   ## Alberta Natural Subregions (ANSRs)
+  ## TODO: only add if studyAreaReporting in AB
   ml <- mapAdd(map = ml, layerName = "Alberta Natural Subregions",
                useSAcrs = TRUE, poly = TRUE, overwrite = TRUE,
                url = "https://drive.google.com/file/d/1hW6zy0CpUBdk-K2IAjzW4INjVl1J4aLJ",
                columnNameForLabels = "Name", isStudyArea = FALSE, filename2 = NULL)
 
   ## BC biogeoclimatic zones
+  ## TODO: only add if studyAreaReporting in BC
   ml <- mapAdd(map = ml, layerName = "BC Biogeoclimatic zones",
                useSAcrs = TRUE, poly = TRUE, overwrite = TRUE,
                url = "https://drive.google.com/file/d/1NS15Gd7dHEhvPOy-Ol_LBtf-4Ch6mPnS",
@@ -236,6 +239,7 @@ InitMaps <- function(sim) {
   ml[["BC Biogeoclimatic zones"]][["Name"]] <- ml[["BC Biogeoclimatic zones"]][["ZONE_NAME"]]
 
   ## NWT ecoregions
+  ## TODO: only add if studyAreaReporting in NWT
   ml <- mapAdd(map = ml, layerName = "Northwest Territories Ecoregions",
                useSAcrs = TRUE, poly = TRUE, overwrite = TRUE,
                url = "https://drive.google.com/file/d/1iRAQfARkmS6-XVHFnTkB-iltzMNPAczC",
@@ -261,12 +265,15 @@ InitMaps <- function(sim) {
                columnNameForLabels = "RGEUNIT", isStudyArea = FALSE, filename2 = NULL)
   ml[["SK Caribou Ranges"]][["Name"]] <- ml[["SK Caribou Ranges"]][["RGEUNIT"]]
 
-  ml <- mapAdd(map = ml, layerName = "MB Caribou Ranges",
-               useSAcrs = TRUE, poly = TRUE, overwrite = TRUE,
-               url = "https://drive.google.com/file/d/1Y_Qi3twoU3fHaNgMzF5QEl1CosGmGyha/", ## .zipx file; needs 'manual' extract 1st time
-               targetFile = "Boreal_caribou_MUs_MB_2015.shp", alsoExtract = "similar",
-               columnNameForLabels = "RANGE_NAME", isStudyArea = FALSE, filename2 = NULL)
-  ml[["MB Caribou Ranges"]][["Name"]] <- ml[["MB Caribou Ranges"]][["RANGE_NAME"]]
+  if (P(sim)$.studyAreaName == "provMB") {
+    ## TODO: .zipx file; needs 'manual' extract 1st time
+    ml <- mapAdd(map = ml, layerName = "MB Caribou Ranges",
+                 useSAcrs = TRUE, poly = TRUE, overwrite = TRUE,
+                 url = "https://drive.google.com/file/d/1Y_Qi3twoU3fHaNgMzF5QEl1CosGmGyha/",
+                 targetFile = "Boreal_caribou_MUs_MB_2015.shp", alsoExtract = "similar",
+                 columnNameForLabels = "RANGE_NAME", isStudyArea = FALSE, filename2 = NULL)
+    ml[["MB Caribou Ranges"]][["Name"]] <- ml[["MB Caribou Ranges"]][["RANGE_NAME"]]
+  }
 
   ml <- mapAdd(map = ml, layerName = "LandWeb Caribou Ranges",
                useSAcrs = TRUE, poly = TRUE, overwrite = TRUE,

@@ -51,8 +51,8 @@ joinReportingPolygons <- function(x, y) {
       y <- sf::st_as_sf(y)
     }
 
-    x <- sf::st_set_precision(x, 1e5) %>% fixErrors(.)
-    y <- sf::st_set_precision(y, 1e5) %>% fixErrors(.)
+    x <- sf::st_set_precision(x, 1e5) |> fixErrors()
+    y <- sf::st_set_precision(y, 1e5) |> fixErrors()
     z <- sf::st_intersection(x, y)
 
     ## sfc_GEOMETRY may itself contain points, so filter them out
