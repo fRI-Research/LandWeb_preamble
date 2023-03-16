@@ -21,25 +21,29 @@ fmaTolko <- function(ml, studyAreaName, dataDir, canProvs, bufferDist, asStudyAr
                                       overwrite = TRUE) %>%
       joinReportingPolygons(., tolko_ab_n)
 
-    ## TODO: fails to download & extract files
-    tolko_ab_n.lbstatus <- Cache(
-      prepInputs,
-      url = "https://drive.google.com/file/d/1ALFFNmh_Z7W_PDiDnVfFnXu1V_dwDeQJ/", ## F26
-      destinationPath = dataDir,
-      targetFile = "F26.shp", alsoExtract = "similar",
-      fun = "sf::st_read", studyArea = tolko_ab_n, useSAcrs = TRUE
-    )
-    tolko_ab_n.lbstatus <- tolko_ab_n.lbstatus[st_is_valid(tolko_ab_n.lbstatus), ] ## remove invalid geometries
-    tolko_ab_n.lbstatus <- tolko_ab_n.lbstatus[!st_is_empty(tolko_ab_n.lbstatus), ] ## remove empty polygons
+    if (!grepl("LandWeb", studyAreaName)) {
+      ## TODO: fails to download & extract files
+      tolko_ab_n.lbstatus <- Cache(
+        prepInputs,
+        url = "https://drive.google.com/file/d/1ALFFNmh_Z7W_PDiDnVfFnXu1V_dwDeQJ/", ## F26
+        destinationPath = dataDir,
+        targetFile = "F26.shp", alsoExtract = "similar",
+        fun = "sf::st_read", studyArea = tolko_ab_n, useSAcrs = TRUE
+      )
+      tolko_ab_n.lbstatus <- tolko_ab_n.lbstatus[st_is_valid(tolko_ab_n.lbstatus), ] ## remove invalid geometries
+      tolko_ab_n.lbstatus <- tolko_ab_n.lbstatus[!st_is_empty(tolko_ab_n.lbstatus), ] ## remove empty polygons
 
-    tolko_ab_n.lbstatus <- Cache({
-      mutate(tolko_ab_n.lbstatus, Name = Landbase, geometry = geometry, .keep = "used") |>
-        group_by(Name) |>
-        summarise(geometry = sf::st_union(geometry)) |>
-        ungroup() |>
-        mutate(shinyLabel = Name, .before = geometry) |>
-        joinReportingPolygons(tolko_ab_n)
-    })
+      tolko_ab_n.lbstatus <- Cache({
+        mutate(tolko_ab_n.lbstatus, Name = Landbase, geometry = geometry, .keep = "used") |>
+          group_by(Name) |>
+          summarise(geometry = sf::st_union(geometry)) |>
+          ungroup() |>
+          mutate(shinyLabel = Name, .before = geometry) |>
+          joinReportingPolygons(tolko_ab_n)
+      })
+
+      tolko_ab_n.lbstatus.caribou <- joinReportingPolygons(tolko_ab_n.lbstatus, tolko_ab_n.caribou)
+    }
 
     ml <- mapAdd(tolko_ab_n, ml, layerName = "Tolko AB North", useSAcrs = TRUE, poly = TRUE,
                  analysisGroupReportingPolygon = "Tolko AB North", isStudyArea = isTRUE(asStudyArea),
@@ -50,9 +54,15 @@ fmaTolko <- function(ml, studyAreaName, dataDir, canProvs, bufferDist, asStudyAr
     ml <- mapAdd(tolko_ab_n.caribou, ml, layerName = "Tolko AB North Caribou", useSAcrs = TRUE, poly = TRUE,
                  analysisGroupReportingPolygon = "Tolko AB North Caribou",
                  columnNameForLabels = "Name", filename2 = NULL)
-    ml <- mapAdd(tolko_ab_n.lbstatus, ml, layerName = "Tolko AB North LBstatus", useSAcrs = TRUE, poly = TRUE,
-                 analysisGroupReportingPolygon = "Tolko AB North LBstatus",
-                 columnNameForLabels = "Name", filename2 = NULL)
+
+    if (!grepl("LandWeb", studyAreaName)) {
+      ml <- mapAdd(tolko_ab_n.lbstatus, ml, layerName = "Tolko AB North LBstatus", useSAcrs = TRUE, poly = TRUE,
+                  analysisGroupReportingPolygon = "Tolko AB North LBstatus",
+                  columnNameForLabels = "Name", filename2 = NULL)
+      ml <- mapAdd(tolko_ab_n.lbstatus.caribou, ml, layerName = "Tolko AB North LBstatus Caribou", useSAcrs = TRUE, poly = TRUE,
+                   analysisGroupReportingPolygon = "Tolko AB North LBstatus Caribou",
+                   columnNameForLabels = "Name", filename2 = NULL)
+    }
 
     ## studyArea shouldn't use analysisGroup because it's not a reportingPolygon
     tolko_ab_n_sr <- postProcess(ml[["LandWeb Study Area"]],

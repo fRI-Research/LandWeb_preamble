@@ -58,6 +58,13 @@ joinReportingPolygons <- function(x, y) {
     ## sfc_GEOMETRY may itself contain points, so filter them out
     z <- suppressWarnings(sf::st_collection_extract(z, "POLYGON"))
 
+    ## ensure polygon name not duplicated in ACTIVE/PASSIVE x Caribou polygon names
+    z[["Name"]] <- gsub("^(ACTIVE|PASSIVE).*", "\\1", z[["Name"]], ignore.case = TRUE)
+    z[["Name.1"]] <- gsub("^(ACTIVE|PASSIVE).*", "\\1", z[["Name.1"]], ignore.case = TRUE)
+    z[["shinyLabel"]] <- gsub("^(ACTIVE|PASSIVE).*", "\\1", z[["shinyLabel"]], ignore.case = TRUE)
+    z[["shinyLabel.1"]] <- gsub("^(ACTIVE|PASSIVE).*", "\\1", z[["shinyLabel.1"]], ignore.case = TRUE)
+
+    ## concatenate polygon names
     z[["Name"]] <- paste(z[["Name"]], z[["Name.1"]])
     z[["Name.1"]] <- NULL
 

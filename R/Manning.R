@@ -37,7 +37,7 @@ fmaManning <- function(ml, studyAreaName, dataDir, canProvs, bufferDist, asStudy
     manning.lbstatus <- as_Spatial(manning.lbstatus)
     names(manning.lbstatus) <- "Name" ## rename LBC_LBStat to Name for use downstream
     manning.lbstatus[["shinyLabel"]] <- manning.lbstatus[["Name"]] ## need shinyLabel downstream
-  }
+  } ## TODO: update this to match WF A/P additions spring 2023
 
   ml <- mapAdd(manning, ml, layerName = "Manning", useSAcrs = TRUE, poly = TRUE,
                analysisGroupReportingPolygon = "Manning", isStudyArea = isTRUE(asStudyArea),

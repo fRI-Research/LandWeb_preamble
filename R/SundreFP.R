@@ -11,24 +11,26 @@ fmaSundreFP <- function(ml, studyAreaName, dataDir, canProvs, bufferDist, asStud
                              overwrite = TRUE) %>%
     joinReportingPolygons(., sundre)
 
-  sundre.lbstatus <- Cache({
-    prepInputs(
-      url = "https://drive.google.com/file/d/1FcIogFQ8veA25T1HEIgw-SyG_Dk21rw4/",
-      destinationPath = dataDir,
-      targetFile = "SFP_Landbase.shp", alsoExtract = "similar",
-      fun = "sf::st_read", studyArea = sundre, useSAcrs = TRUE
-    )
-  })
-  sundre.lbstatus <- sundre.lbstatus[st_is_valid(sundre.lbstatus), ] ## remove invalid geometries
-  sundre.lbstatus <- sundre.lbstatus[!st_is_empty(sundre.lbstatus), ] ## remove empty polygons
-  sundre.lbstatus <- Cache({
-    mutate(sundre.lbstatus, Name = LBC_LBStat, geometry = geometry, .keep = "used") |>
-      group_by(Name) |>
-      summarise(geometry = sf::st_union(geometry)) |>
-      ungroup() |>
-      mutate(shinyLabel = Name) |>
-      joinReportingPolygons(sundre)
-  })
+  if (!grepl("LandWeb", studyAreaName)) {
+    sundre.lbstatus <- Cache({
+      prepInputs(
+        url = "https://drive.google.com/file/d/1FcIogFQ8veA25T1HEIgw-SyG_Dk21rw4/",
+        destinationPath = dataDir,
+        targetFile = "SFP_Landbase.shp", alsoExtract = "similar",
+        fun = "sf::st_read", studyArea = sundre, useSAcrs = TRUE
+      )
+    })
+    sundre.lbstatus <- sundre.lbstatus[st_is_valid(sundre.lbstatus), ] ## remove invalid geometries
+    sundre.lbstatus <- sundre.lbstatus[!st_is_empty(sundre.lbstatus), ] ## remove empty polygons
+    sundre.lbstatus <- Cache({
+      mutate(sundre.lbstatus, Name = LBC_LBStat, geometry = geometry, .keep = "used") |>
+        group_by(Name) |>
+        summarise(geometry = sf::st_union(geometry)) |>
+        ungroup() |>
+        mutate(shinyLabel = Name) |>
+        joinReportingPolygons(sundre)
+    })
+  }
 
   ml <- mapAdd(sundre, ml, layerName = "SundreFP", useSAcrs = TRUE, poly = TRUE,
                analysisGroupReportingPolygon = "SundreFP", isStudyArea = isTRUE(asStudyArea),
@@ -36,9 +38,12 @@ fmaSundreFP <- function(ml, studyAreaName, dataDir, canProvs, bufferDist, asStud
   ml <- mapAdd(sundre.ansr, ml, layerName = "SundreFP ANSR", useSAcrs = TRUE, poly = TRUE,
                analysisGroupReportingPolygon = "SundreFP ANSR",
                columnNameForLabels = "Name", filename2 = NULL)
-  ml <- mapAdd(sundre.lbstatus, ml, layerName = "SundreFP LBstatus", useSAcrs = TRUE, poly = TRUE,
-               analysisGroupReportingPolygon = "SundreFP LBstatus",
-               columnNameForLabels = "Name", filename2 = NULL)
+
+  if (!grepl("LandWeb", studyAreaName)) {
+    ml <- mapAdd(sundre.lbstatus, ml, layerName = "SundreFP LBstatus", useSAcrs = TRUE, poly = TRUE,
+                 analysisGroupReportingPolygon = "SundreFP LBstatus",
+                 columnNameForLabels = "Name", filename2 = NULL)
+  }
 
   ## studyArea shouldn't use analysisGroup because it's not a reportingPolygon
   sundre_sr <- postProcess(ml[["LandWeb Study Area"]],
