@@ -18,11 +18,11 @@ defineModule(sim, list(
                   "PredictiveEcology/LandR@development (>= 1.1.0.9015)",
                   "PredictiveEcology/LandWebUtils@development (>= 0.1.5.9000)",
                   "PredictiveEcology/map@development (>= 0.0.5)",
-                  "maptools",
+                  "maptools", "nngeo",
                   "PredictiveEcology/pemisc@development (>= 0.0.3.9007)",
                   "raster", "RColorBrewer", "RCurl",
                   "PredictiveEcology/reproducible@development (>= 1.2.16.9024)",
-                  "scales", "sf", "sp", "SpaDES.tools", "spatialEco", "XML"),
+                  "scales", "sf", "sp", "SpaDES.tools", "XML"),
   parameters = rbind(
     defineParameter("bufferDist", "numeric", 25000, 20000, 100000,
                     "Study area buffer distance (m) used to make studyArea."),
@@ -182,12 +182,13 @@ InitMaps <- function(sim) {
                #url = "https://drive.google.com/file/d/1JptU0R7qsHOEAEkxybx5MGg650KC98c6", ## landweb_ltfc_v6.shp
                url = "https://drive.google.com/file/d/1eu5TJS1NhzqbnDenyiBy2hAnVI1E3lsC", ## landweb_ltfc_v8.shp
                columnNameForLabels = "NSN", isStudyArea = TRUE, filename2 = NULL)
-  ml[["LandWeb Study Area"]] <- raster::aggregate(ml[["LandWeb Study Area"]]) %>%
-    sf::st_as_sf(.) %>%
-    sf::st_cast("POLYGON") %>%
-    spatialEco::remove.holes(.) %>% ## removes crs
-    sf::`st_crs<-`(., targetCRS) %>%
-    sf::as_Spatial(.)
+  ## use outer perimeter as LandWeb study area (don't need the internal polygon boundaries)
+  ml[["LandWeb Study Area"]] <- ml[["LandWeb Study Area"]] |>
+    sf::st_as_sf() |>
+    sf::st_union() |>
+    sf::st_make_valid() |>
+    nngeo::st_remove_holes() |>
+    sf::as_Spatial()
 
   ## Updated FMA boundaries
   ml <- mapAdd(map = ml, layerName = "FMA Boundaries Updated",

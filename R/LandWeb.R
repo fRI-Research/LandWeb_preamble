@@ -9,27 +9,23 @@ allLandWeb <- function(ml, studyAreaName, dataDir, canProvs, bufferDist, asStudy
   west <- canProvs[canProvs$NAME_1 %in% c("British Columbia", "Alberta", "Saskatchewan", "Manitoba"), ]
 
   lw <- ml[["LandWeb Study Area"]]
-  lw.sp <- as(lw, "SpatialPolygons") %>% raster::aggregate(.) %>% spatialEco::remove.holes(.)
 
   ## reportingPolygons
   lw.natler <- postProcess(ml[["National Ecoregions"]],
                            studyArea = lw, useSAcrs = TRUE,
-                           filename2 = file.path(dataDir, "LandWeb_NATLER.shp")) %>%
-    joinReportingPolygons(., lw)
+                           filename2 = file.path(dataDir, "LandWeb_NATLER.shp"))
   lw.caribou <- postProcess(ml[["LandWeb Caribou Ranges"]],
-                            studyArea = lw.sp, useSAcrs = TRUE,
+                            studyArea = lw, useSAcrs = TRUE,
                             filename2 = file.path(dataDir, "LandWeb_caribou.shp"),
                             overwrite = TRUE)
   lw.provs <- postProcess(ml[["Provincial Boundaries"]],
-                          studyArea = lw.sp, useSAcrs = TRUE,
+                          studyArea = lw, useSAcrs = TRUE,
                           filename2 = file.path(dataDir, "LandWeb_provinces.shp"),
                           overwrite = TRUE)
 
   ml <- mapAdd(lw, ml, layerName = "LandWeb", useSAcrs = TRUE, poly = TRUE,
                analysisGroupReportingPolygon = "LandWeb", isStudyArea = TRUE,
-               columnNameForLabels = "Name", filename2 = NULL) ## TODO: losing a polygon in NWT
-  ml$LandWeb <- lw ## TODO: workaround the problem with lost NWT poly
-
+               columnNameForLabels = "Name", filename2 = NULL)
   ml <- mapAdd(lw.natler, ml, layerName = "LandWeb NATLER", useSAcrs = TRUE, poly = TRUE,
                analysisGroupReportingPolygon = "LandWeb NATLER",
                columnNameForLabels = "REGION_NAM", filename2 = NULL)
@@ -40,6 +36,8 @@ allLandWeb <- function(ml, studyAreaName, dataDir, canProvs, bufferDist, asStudy
                analysisGroupReportingPolygon = "LandWeb Provinces",
                columnNameForLabels = "NAME_1", filename2 = NULL)
 
+  ## TODO: update to include all provs/FMAs etc.
+  # ml <- fmaAlpac(ml, studyAreaName, dataDir, canProvs, bufferDist, asStudyArea = FALSE)
   ml <- fmaANC(ml, studyAreaName, dataDir, canProvs, bufferDist, asStudyArea = FALSE)
   ml <- fmaDMI(ml, studyAreaName, dataDir, canProvs, bufferDist, asStudyArea = FALSE)
   ml <- fmaEdsonFP(ml, studyAreaName, dataDir, canProvs, bufferDist, asStudyArea = FALSE)
@@ -48,11 +46,17 @@ allLandWeb <- function(ml, studyAreaName, dataDir, canProvs, bufferDist, asStudy
   ml <- fmaMillarWestern(ml, studyAreaName, dataDir, canProvs, bufferDist, asStudyArea = FALSE)
   ml <- fmaMistik(ml, studyAreaName, dataDir, canProvs, bufferDist, asStudyArea = FALSE)
   ml <- fmaNWT(ml, studyAreaName, dataDir, canProvs, bufferDist, asStudyArea = FALSE)
+  # ml <- fmaSprayLake(ml, studyAreaName, dataDir, canProvs, bufferDist, asStudyArea = FALSE)
   ml <- fmaSundreFP(ml, studyAreaName, dataDir, canProvs, bufferDist, asStudyArea = FALSE)
   ml <- fmaTolko(ml, studyAreaName, dataDir, canProvs, bufferDist, asStudyArea = FALSE)
   ml <- fmaVanderwell(ml, studyAreaName, dataDir, canProvs, bufferDist, asStudyArea = FALSE)
   ml <- fmaWestFraser(ml, studyAreaName, dataDir, canProvs, bufferDist, asStudyArea = FALSE)
   ml <- fmaWeyCo(ml, studyAreaName, dataDir, canProvs, bufferDist, asStudyArea = FALSE)
+
+  # ml <- provAB(ml, studyAreaName, dataDir, canProvs, bufferDist, asStudyArea = FALSE)
+  # ml <- provMB(ml, studyAreaName, dataDir, canProvs, bufferDist, asStudyArea = FALSE)
+  # ml <- provNWT(ml, studyAreaName, dataDir, canProvs, bufferDist, asStudyArea = FALSE)
+  # ml <- provSK(ml, studyAreaName, dataDir, canProvs, bufferDist, asStudyArea = FALSE)
 
   if (isTRUE(asStudyArea)) {
     ## studyArea shouldn't use analysisGroup because it's not a reportingPolygon
