@@ -266,7 +266,7 @@ InitMaps <- function(sim) {
                columnNameForLabels = "RGEUNIT", isStudyArea = FALSE, filename2 = NULL)
   ml[["SK Caribou Ranges"]][["Name"]] <- ml[["SK Caribou Ranges"]][["RGEUNIT"]]
 
-  if (P(sim)$.studyAreaName == "provMB") {
+  if (grepl("provMB", P(sim)$.studyAreaName)) {
     ## TODO: .zipx file; needs 'manual' extract 1st time
     ml <- mapAdd(map = ml, layerName = "MB Caribou Ranges",
                  useSAcrs = TRUE, poly = TRUE, overwrite = TRUE,

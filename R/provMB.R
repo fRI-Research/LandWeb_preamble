@@ -26,21 +26,27 @@ provMB <- function(ml, studyAreaName, dataDir, canProvs, bufferDist, asStudyArea
 
   MB.fmla1 <- prepInputs(url = "https://drive.google.com/file/d/1cHt9irGx9PhoMhP3oSrTG758-vrzog--/",
                          studyArea = MB, useSAcrs = TRUE,
-                         filename2 = file.path(dataDir, "MB_FMLA.shp")) %>%
-    joinReportingPolygons(., MB)
+                         filename2 = file.path(dataDir, "MB_FMLA.shp"))
+  MB.fmla1$Name <- MB.fmla1$FMLNO
+  MB.fmla1$shinyLabel <- MB.fmla1$FMLNO
+  MB.fmla1 <- joinReportingPolygons(MB.fmla1, MB)
   MB.fmla1$FML_NAME <- MB.fmla1$FMLNO
 
   MB.fmla23 <- prepInputs(url = "https://drive.google.com/file/d/18Uwivkqt97WYAse_cM2uC7Op-GmXUo6V/",
                           studyArea = MB, useSAcrs = TRUE,
-                          filename2 = file.path(dataDir, "MB_FMLA.shp")) %>%
-    joinReportingPolygons(., MB)
+                          filename2 = file.path(dataDir, "MB_FMLA.shp"))
+  MB.fmla23$Name <- MB.fmla23$FML_NAME
+  MB.fmla23$shinyLabel <- MB.fmla23$FML_NAME
+  MB.fmla23 <- joinReportingPolygons(MB.fmla23, MB)
 
   MB.fmla <- bind(MB.fmla1, MB.fmla23)
 
   MB.fmu <- prepInputs(url = "https://drive.google.com/file/d/18IXDtSyrakMS5QKRi6IU4UWOwhR2fYxn/",
                        studyArea = MB, useSAcrs = TRUE,
-                       filename2 = file.path(dataDir, "MB_FMU.shp")) %>%
-    joinReportingPolygons(., MB)
+                       filename2 = file.path(dataDir, "MB_FMU.shp"))
+  MB.fmu$Name <- MB.fmu$SEC_NAME
+  MB.fmu$shinyLabel <- MB.fmu$SEC_NAME
+  MB.fmu <- joinReportingPolygons(MB.fmu, MB)
 
   ml <- mapAdd(MB, ml, layerName = "MB", useSAcrs = TRUE, poly = TRUE,
                analysisGroupReportingPolygon = "MB", isStudyArea = isTRUE(asStudyArea),
