@@ -9,6 +9,11 @@ editor_options:
   chunk_output_type: console
 ---
 
+# *LandWeb_preamble* Module
+
+<!-- the following are text references used in captions for LaTeX compatibility -->
+(ref:LandWeb_preamble) *LandWeb_preamble*
+
 ```{r setup-LandWeb_preamble, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE, eval = FALSE, message = FALSE, warning = FALSE, results = "hold")
 
