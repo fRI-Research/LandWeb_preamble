@@ -7,7 +7,7 @@ defineModule(sim, list(
     person(c("Alex", "M."), "Chubaty", email = "achubaty@for-cast.ca", role = c("aut"))
   ),
   childModules = character(0),
-  version = list(LandWeb_preamble = "0.0.4"),
+  version = list(LandWeb_preamble = "0.0.5"),
   spatialExtent = raster::extent(rep(NA_real_, 4)),
   timeframe = as.POSIXlt(c(NA, NA)),
   timeunit = "year",
@@ -174,15 +174,17 @@ InitMaps <- function(sim) {
   ## 2. we want the boundary (outline) of the entire study area.
   ml <- mapAdd(layerName = "LTHFC",
                targetCRS = targetCRS, overwrite = TRUE,
-               #url = "https://drive.google.com/file/d/1JptU0R7qsHOEAEkxybx5MGg650KC98c6", ## landweb_ltfc_v6.shp
-               url = "https://drive.google.com/file/d/1eu5TJS1NhzqbnDenyiBy2hAnVI1E3lsC", ## landweb_ltfc_v8.shp
+               # url = "https://drive.google.com/file/d/1JptU0R7qsHOEAEkxybx5MGg650KC98c6", ## landweb_ltfc_v6.shp
+               # url = "https://drive.google.com/file/d/1eu5TJS1NhzqbnDenyiBy2hAnVI1E3lsC", ## landweb_ltfc_v8.shp
+               url = "https://drive.google.com/file/d/1wNxOeV1vl05WDp6DsyuyRSbDZOu87N17", ## landweb_ltfc_v8a.shp
                columnNameForLabels = "NSN", isStudyArea = FALSE, filename2 = NULL)
   ml[["LTHFC"]] <- LandWebUtils::polygonClean(ml[["LTHFC"]], type = "LandWeb", minFRI = P(sim)$minFRI)
 
   ml <- mapAdd(map = ml, layerName = "LandWeb Study Area",
                targetCRS = targetCRS, overwrite = TRUE,
-               #url = "https://drive.google.com/file/d/1JptU0R7qsHOEAEkxybx5MGg650KC98c6", ## landweb_ltfc_v6.shp
-               url = "https://drive.google.com/file/d/1eu5TJS1NhzqbnDenyiBy2hAnVI1E3lsC", ## landweb_ltfc_v8.shp
+               # url = "https://drive.google.com/file/d/1JptU0R7qsHOEAEkxybx5MGg650KC98c6", ## landweb_ltfc_v6.shp
+               # url = "https://drive.google.com/file/d/1eu5TJS1NhzqbnDenyiBy2hAnVI1E3lsC", ## landweb_ltfc_v8.shp
+               url = "https://drive.google.com/file/d/1wNxOeV1vl05WDp6DsyuyRSbDZOu87N17", ## landweb_ltfc_v8a.shp
                columnNameForLabels = "NSN", isStudyArea = TRUE, filename2 = NULL)
   ## use outer perimeter as LandWeb study area (don't need the internal polygon boundaries)
   ml[["LandWeb Study Area"]] <- ml[["LandWeb Study Area"]] |>
