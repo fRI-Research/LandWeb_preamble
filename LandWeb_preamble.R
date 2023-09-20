@@ -35,6 +35,8 @@ defineModule(sim, list(
                     "Multiplication factor for adjusting fire return intervals."),
     defineParameter("dispersalType", "character", "default", NA, NA,
                     "One of 'aspen', 'high', 'none', or 'default'."),
+    defineParameter("mergeSlivers", "logical", TRUE, NA, NA,
+                    "Should sliver polygons in LTHFC map be merged into nearest non-zero polygon?"),
     defineParameter("minFRI", "numeric", 40, 0, 200,
                     "The value of fire return interval below which, pixels will be changed to `NA`, i.e., ignored"),
     defineParameter("pixelSize", "numeric", 250, NA, NA,
@@ -169,30 +171,68 @@ InitMaps <- function(sim) {
   targetCRS <- paste("+proj=lcc +lat_1=49 +lat_2=77 +lat_0=0 +lon_0=-95",
                      "+x_0=0 +y_0=0 +units=m +no_defs +ellps=GRS80 +towgs84=0,0,0")
 
+  ## TODO: use terra
+  opts <- options(reproducible.useTerra = FALSE)
+  lthfc <- prepInputs(
+    # url = "https://drive.google.com/file/d/1JptU0R7qsHOEAEkxybx5MGg650KC98c6", ## landweb_ltfc_v6.shp
+    # url = "https://drive.google.com/file/d/1eu5TJS1NhzqbnDenyiBy2hAnVI1E3lsC", ## landweb_ltfc_v8.shp
+    url = "https://drive.google.com/file/d/1wNxOeV1vl05WDp6DsyuyRSbDZOu87N17", ## landweb_ltfc_v8a.shp
+    targetCRS = targetCRS,
+    overwrite = TRUE,
+    filename2 = NULL
+  )
+  options(opts)
+
+  ## keep only the LTHFC column
+  lthfc <- lthfc[, "LTHFC"]
+  lthfc$area <- sf::st_area(lthfc)
+
+  ## 2023-09: added additional geoprocessing to LTHFC map to remove polygon fragments
+  if (isTRUE(P(sim)$mergeSlivers)) {
+    smallerThanOnePixel <- (lthfc$area <= units::as_units((P(sim)$pixelSize)^2, "m^2"))
+
+    slivers <- lthfc[smallerThanOnePixel, ]
+    nonSlivers <- lthfc[!smallerThanOnePixel, ] |> subset(LTHFC > 0)
+
+    nearest <- sf::st_nearest_feature(slivers, nonSlivers)
+    lthfc_merged <- lapply(unique(nearest), function(i) {
+      slivers[nearest == i, ] |>
+        sf::st_union() |> ## merge multiple slivers if more than one
+        sf::st_union(nonSlivers[i, ]) |> ## merge with non-slivers (i.e., update geametries)
+        cbind(sf::st_drop_geometry(nonSlivers[i, ]))
+    }) |>
+      do.call(rbind, args = _) |>
+      sf::st_as_sf() |>
+      sf::st_make_valid() |>
+      rbind(nonSlivers[!(seq_len(nrow(nonSlivers)) %in% nearest), ]) |> ## merge remaining nonSlivers
+      rbind(subset(lthfc, LTHFC == 0)) ## add back the zero LTHFC polygons
+    lthfc_merged$area <- sf::st_area(lthfc_merged) ## recalculate areas
+
+    lthfc_clean <- LandWebUtils::polygonClean(as_Spatial(lthfc_merged), type = "LandWeb", minFRI = P(sim)$minFRI)
+  } else {
+    lthfc_clean <- LandWebUtils::polygonClean(as_Spatial(lthfc), type = "LandWeb", minFRI = P(sim)$minFRI)
+  }
+
+  sf::st_as_sf(lthfc_clean) |>
+    sf::st_write(file.path(outputPath(sim), "landweb_lthfc_clean.shp"))
+
   ## LandWeb study area provides LTHFC (aka "fire return interval") map:
   ## 1. we want the actual LTHFC map;
   ## 2. we want the boundary (outline) of the entire study area.
-  ml <- mapAdd(layerName = "LTHFC",
-               targetCRS = targetCRS, overwrite = TRUE,
-               # url = "https://drive.google.com/file/d/1JptU0R7qsHOEAEkxybx5MGg650KC98c6", ## landweb_ltfc_v6.shp
-               # url = "https://drive.google.com/file/d/1eu5TJS1NhzqbnDenyiBy2hAnVI1E3lsC", ## landweb_ltfc_v8.shp
-               url = "https://drive.google.com/file/d/1wNxOeV1vl05WDp6DsyuyRSbDZOu87N17", ## landweb_ltfc_v8a.shp
-               columnNameForLabels = "NSN", isStudyArea = FALSE, filename2 = NULL)
-  ml[["LTHFC"]] <- LandWebUtils::polygonClean(ml[["LTHFC"]], type = "LandWeb", minFRI = P(sim)$minFRI)
+  ml <- mapAdd(lthfc_clean, layerName = "LTHFC", overwrite = TRUE,
+               columnNameForLabels = "LTHFC", isStudyArea = FALSE, filename2 = NULL)
 
-  ml <- mapAdd(map = ml, layerName = "LandWeb Study Area",
-               targetCRS = targetCRS, overwrite = TRUE,
-               # url = "https://drive.google.com/file/d/1JptU0R7qsHOEAEkxybx5MGg650KC98c6", ## landweb_ltfc_v6.shp
-               # url = "https://drive.google.com/file/d/1eu5TJS1NhzqbnDenyiBy2hAnVI1E3lsC", ## landweb_ltfc_v8.shp
-               url = "https://drive.google.com/file/d/1wNxOeV1vl05WDp6DsyuyRSbDZOu87N17", ## landweb_ltfc_v8a.shp
-               columnNameForLabels = "NSN", isStudyArea = TRUE, filename2 = NULL)
   ## use outer perimeter as LandWeb study area (don't need the internal polygon boundaries)
-  ml[["LandWeb Study Area"]] <- ml[["LandWeb Study Area"]] |>
-    sf::st_as_sf() |>
+  landweb_area <- sf::st_as_sf(lthfc_clean) |>
     sf::st_union() |>
     sf::st_make_valid() |>
     nngeo::st_remove_holes() |>
     sf::as_Spatial()
+  landweb_area$Name <- "LandWeb Study Area"
+
+  ml <- mapAdd(landweb_area, map = ml, layerName = "LandWeb Study Area",
+               targetCRS = targetCRS, overwrite = TRUE,
+               columnNameForLabels = "Name", isStudyArea = TRUE, filename2 = NULL)
 
   ## Updated FMA boundaries
   ml <- mapAdd(map = ml, layerName = "FMA Boundaries Updated",
