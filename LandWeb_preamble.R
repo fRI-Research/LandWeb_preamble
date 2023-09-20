@@ -220,7 +220,7 @@ InitMaps <- function(sim) {
   ## 1. we want the actual LTHFC map;
   ## 2. we want the boundary (outline) of the entire study area.
   ml <- mapAdd(lthfc_clean, layerName = "LTHFC", overwrite = TRUE,
-               columnNameForLabels = "LTHFC", isStudyArea = FALSE, filename2 = NULL)
+               columnNameForLabels = "fireReturnInterval", isStudyArea = FALSE, filename2 = NULL)
 
   ## use outer perimeter as LandWeb study area (don't need the internal polygon boundaries)
   landweb_area <- sf::st_as_sf(lthfc_clean) |>
