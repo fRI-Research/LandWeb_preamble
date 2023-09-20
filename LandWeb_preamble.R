@@ -214,7 +214,7 @@ InitMaps <- function(sim) {
   }
 
   sf::st_as_sf(lthfc_clean) |>
-    sf::st_write(file.path(outputPath(sim), "landweb_lthfc_clean.shp"))
+    sf::write_sf(file.path(outputPath(sim), "landweb_lthfc_clean.shp"), )
 
   ## LandWeb study area provides LTHFC (aka "fire return interval") map:
   ## 1. we want the actual LTHFC map;
