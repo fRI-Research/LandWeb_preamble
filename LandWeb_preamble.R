@@ -35,7 +35,7 @@ defineModule(sim, list(
                     "Multiplication factor for adjusting fire return intervals."),
     defineParameter("dispersalType", "character", "default", NA, NA,
                     "One of 'aspen', 'high', 'none', or 'default'."),
-    defineParameter("mergeSlivers", "logical", TRUE, NA, NA,
+    defineParameter("mergeSlivers", "logical", FALSE, NA, NA,
                     "Should sliver polygons in LTHFC map be merged into nearest non-zero polygon?"),
     defineParameter("minFRI", "numeric", 40, 0, 200,
                     "The value of fire return interval below which, pixels will be changed to `NA`, i.e., ignored"),
@@ -190,6 +190,7 @@ InitMaps <- function(sim) {
   ## 2023-09: added additional geoprocessing to LTHFC map to remove polygon fragments
   if (isTRUE(P(sim)$mergeSlivers)) {
     smallerThanOnePixel <- (lthfc$area <= units::as_units((P(sim)$pixelSize)^2, "m^2"))
+    # smallerThanOnePixel <- (lthfc$area <= units::as_units(1500, "ha")) ## MB LTHFC 85 fragment size
 
     slivers <- lthfc[smallerThanOnePixel, ]
     nonSlivers <- lthfc[!smallerThanOnePixel, ] |> subset(LTHFC > 0)
@@ -214,7 +215,7 @@ InitMaps <- function(sim) {
   }
 
   sf::st_as_sf(lthfc_clean) |>
-    sf::write_sf(file.path(outputPath(sim), "landweb_lthfc_clean.shp"), )
+    sf::write_sf(file.path(outputPath(sim), "landweb_lthfc_clean.shp"))
 
   ## LandWeb study area provides LTHFC (aka "fire return interval") map:
   ## 1. we want the actual LTHFC map;
