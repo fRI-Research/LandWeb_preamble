@@ -176,7 +176,8 @@ InitMaps <- function(sim) {
   lthfc <- prepInputs(
     # url = "https://drive.google.com/file/d/1JptU0R7qsHOEAEkxybx5MGg650KC98c6", ## landweb_ltfc_v6.shp
     # url = "https://drive.google.com/file/d/1eu5TJS1NhzqbnDenyiBy2hAnVI1E3lsC", ## landweb_ltfc_v8.shp
-    url = "https://drive.google.com/file/d/1wNxOeV1vl05WDp6DsyuyRSbDZOu87N17", ## landweb_ltfc_v8a.shp
+    # url = "https://drive.google.com/file/d/1wNxOeV1vl05WDp6DsyuyRSbDZOu87N17", ## landweb_ltfc_v8a.shp
+    url = "https://drive.google.com/file/d/1R9QLvW_yD482xv_6ZF1yhB32blaDPWjV", ## landweb_ltfc_v8c.shp
     targetCRS = targetCRS,
     overwrite = TRUE,
     filename2 = NULL
