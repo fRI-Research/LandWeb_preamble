@@ -6,6 +6,16 @@ provAB <- function(ml, studyAreaName, dataDir, canProvs, bufferDist, asStudyArea
   raster::shapefile(AB, filename = file.path(dataDir, "AB_full.shp"), overwrite = TRUE)
 
   ## reportingPolygons
+  AB.natlez <- postProcess(ml[["National Ecozones"]],
+                           studyArea = AB, useSAcrs = TRUE,
+                           filename2 = file.path(dataDir, "AB_NATLEZ.shp")) %>%
+    joinReportingPolygons(., AB)
+
+  AB.natler <- postProcess(ml[["National Ecoregions"]],
+                           studyArea = AB, useSAcrs = TRUE,
+                           filename2 = file.path(dataDir, "AB_NATLER.shp")) %>%
+    joinReportingPolygons(., AB)
+
   AB.ansr <- ml[["Alberta Natural Subregions"]]
 
   AB[["Name"]] <- AB[["NAME_1"]]
@@ -17,6 +27,12 @@ provAB <- function(ml, studyAreaName, dataDir, canProvs, bufferDist, asStudyArea
 
   ml <- mapAdd(AB, ml, layerName = "AB", useSAcrs = TRUE, poly = TRUE,
                analysisGroupReportingPolygon = "AB", isStudyArea = isTRUE(asStudyArea),
+               columnNameForLabels = "Name", filename2 = NULL)
+  ml <- mapAdd(AB.natlez, ml, layerName = "AB NATLEZ", useSAcrs = TRUE, poly = TRUE,
+               analysisGroupReportingPolygon = "AB NATLEZ",
+               columnNameForLabels = "Name", filename2 = NULL)
+  ml <- mapAdd(AB.natler, ml, layerName = "AB NATLER", useSAcrs = TRUE, poly = TRUE,
+               analysisGroupReportingPolygon = "AB NATLER",
                columnNameForLabels = "Name", filename2 = NULL)
   ml <- mapAdd(AB.ansr, ml, layerName = "AB ANSR", useSAcrs = TRUE, poly = TRUE,
                analysisGroupReportingPolygon = "AB ANSR",
