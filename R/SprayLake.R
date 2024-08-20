@@ -36,7 +36,7 @@ fmaSprayLake <- function(ml, studyAreaName, dataDir, canProvs, bufferDist, asStu
     }
 
     C5.lbstatus <- sf::st_read(C5_gdb, layer = "lb_20230901_tsa") |>
-      postProcess(projectTo = spraylake.c5, cropTo = NULL, mask = NULL)
+      postProcess(projectTo = spraylake.c5, cropTo = NULL, maskTo = NULL)
     C5.lbstatus <- C5.lbstatus[st_is_valid(C5.lbstatus), ] ## remove invalid geometries
     C5.lbstatus <- C5.lbstatus[!st_is_empty(C5.lbstatus), ] ## remove empty polygons
     C5.lbstatus <- Cache({
