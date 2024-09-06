@@ -629,6 +629,9 @@ InitSpecies <- function(sim) {
   ## species parameter tables
   sim$speciesTable <- LandR::getSpeciesTable(dPath = mod$dPath) ## uses default URL
 
+  ## TODO: don't change params at all in v3;
+  ## maybe restore changes made by LandR::speciesTableUpdate,
+  ## so shadetol to 'defaults' listed below -- except perhaps increase Pinu to 1.5
   speciesParams <- list(
     growthcurve = list(Abie_sp = 0, Pice_gla = 1, Pice_mar = 1, Pinu_sp = 0, Popu_sp = 0),
     mortalityshape = list(Abie_sp = 15L, Pice_gla = 15L, Pice_mar = 15L, Pinu_sp = 15L, Popu_sp = 25L),
