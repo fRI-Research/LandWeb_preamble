@@ -50,7 +50,7 @@ fmaSprayLake <- function(ml, studyAreaName, dataDir, canProvs, bufferDist, asStu
   }
 
   ml <- mapAdd(spraylake_sa, ml, layerName = "Spray Lake + C5 study area", useSAcrs = TRUE, poly = TRUE,
-               analysisGroupReportingPolygon = "Spray Lake + C5 study area", isStudyArea = isTRUE(asStudyArea),
+               isStudyArea = isTRUE(asStudyArea),
                columnNameForLabels = "Name", filename2 = NULL)
 
   ml <- mapAdd(spraylake, ml, layerName = "Spray Lake", useSAcrs = TRUE, poly = TRUE,
