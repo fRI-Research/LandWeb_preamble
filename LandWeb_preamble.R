@@ -173,11 +173,19 @@ InitMaps <- function(sim) {
 
   ## TODO: use terra
   opts <- options(reproducible.useTerra = FALSE)
+
+  if (P(sim)$.studyAreaName == "SprayLake") {
+    ## 2024-09-23 per Dave, use custom lthfc only for Spray Lake + C5 runs;
+    ## LTHFCS are *much* lower (200/150 reduced to 50 in eastern portion of study area)
+    lthfc_url <- "https://drive.google.com/file/d/1vvwqlS0hrD2s7Eq4N7NKrRDKWon4RvUw" ## ltfc_sls_v2.shp
+  } else {
+    # lthfc_url <- "https://drive.google.com/file/d/1JptU0R7qsHOEAEkxybx5MGg650KC98c6" ## landweb_ltfc_v6.shp
+    # lthfc_url <- "https://drive.google.com/file/d/1eu5TJS1NhzqbnDenyiBy2hAnVI1E3lsC" ## landweb_ltfc_v8.shp
+    # lthfc_url <- "https://drive.google.com/file/d/1wNxOeV1vl05WDp6DsyuyRSbDZOu87N17" ## landweb_ltfc_v8a.shp
+    lthfc_url <- "https://drive.google.com/file/d/1R9QLvW_yD482xv_6ZF1yhB32blaDPWjV" ## landweb_ltfc_v8c.shp
+  }
   lthfc <- prepInputs(
-    # url = "https://drive.google.com/file/d/1JptU0R7qsHOEAEkxybx5MGg650KC98c6", ## landweb_ltfc_v6.shp
-    # url = "https://drive.google.com/file/d/1eu5TJS1NhzqbnDenyiBy2hAnVI1E3lsC", ## landweb_ltfc_v8.shp
-    # url = "https://drive.google.com/file/d/1wNxOeV1vl05WDp6DsyuyRSbDZOu87N17", ## landweb_ltfc_v8a.shp
-    url = "https://drive.google.com/file/d/1R9QLvW_yD482xv_6ZF1yhB32blaDPWjV", ## landweb_ltfc_v8c.shp
+    url = lthfc_url,
     targetCRS = targetCRS,
     overwrite = TRUE,
     filename2 = NULL
@@ -605,11 +613,12 @@ InitMaps <- function(sim) {
 
 InitSpecies <- function(sim) {
   sppEquiv <- LandR::sppEquivalencies_CA
+
   sppEquiv[grep("Pin", LandR), `:=`(EN_generic_short = "Pine",
                                     EN_generic_full = "Pine",
                                     Leading = "Pine leading")]
 
-  # Make LandWeb spp equivalencies
+  ## Make LandWeb spp equivalencies
   sppEquiv[, LandWeb := c(Pice_mar = "Pice_mar", Pice_gla = "Pice_gla",
                           Pinu_con = "Pinu_sp", Pinu_ban = "Pinu_sp",
                           Popu_tre = "Popu_sp", Betu_pap = "Popu_sp",
@@ -622,6 +631,11 @@ InitSpecies <- function(sim) {
   sppEquiv[LandWeb == "Popu_sp", `:=`(EN_generic_full = "Deciduous",
                                       EN_generic_short = "Decid",
                                       Leading = "Deciduous leading")]
+
+  if (P(sim)$.studyAreaName == "SprayLake") {
+    ## 2024-09-23: add Douglas fir for Spray Lakes + C5 runs
+    sppEquiv[LandR == "Pseu_men", LandWeb := "Pseu_men"]
+  }
 
   sim$sppEquiv <- sppEquiv[!is.na(LandWeb), ]
   sim$sppColorVect <- LandR::sppColors(sim$sppEquiv, "LandWeb", newVals = "Mixed", palette = "Accent")
@@ -636,9 +650,18 @@ InitSpecies <- function(sim) {
     growthcurve = list(Abie_sp = 0, Pice_gla = 1, Pice_mar = 1, Pinu_sp = 0, Popu_sp = 0),
     mortalityshape = list(Abie_sp = 15L, Pice_gla = 15L, Pice_mar = 15L, Pinu_sp = 15L, Popu_sp = 25L),
     resproutage_min = list(Popu_sp = 25L), # default 10L
-    #resproutprob = list(Popu_sp = 0.1), # default 0.5
+    # resproutprob = list(Popu_sp = 0.1), # default 0.5
     shadetolerance = list(Abie_sp = 3, Pice_gla = 2, Pice_mar = 3, Pinu_sp = 1, Popu_sp = 1) # defaults 4, 3, 4, 1, 1
   )
+
+  if (P(sim)$.studyAreaName == "SprayLake") {
+    ## 2024-09-23: add Douglas fir for Spray Lakes + C5 runs
+    speciesParams <- modifyList(speciesParams, list(
+      growthcurve = list(Pseu_men = 1), ## default 1
+      mortalityshape = list(Pseu_men = 15L), ## default 15L
+      shadetolerance = list(Pseu_men = 3) ## default 3
+    ))
+  }
 
   ## seed dispersal (see LandWeb#96, LandWeb#112)
   stopifnot(P(sim)$dispersalType %in% c("default", "aspen", "high", "none"))
@@ -651,6 +674,16 @@ InitSpecies <- function(sim) {
       resproutage_min = list(Abie_sp = 0L, Pice_gla = 0L, Pice_mar = 0L, Pinu_sp = 0L, Popu_sp = 0L),
       resproutprob = list(Abie_sp = 1.0, Pice_gla = 1.0, Pice_mar = 1.0, Pinu_sp = 1.0, Popu_sp = 1.0)
     ))
+
+    if (P(sim)$.studyAreaName == "SprayLake") {
+      ## 2024-09-23: add Douglas fir for Spray Lakes + C5 runs
+      speciesParams <- modifyList(speciesParams, list(
+        postfireregen = list(Pseu_men = "resprout"),
+        resproutage_max = list(Pseu_men = 400L),
+        resproutage_min = list(Pseu_men = 0L),
+        resproutprob = list(Pseu_men = 1.0)
+      ))
+    }
   }
 
   speciesParams <- append(speciesParams, switch(
@@ -672,6 +705,29 @@ InitSpecies <- function(sim) {
       seeddistance_max = list(Abie_sp = 160L, Pice_gla = 303L, Pice_mar = 200L, Pinu_sp = 100L, Popu_sp = 2000L)
     )
   ))
+
+  if (P(sim)$.studyAreaName == "SprayLake") {
+    ## 2024-09-23: add Douglas fir for Spray Lakes + C5 runs
+    speciesParams <- modifyList(speciesParams, switch(
+      P(sim)$dispersalType,
+      aspen = list(
+        seeddistance_eff = list(Pseu_men = 0L),
+        seeddistance_max = list(Pseu_men = 125L)
+      ),
+      high = list(
+        seeddistance_eff = list(Pseu_men = 300L),
+        seeddistance_max = list(Pseu_men = 1250L)
+      ),
+      none = list(
+        seeddistance_eff = list(Pseu_men = 100L), ## default but disabled downstream
+        seeddistance_max = list(Pseu_men = 500L) ## default but disabled downstream
+      ),
+      default = list(
+        seeddistance_eff = list(Pseu_men = 100L),
+        seeddistance_max = list(Pseu_men = 500L)
+      )
+    ))
+  }
 
   # if (P(sim)$.studyAreaName == "SprayLake") {
   #   message(crayon::red("Fir shade tolerance lowered below default (3). Using value 2."))
