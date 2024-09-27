@@ -635,6 +635,9 @@ InitSpecies <- function(sim) {
   if (P(sim)$.studyAreaName == "SprayLake") {
     ## 2024-09-23: add Douglas fir for Spray Lakes + C5 runs
     sppEquiv[LandR == "Pseu_men", LandWeb := "Pseu_men"]
+    sppEquiv[LandWeb == "Pseu_men",  `:=`(EN_generic_full = "Douglas fir",
+                                          EN_generic_short = "Doug fir",
+                                          Leading = "Doug fir leading")]
   }
 
   sim$sppEquiv <- sppEquiv[!is.na(LandWeb), ]
