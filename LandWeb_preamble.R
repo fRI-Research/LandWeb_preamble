@@ -174,7 +174,7 @@ InitMaps <- function(sim) {
   ## TODO: use terra
   opts <- options(reproducible.useTerra = FALSE)
 
-  if (P(sim)$.studyAreaName == "SprayLake") {
+  if (grepl("SprayLake", P(sim)$.studyAreaName)) {
     ## 2024-09-23 per Dave, use custom lthfc only for Spray Lake + C5 runs;
     ## LTHFCS are *much* lower (200/150 reduced to 50 in eastern portion of study area)
     lthfc_url <- "https://drive.google.com/file/d/1vvwqlS0hrD2s7Eq4N7NKrRDKWon4RvUw" ## ltfc_sls_v2.shp
@@ -632,7 +632,7 @@ InitSpecies <- function(sim) {
                                       EN_generic_short = "Decid",
                                       Leading = "Deciduous leading")]
 
-  if (P(sim)$.studyAreaName == "SprayLake") {
+  if (grepl("SprayLake", P(sim)$.studyAreaName)) {
     ## 2024-09-23: add Douglas fir for Spray Lakes + C5 runs
     sppEquiv[LandR == "Pseu_men", LandWeb := "Pseu_men"]
     sppEquiv[LandWeb == "Pseu_men",  `:=`(EN_generic_full = "Douglas fir",
@@ -657,7 +657,7 @@ InitSpecies <- function(sim) {
     shadetolerance = list(Abie_sp = 3, Pice_gla = 2, Pice_mar = 3, Pinu_sp = 1, Popu_sp = 1) # defaults 4, 3, 4, 1, 1
   )
 
-  if (P(sim)$.studyAreaName == "SprayLake") {
+  if (grepl("SprayLake", P(sim)$.studyAreaName)) {
     ## 2024-09-23: add Douglas fir for Spray Lakes + C5 runs
     speciesParams <- modifyList(speciesParams, list(
       growthcurve = list(Pseu_men = 1), ## default 1
@@ -678,7 +678,7 @@ InitSpecies <- function(sim) {
       resproutprob = list(Abie_sp = 1.0, Pice_gla = 1.0, Pice_mar = 1.0, Pinu_sp = 1.0, Popu_sp = 1.0)
     ))
 
-    if (P(sim)$.studyAreaName == "SprayLake") {
+    if (grepl("SprayLake", P(sim)$.studyAreaName)) {
       ## 2024-09-23: add Douglas fir for Spray Lakes + C5 runs
       speciesParams <- modifyList(speciesParams, list(
         postfireregen = list(Pseu_men = "resprout"),
@@ -709,7 +709,7 @@ InitSpecies <- function(sim) {
     )
   ))
 
-  if (P(sim)$.studyAreaName == "SprayLake") {
+  if (grepl("SprayLake", P(sim)$.studyAreaName)) {
     ## 2024-09-23: add Douglas fir for Spray Lakes + C5 runs
     speciesParams <- modifyList(speciesParams, switch(
       P(sim)$dispersalType,
@@ -732,7 +732,7 @@ InitSpecies <- function(sim) {
     ))
   }
 
-  # if (P(sim)$.studyAreaName == "SprayLake") {
+  # if (grepl("SprayLake", P(sim)$.studyAreaName)) {
   #   message(crayon::red("Fir shade tolerance lowered below default (3). Using value 2."))
   #   message(crayon::red("Spruce shade tolerance raised above default (2, 3). Using values 3, 4."))
   #   speciesParams <- append(speciesParams, list(
