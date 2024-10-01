@@ -35,10 +35,12 @@ fmaSprayLake <- function(ml, studyAreaName, dataDir, canProvs, bufferDist, asStu
       archive::archive_extract(C5_zip, dataDir)
     }
 
-    C5.lbstatus <- sf::st_read(C5_gdb, layer = "lb_20230901_tsa") |>
-      postProcess(projectTo = spraylake.c5, cropTo = NULL, maskTo = NULL)
-    C5.lbstatus <- C5.lbstatus[st_is_valid(C5.lbstatus), ] ## remove invalid geometries
-    C5.lbstatus <- C5.lbstatus[!st_is_empty(C5.lbstatus), ] ## remove empty polygons
+    C5.lbstatus <- sf::st_read(C5_gdb, layer = "lb_20230901_tsa")
+    C5.lbstatus <- C5.lbstatus[sf::st_is_valid(C5.lbstatus), ] ## remove invalid geometries
+    C5.lbstatus <- C5.lbstatus[!sf::st_is_empty(C5.lbstatus), ] ## remove empty polygons
+    ## NOTE: postProcess() does the wrong things wrt projections and is slow
+    C5.lbstatus <- sf::st_transform(C5.lbstatus, sf::st_crs(spraylake.c5)) |>
+      sf::st_make_valid()
     C5.lbstatus <- Cache({
       mutate(C5.lbstatus, Name = f_active, geometry = SHAPE, .keep = "used") |>
         group_by(Name) |>
