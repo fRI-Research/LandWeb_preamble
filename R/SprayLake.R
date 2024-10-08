@@ -1,7 +1,12 @@
 fmaSprayLake <- function(ml, studyAreaName, dataDir, canProvs, bufferDist, asStudyArea = FALSE) {
   ab <- canProvs[canProvs$NAME_1 == "Alberta", ]
   spraylake <- extractFMA(ml, "Spray Lake")
-  spraylake.c5 <- extractFMA(ml, "Crowsnest") ## Crowsnest is the C5 unit
+  spraylake.c5 <- extractFMU(ml, "C5") |>
+    st_as_sf() |>
+    dplyr::mutate(OBJECTID_1 = OBJECTID, Shape_Leng = SHAPE_Leng, Shape_Area = SHAPE_Area, Name.1 = Name) |>
+    dplyr::select(OBJECTID_1, Name, Shape_Leng, Shape_Area, Name.1, shinyLabel) |>
+    as_Spatial()
+  spraylake.c5[["Name"]] <- "C5"
   spraylake_sa <- rbind(spraylake, spraylake.c5)
   raster::shapefile(spraylake, filename = file.path(dataDir, "SprayLake.shp"), overwrite = TRUE)
   raster::shapefile(spraylake.c5, filename = file.path(dataDir, "SprayLakeC5.shp"), overwrite = TRUE)
