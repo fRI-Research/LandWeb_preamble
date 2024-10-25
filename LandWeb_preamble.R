@@ -177,7 +177,8 @@ InitMaps <- function(sim) {
   if (grepl("SprayLake", P(sim)$.studyAreaName)) {
     ## 2024-09-23 per Dave, use custom lthfc only for Spray Lake + C5 runs;
     ## LTHFCS are *much* lower (200/150 reduced to 50 in eastern portion of study area)
-    lthfc_url <- "https://drive.google.com/file/d/1vvwqlS0hrD2s7Eq4N7NKrRDKWon4RvUw" ## ltfc_sls_v2.shp
+    # lthfc_url <- "https://drive.google.com/file/d/1vvwqlS0hrD2s7Eq4N7NKrRDKWon4RvUw" ## ltfc_sls_v2.shp
+    lthfc_url <- "https://drive.google.com/file/d/1udhnNh_zWap1fORuDMYVUXWQ0bNeeRAT" ## ltfc_sls_v3.shp
   } else {
     # lthfc_url <- "https://drive.google.com/file/d/1JptU0R7qsHOEAEkxybx5MGg650KC98c6" ## landweb_ltfc_v6.shp
     # lthfc_url <- "https://drive.google.com/file/d/1eu5TJS1NhzqbnDenyiBy2hAnVI1E3lsC" ## landweb_ltfc_v8.shp
