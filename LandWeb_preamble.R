@@ -580,8 +580,9 @@ InitMaps <- function(sim) {
                                                 field = "fireReturnInterval")
   rstFireReturnInterval <- crop(rstFireReturnInterval, sim$rasterToMatch) ## ensure it matches studyArea
 
-  if (!is.integer(rstFireReturnInterval[]))
+  if (!is.integer(rstFireReturnInterval[])) {
     rstFireReturnInterval[] <- as.integer(rstFireReturnInterval[])
+  }
 
   ml <- mapAdd(rstFireReturnInterval, layerName = "fireReturnInterval", filename2 = NULL,
                map = ml, leaflet = FALSE, maskWithRTM = FALSE)
