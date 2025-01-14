@@ -12,18 +12,40 @@ fmaSundreFP <- function(ml, studyAreaName, dataDir, canProvs, bufferDist, asStud
     joinReportingPolygons(., sundre)
 
   if (!grepl("LandWeb", studyAreaName)) {
-    sundre.lbstatus <- Cache({
-      prepInputs(
-        url = "https://drive.google.com/file/d/1FcIogFQ8veA25T1HEIgw-SyG_Dk21rw4/",
-        destinationPath = dataDir,
-        targetFile = "SFP_Landbase.shp", alsoExtract = "similar",
-        fun = "sf::st_read", studyArea = sundre, useSAcrs = TRUE
-      )
-    })
+    ## NOTE: updated fall 2024 to use gdb which does not contain invalid geometries;
+
+    # sundre.lbstatus <- Cache({
+    #   prepInputs(
+    #     url = "https://drive.google.com/file/d/1FcIogFQ8veA25T1HEIgw-SyG_Dk21rw4/",
+    #     destinationPath = dataDir,
+    #     targetFile = "SFP_Landbase.shp", alsoExtract = "similar",
+    #     fun = "sf::st_read", studyArea = sundre, useSAcrs = TRUE
+    #   )
+    # })
+
+    ## TODO: prepInputs can't deal with gdb files
+    SFP_gdb <- file.path(dataDir, "SFP_Landbase_2024.gdb")
+    SFP_zip <- paste0(SFP_gdb, ".zip")
+
+    if (!file.exists(SFP_zip)) {
+      googledrive::as_id("1oh_w9nALKufCQXb1PR3VIlChPHPysHF4") |>
+        googledrive::drive_download(path = SFP_zip)
+    }
+
+    if (!file.exists(SFP_gdb)) {
+      archive::archive_extract(SFP_zip, dataDir) ## TODO: fails to extract; do it manually
+    }
+
+    sundre.lbstatus <- sf::st_read(SFP_gdb) |>
+      sf::st_transform(crs(sundre))
+
+    ## TODO: cache these to speed up subsequent processing
     sundre.lbstatus <- sundre.lbstatus[st_is_valid(sundre.lbstatus), ] ## remove invalid geometries
     sundre.lbstatus <- sundre.lbstatus[!st_is_empty(sundre.lbstatus), ] ## remove empty polygons
+
     sundre.lbstatus <- Cache({
-      mutate(sundre.lbstatus, Name = LBC_LBStat, geometry = geometry, .keep = "used") |>
+      # mutate(sundre.lbstatus, Name = LBC_LBStat, geometry = geometry, .keep = "used") |>
+      mutate(sundre.lbstatus, Name = LBC_LBStatus, geometry = Shape, .keep = "used") |>
         group_by(Name) |>
         summarise(geometry = sf::st_union(geometry)) |>
         ungroup() |>

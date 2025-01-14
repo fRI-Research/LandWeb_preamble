@@ -22,23 +22,45 @@ fmaTolko <- function(ml, studyAreaName, dataDir, canProvs, bufferDist, asStudyAr
       joinReportingPolygons(., tolko_ab_n)
 
     if (!grepl("LandWeb", studyAreaName)) {
+      ## NOTE: updated fall 2024 to use gdb which does not contain invalid geometries;
+
       ## TODO: fails to download & extract files
-      tolko_ab_n.lbstatus <- Cache(
-        prepInputs,
-        url = "https://drive.google.com/file/d/1ALFFNmh_Z7W_PDiDnVfFnXu1V_dwDeQJ/", ## F26
-        destinationPath = dataDir,
-        targetFile = "F26.shp", alsoExtract = "similar",
-        fun = "sf::st_read", studyArea = tolko_ab_n, useSAcrs = TRUE
-      )
+      # tolko_ab_n.lbstatus <- Cache(
+      #   prepInputs,
+      #   url = "https://drive.google.com/file/d/1ALFFNmh_Z7W_PDiDnVfFnXu1V_dwDeQJ/", ## F26
+      #   destinationPath = dataDir,
+      #   targetFile = "F26.shp", alsoExtract = "similar",
+      #   fun = "sf::st_read", studyArea = tolko_ab_n, useSAcrs = TRUE
+      # )
+
+      ## TODO: prepInputs can't deal with gdb files
+      F26_gdb <- file.path(dataDir, "UpperHay_RFMP_CLB_27MAR2024.gdb") ## F26 and surrounding area
+      F26_zip <- paste0(F26_gdb, ".zip")
+
+      if (!file.exists(F26_zip)) {
+        googledrive::as_id("1qzWhMR-nP_2N2KLL84ZHCVGNNlWxd2bZ") |>
+          googledrive::drive_download(path = F26_zip)
+      }
+
+      if (!file.exists(F26_gdb)) {
+        archive::archive_extract(F26_zip, dataDir) ## TODO: fails to extract; do it manually
+      }
+
+      tolko_ab_n.lbstatus <- sf::st_read(F26_gdb) |>
+        sf::st_transform(crs(tolko_ab_n))
+
+      ## TODO: cache these to speed up subsequent processing (validity check is super slow!)
       tolko_ab_n.lbstatus <- tolko_ab_n.lbstatus[st_is_valid(tolko_ab_n.lbstatus), ] ## remove invalid geometries
       tolko_ab_n.lbstatus <- tolko_ab_n.lbstatus[!st_is_empty(tolko_ab_n.lbstatus), ] ## remove empty polygons
 
       tolko_ab_n.lbstatus <- Cache({
-        mutate(tolko_ab_n.lbstatus, Name = Landbase, geometry = geometry, .keep = "used") |>
+        # mutate(tolko_ab_n.lbstatus, Name = Landbase, geometry = geometry, .keep = "used") |>
+        ## NOTE: was Active/Passive, is now Contributing/Non-contributing
+        mutate(tolko_ab_n.lbstatus, Name = LBC_Landbase, geometry = SHAPE, .keep = "used") |>
           group_by(Name) |>
           summarise(geometry = sf::st_union(geometry)) |>
           ungroup() |>
-          mutate(shinyLabel = Name, .before = geometry) |>
+          mutate(shinyLabel = Name, SHAPE = NULL, .before = geometry) |>
           joinReportingPolygons(tolko_ab_n)
       })
 

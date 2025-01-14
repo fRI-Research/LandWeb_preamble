@@ -7,7 +7,7 @@ defineModule(sim, list(
     person(c("Alex", "M."), "Chubaty", email = "achubaty@for-cast.ca", role = c("aut"))
   ),
   childModules = character(0),
-  version = list(LandWeb_preamble = "0.0.8"),
+  version = list(LandWeb_preamble = "0.0.9"),
   spatialExtent = raster::extent(rep(NA_real_, 4)),
   timeframe = as.POSIXlt(c(NA, NA)),
   timeunit = "year",
@@ -694,7 +694,7 @@ InitSpecies <- function(sim) {
   speciesParams <- append(speciesParams, switch(
     P(sim)$dispersalType,
     aspen = list(
-      seeddistance_eff = list(Abie_sp = 0L, Pice_gla = 0L, Pice_mar = 0L, Pinu_sp = 0L, Popu_sp = 100L),
+      seeddistance_eff = list(Abie_sp = 1L, Pice_gla = 1L, Pice_mar = 1L, Pinu_sp = 1L, Popu_sp = 100L),
       seeddistance_max = list(Abie_sp = 125L, Pice_gla = 125L, Pice_mar = 125L, Pinu_sp = 125L, Popu_sp = 235L)
     ),
     high = list(

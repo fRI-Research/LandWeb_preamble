@@ -20,21 +20,45 @@ fmaWestFraser <- function(ml, studyAreaName, dataDir, canProvs, bufferDist, asSt
     ## NOTE: no intersecting caribou areas
 
     if (!grepl("LandWeb", studyAreaName)) {
-      wf_br.lbstatus <- Cache(
-        prepInputs,
-        url = "https://drive.google.com/file/d/1A7N_EIbO2wMBI_YTmU2Z-bQwqC9sY_EC/",
-        destinationPath = dataDir,
-        targetFile = "BRL_Landbase.shp", alsoExtract = "similar",
-        fun = "sf::st_read", studyArea = wf_br, useSAcrs = TRUE
-      )
+      ## NOTE: updated fall 2024 to use gdb which does not contain invalid geometries;
+      ## unchanged 419540, added 0, removed 196 polys;
+
+      # wf_br.lbstatus <- Cache(
+      #   prepInputs,
+      #   url = "https://drive.google.com/file/d/1A7N_EIbO2wMBI_YTmU2Z-bQwqC9sY_EC/",
+      #   destinationPath = dataDir,
+      #   targetFile = "BRL_Landbase.shp", alsoExtract = "similar",
+      #   fun = "sf::st_read", studyArea = wf_br, useSAcrs = TRUE
+      # )
+
+      ## TODO: prepInputs can't deal with gdb files
+      BRL_gdb <- file.path(dataDir, "BRL_Landbase_2024.gdb")
+      BRL_zip <- paste0(BRL_gdb, ".zip")
+
+      if (!file.exists(BRL_zip)) {
+        googledrive::as_id("1Mk5L6287sKFGLY4ZfwWIUAczF5AGqAOV") |>
+          googledrive::drive_download(path = BRL_zip)
+      }
+
+      if (!file.exists(BRL_gdb)) {
+        archive::archive_extract(BRL_zip, dataDir) ## TODO: fails to extract; do it manually
+      }
+
+      wf_br.lbstatus <- sf::st_read(BRL_gdb) |>
+        sf::st_transform(crs(wf_br))
+
+      ## TODO: cache these to speed up subsequent processing
       wf_br.lbstatus <- wf_br.lbstatus[st_is_valid(wf_br.lbstatus), ] ## remove invalid geometries
       wf_br.lbstatus <- wf_br.lbstatus[!st_is_empty(wf_br.lbstatus), ] ## remove empty polygons
+
       wf_br.lbstatus <- Cache({
-        mutate(wf_br.lbstatus, Name = LBC_LBStat, geometry = geometry, .keep = "used") |>
+        # mutate(wf_br.lbstatus, Name = LBC_LBStat, geometry = geometry, .keep = "used") |>
+        mutate(wf_br.lbstatus, Name = LBC_LBStatus, geometry = Shape, .keep = "used") |>
           group_by(Name) |>
           summarise(geometry = sf::st_union(geometry)) |>
           ungroup() |>
-          mutate(shinyLabel = Name, .before = geometry) |>
+          # mutate(shinyLabel = Name, .before = geometry) |>
+          mutate(shinyLabel = Name, Shape = NULL, .before = geometry) |>
           joinReportingPolygons(wf_br)
       })
     }
