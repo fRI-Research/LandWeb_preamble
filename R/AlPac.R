@@ -7,13 +7,13 @@ fmaAlpac <- function(ml, studyAreaName, dataDir, canProvs, bufferDist, asStudyAr
   alpac.ansr <- postProcess(ml[["Alberta Natural Subregions"]],
                             studyArea = alpac, useSAcrs = TRUE,
                             filename2 = file.path(dataDir, "Alpac_ANSR.shp"),
-                            overwrite = TRUE) %>%
-    joinReportingPolygons(., alpac)
+                            overwrite = TRUE) |>
+    joinReportingPolygons(alpac)
   alpac.caribou <- postProcess(ml[["LandWeb Caribou Ranges"]],
                                studyArea = alpac, useSAcrs = TRUE,
                                filename2 = file.path(dataDir, "Alpac_caribou.shp"),
-                               overwrite = TRUE) %>%
-    joinReportingPolygons(., alpac)
+                               overwrite = TRUE) |>
+    joinReportingPolygons(alpac)
 
   ml <- mapAdd(alpac, ml, layerName = "Alpac", useSAcrs = TRUE, poly = TRUE,
                analysisGroupReportingPolygon = "Alpac", isStudyArea = isTRUE(asStudyArea),

@@ -1,11 +1,10 @@
 #' Extract boundary polygon(s) for forest management area(s)
 #'
-#' @param ml    A \code{map} object containing 'FMA Boundary Updated'
-#'              \code{SpatialPolygonsDataFrame} object with FMA boundaries
+#' @param ml    A `map` object containing 'FMA Boundary Updated' `sf` object with FMA boundaries
 #'
 #' @param name  A character (regex) string to match.
 #'
-#' @return \code{SpatialPolygonsDataFrame}
+#' @return `sf` polygons object
 #'
 #' @export
 #'
@@ -23,14 +22,14 @@ extractFMU <- function(ml, name) {
 #' Join reporting polygons and intersect their features
 #'
 #' Join two reporting polygons, preserving their features;
-#' concatenate the \code{Name.*} fields into a single \code{Name} field;
-#' concatenate the \code{shinyLabel.*} fields into a single \code{shinyLabel} field.
-#' E.g., if \code{x} and \code{y} each contain 2 features, the resulting object will contain 4
-#' features (corresponding to \code{x1.y1}, \code{x1.y2}, \code{x2.y1}, and \code{x2.y2}).
+#' concatenate the `Name.*` fields into a single `Name` field;
+#' concatenate the `shinyLabel.*` fields into a single `shinyLabel` field.
+#' E.g., if `x` and `y` each contain 2 features, the resulting object will contain 4
+#' features (corresponding to `x1.y1`, `x1.y2`, `x2.y1`, and `x2.y2`).
 #'
-#' @param x,y a \code{SpatialPolygonsDataFrame}
+#' @param x,y a `sf`
 #'
-#' @return a \code{SpatialPolygonsDataFrame}
+#' @return a `sf`
 #'
 #' @importFrom sf as st_as_sf st_join
 joinReportingPolygons <- function(x, y) {
@@ -75,91 +74,4 @@ joinReportingPolygons <- function(x, y) {
   }
 
   return(z)
-}
-
-#' Plot boundary polygon(s) for forest management areas
-#'
-#' @param x        \code{SpatialPolygons*} object corresponding to the FMA to be plotted
-#'
-#' @param provs    \code{SpatialPolygons*} object corresponding to the provincial
-#'                 (or territorial) boundaries to plot
-#'
-#' @param caribou  Optional \code{SpatialPolygons*} object corresponding to caribou boundaries
-#'
-#' @param xsr      Optional \code{SpatialPolygons*} object corresponding to a buffered \code{studyArea}
-#'
-#' @param title    Character string to use for plot title
-#'
-#' @param png      Optional. If non-NULL, must be a valid file path to a write a png
-#'
-#' @export
-#' @importFrom graphics dev.off png
-#' @importFrom sp crs plot spTransform
-#' @rdname plotFMA
-plotFMA <- function(x, provs, caribou = NULL, xsr = NULL, title = NULL, png = NULL) {
-  provs <- spTransform(provs, crs(x))
-
-  ## regular boring old plot
-  if (!is.null(png)) png(filename = png, width = 1200, height = 800)
-  sp::plot(provs)
-  sp::plot(x[, "Name"], main = title, col = "lightblue", add = TRUE)
-  if (!is.null(caribou)) sp::plot(caribou, col = "magenta", add = TRUE)
-  if (!is.null(xsr)) sp::plot(xsr, add = TRUE)
-  if (!is.null(png)) dev.off()
-
-  ## sexy ggplot version
-  x_gg <- plotGG(x, provs, caribou, png)
-
-  if (!is.null(png)) {
-    png2 <- gsub("[.]png", "_gg.png", png)
-    ggsave(png2, x_gg, width = 6, height = 8) ## a bit slow...
-  }
-}
-
-#' @export
-#' @importFrom sp plot spTransform
-#' @rdname plotFMA
-plotLandWeb <- function(x, provs, caribou = NULL, xsr = NULL, title = NULL, png = NULL) {
-  provs <- spTransform(provs, crs(x))
-
-  ## regular boring old plot
-  if (!is.null(png)) png(filename = png, width = 1800, height = 1200)
-  sp::plot(provs)
-  sp::plot(x, main = title, col = "lightblue", add = TRUE)
-  if (!is.null(caribou)) sp::plot(caribou, col = "magenta", add = TRUE)
-  if (!is.null(xsr)) sp::plot(xsr, add = TRUE)
-  if (!is.null(png)) dev.off()
-
-  ## sexy ggplot version
-  x_gg <- plotGG(x, provs, caribou, png)
-
-  if (!is.null(png)) {
-    png2 <- gsub("[.]png", "_gg.png", png)
-    ggsave(png2, x_gg, width = 6, height = 8) ## a bit slow...
-  }
-}
-
-#' @export
-#' @importFrom dplyr left_join
-#' @importFrom ggplot2 aes coord_equal element_blank fortify geom_path geom_polygon ggsave hue_pal theme
-#' @importFrom scales hue_pal show_col
-#' @importFrom reproducible Cache
-#' @rdname plotFMA
-plotGG <- function(x, provs, caribou = NULL, png = NULL) {
-  x.sf <- st_as_sf(x)
-  provs.sf <- st_as_sf(provs)
-
-  x_gg <- ggplot(provs.sf) +
-    geom_sf() +
-    geom_sf(data = x.sf, color = "white", fill = hue_pal()(16)[11]) +
-    coord_sf() +
-    theme_bw()
-
-  if (!is.null(caribou)) {
-    caribou.sf <- st_as_sf(caribou)
-
-    x_gg <- x_gg + geom_sf(data = caribou.sf, color = "white", fill = hue_pal()(16)[15])
-  }
-
-  return(x_gg)
 }
