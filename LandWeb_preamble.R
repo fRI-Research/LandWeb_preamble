@@ -83,8 +83,6 @@ defineModule(sim, list(
                   desc = "fire return interval raster"),
     createsOutput("LandTypeCC", "RasterLayer",
                   desc = "Land Cover Classification map derived from Current Conditions data."),
-    createsOutput("ml", "map",
-                  desc = "`map` object containing study areas, reporting polygons, etc. for post-processing."),
     createsOutput("LCC", "RasterLayer",
                   desc = "The result of `LandR::overlayLCCs()` on `LCC2005` and `LandTypeCC`."),
     createsOutput("nonTreePixels", "integer",
