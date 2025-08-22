@@ -1,12 +1,21 @@
 ---
-title: "LandWeb_preamble"
-author: ""
-date: "15 August 2023"
+title: "LandWeb_preamble Manual"
+subtitle: "v.`r SpaDES.core::moduleMetadata(module = 'LandWeb_preamble', path = '..')$version`"
+date: "Last updated: `r Sys.Date()`"
 output:
-  pdf_document:
+  bookdown::html_document2:
+    toc: true
+    toc_float: true
+    theme: sandstone
+    number_sections: false
+    df_print: paged
     keep_md: yes
 editor_options:
   chunk_output_type: console
+  bibliography: citations/references_LandWeb_preamble.bib
+citation-style: citations/ecology-letters.csl
+link-citations: true
+always_allow_html: true
 ---
 
 # *LandWeb_preamble* Module
@@ -28,7 +37,7 @@ if (isTRUE(Sys.getenv("R_USE_REQUIRE"))) {
 
 #### Authors:
 
-`r paste(as.character(SpaDES.core::moduleMetadata(module = 'Biomass_speciesData', path = '..')$authors), sep = ', ')`
+`r paste(as.character(SpaDES.core::moduleMetadata(module = 'LandWeb_preamble', path = '..')$authors), sep = ', ')`
 <!-- ideally separate authors with new lines, '\n' not working -->
 
 ## Module Overview
@@ -42,8 +51,8 @@ Set up study areas and parameters for LandWeb simulations.
 Provide a summary of user-visible parameters.
 
 ```{r moduleParams-LandWeb_preamble, echo = FALSE, eval = TRUE}
-df_params <- SpaDES.core::moduleParams("LandWeb_preamble", "..")
-knitr::kable(df_params) |>
+SpaDES.core::moduleParams("LandWeb_preamble", "..") |>
+  knitr::kable() |>
   kableExtra::kable_styling(latex_options = "scale_down", full_width = FALSE)
 ```
 
@@ -54,8 +63,8 @@ knitr::kable(df_params) |>
 Description of the module inputs.
 
 ```{r moduleInputs-LandWeb_preamble, echo = FALSE, eval = TRUE}
-df_inputs <- SpaDES.core::moduleInputs("LandWeb_preamble", "..")
-knitr::kable(df_inputs) |>
+SpaDES.core::moduleInputs("LandWeb_preamble", "..") |>
+  knitr::kable() |>
   kableExtra::kable_styling(latex_options = "scale_down", full_width = FALSE)
 ```
 
@@ -64,11 +73,17 @@ knitr::kable(df_inputs) |>
 Description of the module outputs.
 
 ```{r moduleOutputs-LandWeb_preamble, echo = FALSE, eval = TRUE}
-df_outputs <- SpaDES.core::moduleOutputs("LandWeb_preamble", "..")
-knitr::kable(df_outputs) |>
+SpaDES.core::moduleOutputs("LandWeb_preamble", "..") |>
+  knitr::kable() |>
   kableExtra::kable_styling(latex_options = "scale_down", full_width = FALSE)
 ```
 
 ## Links to other modules
 
-Originally developed for use with the LandR Biomass suite of modules, with LandMine fire model.
+Initially developed for use with the [LandWeb](https://github.com/PredictiveEcology/LandWeb) model.
+
+## Getting help
+
+-   <https://github.com/PredictiveEcology/LandWeb_preamble/issues>
+
+## References {#lwpre-refs}
