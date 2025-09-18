@@ -3,26 +3,26 @@ defineModule(sim, list(
   description = "define FMA-specific study areas etc. for LandWeb",
   keywords = c("LandWeb"),
   authors = c(
-    person(c("Eliot", "J", "B"), "McIntire", email = "eliot.mcintire@nrcan-rncan.gc.ca", role = c("aut", "cre")),
-    person(c("Alex", "M."), "Chubaty", email = "achubaty@for-cast.ca", role = c("aut"))
+    person(c("Eliot", "J", "B"), "McIntire", email = "eliot.mcintire@nrcan-rncan.gc.ca", role = "aut"),
+    person(c("Alex", "M."), "Chubaty", email = "achubaty@for-cast.ca", role = c("aut", "cre"))
   ),
   childModules = character(0),
-  version = list(LandWeb_preamble = "0.0.9"),
+  version = list(LandWeb_preamble = "1.0.0"),
   spatialExtent = raster::extent(rep(NA_real_, 4)),
   timeframe = as.POSIXlt(c(NA, NA)),
   timeunit = "year",
   citation = list("citation.bib"),
   documentation = list("README.md", "LandWeb_preamble.Rmd"),
-  reqdPkgs = list("achubaty/amc@development",
-                  "crayon", "curl", "dplyr", "fasterize", "geodata", "ggplot2", "httr",
-                  "PredictiveEcology/LandR@development (>= 1.1.0.9015)",
-                  "PredictiveEcology/LandWebUtils@development (>= 0.1.5.9000)",
-                  "PredictiveEcology/map@development (>= 0.0.5)",
-                  "maptools", "nngeo",
-                  "PredictiveEcology/pemisc@development (>= 0.0.3.9007)",
-                  "raster", "RColorBrewer", "RCurl",
-                  "PredictiveEcology/reproducible@development (>= 1.2.16.9024)",
-                  "scales", "sf", "sp", "SpaDES.tools", "XML"),
+  reqdPkgs = list(
+    "crayon", "curl", "dplyr", "fasterize", "geodata", "ggplot2", "httr",
+    "nngeo", "RColorBrewer", "RCurl", "scales", "sf", "sp", "SpaDES.tools", "XML",
+    "FOR-CAST/spatialutils",
+    "PredictiveEcology/LandR@development (>= 1.1.0.9015)",
+    "PredictiveEcology/LandWebUtils@development (>= 0.1.5.9000)",
+    "PredictiveEcology/map@development (>= 0.0.5)",
+    "PredictiveEcology/pemisc@development (>= 0.0.3.9007)",
+    "PredictiveEcology/reproducible@development (>= 1.2.16.9024)"
+  ),
   parameters = rbind(
     defineParameter("bufferDist", "numeric", 25000, 20000, 100000,
                     "Study area buffer distance (m) used to make `studyArea`."),
@@ -39,15 +39,15 @@ defineModule(sim, list(
                     "Should sliver polygons in LTHFC map be merged into nearest non-zero polygon?"),
     defineParameter("minFRI", "numeric", 40, 0, 200,
                     "The value of fire return interval below which, pixels will be changed to `NA`, i.e., ignored"),
-    defineParameter("pixelSize", "numeric", 250, NA, NA,
-                    paste("Pixel size in metres. Should be one of 250, 125, 50, 25.")),
+    defineParameter("pixelSize", "integer", 240L, NA, NA,
+                    paste("Pixel size in metres. Should be one of 240, 120, 90, 30.")),
     defineParameter("ROStype", "character", "default", NA, NA,
                     "Rate of spread preset to use. One of 'burny', 'equal', 'log', or 'default'."),
-    defineParameter("treeClassesLCC", "integer", c(1L:15L, 20L, 32L, 34L:36L), 0L, 39L,
-                    paste("AKA `forestedLCCClasses`. The classes in the `LCC2005` layer that are",
+    defineParameter("treeClassesLCC", "integer", c(81, 210, 220, 230, 240), 0L, 240L,
+                    paste("AKA `forestedLCCClasses`. The classes in the `LCC` layer that are",
                           "considered 'trees' from the perspective of LandR-Biomass.")),
-    defineParameter("treeClassesToReplace", "numeric", c(34:36), 0, 39,
-                    paste("The transient classes in the `LCC2005` layer that will become 'trees'",
+    defineParameter("treeClassesToReplace", "numeric", 240, NA, NA,
+                    paste("The transient classes in the `LCC` layer that will become 'trees'",
                           "from the perspective of LandR-Biomass (e.g., burned)")),
     defineParameter(".plotInitialTime", "numeric", start(sim), NA, NA,
                     "This describes the simulation time at which the first plot event should occur"),
@@ -74,7 +74,6 @@ defineModule(sim, list(
   ),
   inputObjects = bindrows(
     ## TODO: uses CC and fire return interval maps from URL in init
-    expectsInput("canProvs", "SpatialPolygonsDataFrame", "Canadian provincial boundaries shapefile", NA)
   ),
   outputObjects = bindrows(
     createsOutput("CC TSF", "RasterLayer",
@@ -84,7 +83,7 @@ defineModule(sim, list(
     createsOutput("LandTypeCC", "RasterLayer",
                   desc = "Land Cover Classification map derived from Current Conditions data."),
     createsOutput("LCC", "RasterLayer",
-                  desc = "The result of `LandR::overlayLCCs()` on `LCC2005` and `LandTypeCC`."),
+                  desc = "The result of `LandR::overlayLCCs()` on `LCC` and `LandTypeCC`."),
     createsOutput("nonTreePixels", "integer",
                   desc = NA),
     createsOutput("rasterToMatch", "RasterLayer",
@@ -136,6 +135,8 @@ doEvent.LandWeb_preamble = function(sim, eventTime, eventType) {
   switch(
     eventType,
     init = {
+      mod$dPath <- asPath(inputPath(sim), 1)
+
       sim <- InitMaps(sim)
       sim <- InitSpecies(sim)
       sim <- InitLandMine(sim)
@@ -156,21 +157,8 @@ doEvent.LandWeb_preamble = function(sim, eventTime, eventType) {
 }
 
 InitMaps <- function(sim) {
-  allowedStudyAreaNames <- c("ANC", "AlPac", "BlueRidge", "DMI", "Edson", "FMANWT", "FMU",
-                             "LandWeb", "LP", "Manning", "MillarWestern", "Mistik", "MPR",
-                             "provAB", "provMB", "provNWT", "provSK", "random",
-                             "SprayLake", "Sundre", "Tolko", "Vanderwell", "WeyCo", "WestFraser")
-  if (!grepl(paste(allowedStudyAreaNames, collapse = "|"), P(sim)$.studyAreaName)) {
-    stop(".studyAreaName, ", P(sim)$.studyAreaName, ", does not contain valid study area name.\n",
-         "Study area name must be one of:\n", paste(allowedStudyAreaNames, collapse = ", "), ".")
-  }
-
-  ## NOTE (2019-11-08): targetCRS needs to be character, not CRS class due to change in data.table
-  targetCRS <- paste("+proj=lcc +lat_1=49 +lat_2=77 +lat_0=0 +lon_0=-95",
-                     "+x_0=0 +y_0=0 +units=m +no_defs +ellps=GRS80 +towgs84=0,0,0")
-
-  ## TODO: use terra
-  opts <- options(reproducible.useTerra = FALSE)
+  ## NOTE needs to be character, not `CRS` class, for downstream use with `data.table`
+  targetCRS <- LandWebUtils::LandWebCRS
 
   if (grepl("SprayLake", P(sim)$.studyAreaName)) {
     ## 2024-09-23 per Dave, use custom lthfc only for Spray Lake + C5 runs;
@@ -183,17 +171,16 @@ InitMaps <- function(sim) {
     # lthfc_url <- "https://drive.google.com/file/d/1wNxOeV1vl05WDp6DsyuyRSbDZOu87N17" ## landweb_ltfc_v8a.shp
     lthfc_url <- "https://drive.google.com/file/d/1R9QLvW_yD482xv_6ZF1yhB32blaDPWjV" ## landweb_ltfc_v8c.shp
   }
+
+  ## keep only the LTHFC column, and recalculate area
   lthfc <- prepInputs(
     url = lthfc_url,
     targetCRS = targetCRS,
     overwrite = TRUE,
     filename2 = NULL
-  )
-  options(opts)
-
-  ## keep only the LTHFC column
-  lthfc <- lthfc[, "LTHFC"]
-  lthfc$area <- sf::st_area(lthfc)
+  ) |>
+    dplyr::select(LTHFC) |>
+    dplyr::mutate(area = sf::st_area(geometry))
 
   ## 2023-09: added additional geoprocessing to LTHFC map to remove polygon fragments
   if (isTRUE(P(sim)$mergeSlivers)) {
@@ -207,7 +194,7 @@ InitMaps <- function(sim) {
     lthfc_merged <- lapply(unique(nearest), function(i) {
       slivers[nearest == i, ] |>
         sf::st_union() |> ## merge multiple slivers if more than one
-        sf::st_union(nonSlivers[i, ]) |> ## merge with non-slivers (i.e., update geametries)
+        sf::st_union(nonSlivers[i, ]) |> ## merge with non-slivers (i.e., update geometries)
         cbind(sf::st_drop_geometry(nonSlivers[i, ]))
     }) |>
       do.call(rbind, args = _) |>
@@ -217,242 +204,97 @@ InitMaps <- function(sim) {
       rbind(subset(lthfc, LTHFC == 0)) ## add back the zero LTHFC polygons
     lthfc_merged$area <- sf::st_area(lthfc_merged) ## recalculate areas
 
-    lthfc_clean <- LandWebUtils::polygonClean(as_Spatial(lthfc_merged), type = "LandWeb", minFRI = P(sim)$minFRI)
+    lthfc_clean <- LandWebUtils::polygonClean(lthfc_merged, type = "LandWeb", minFRI = P(sim)$minFRI)
   } else {
-    lthfc_clean <- LandWebUtils::polygonClean(as_Spatial(lthfc), type = "LandWeb", minFRI = P(sim)$minFRI)
+    lthfc_clean <- LandWebUtils::polygonClean(lthfc, type = "LandWeb", minFRI = P(sim)$minFRI)
   }
+
+  ## LandWeb study area provides LTHFC (aka "fire return interval") map:
+  ## 1. we want the actual LTHFC map (lthfc_clean);
+  ## 2. we want the outer boundary of the entire study area (landweb_area).
 
   sf::st_as_sf(lthfc_clean) |>
     sf::write_sf(file.path(outputPath(sim), "landweb_lthfc_clean.shp"))
 
-  ## LandWeb study area provides LTHFC (aka "fire return interval") map:
-  ## 1. we want the actual LTHFC map;
-  ## 2. we want the boundary (outline) of the entire study area.
-  ml <- mapAdd(lthfc_clean, layerName = "LTHFC", overwrite = TRUE,
-               columnNameForLabels = "fireReturnInterval", isStudyArea = FALSE, filename2 = NULL)
-
-  ## use outer perimeter as LandWeb study area (don't need the internal polygon boundaries)
   landweb_area <- sf::st_as_sf(lthfc_clean) |>
     sf::st_union() |>
     sf::st_make_valid() |>
-    nngeo::st_remove_holes() |>
-    sf::as_Spatial()
-  landweb_area$Name <- "LandWeb Study Area"
-
-  ml <- mapAdd(landweb_area, map = ml, layerName = "LandWeb Study Area",
-               targetCRS = targetCRS, overwrite = TRUE,
-               columnNameForLabels = "Name", isStudyArea = TRUE, filename2 = NULL)
-
-  ## Updated FMA boundaries
-  ml <- mapAdd(map = ml, layerName = "FMA Boundaries Updated",
-               useSAcrs = TRUE, poly = TRUE, overwrite = TRUE,
-               url = "https://drive.google.com/file/d/1yCbq8rcRXCfUKHJGg-Fzlnrjl48LJfCO", ## 2024-08 added C5
-               columnNameForLabels = "Name", isStudyArea = FALSE, filename2 = NULL)
-
-  ## AB FMU boundaries
-  ## TODO: only add if studyAreaReporting in AB
-  ml <- mapAdd(map = ml, layerName = "AB FMU Boundaries",
-               useSAcrs = TRUE, poly = TRUE, overwrite = TRUE,
-               url = "https://drive.google.com/open?id=1OH3b5pwjumm1ToytDBDI6jthVe2pp0tS", # 2020-06
-               columnNameForLabels = "FMU_NAME", isStudyArea = FALSE, filename2 = NULL)
-
-  ### Rename some polygons:
-  ###   - DMI is now Mercer (MPR)
-  ids <- grep("Daishowa-Marubeni International Ltd", ml[["FMA Boundaries Updated"]][["Name"]])
-  newNames <- c("Mercer Peace River Pulp Ltd. (East)", "Mercer Peace River Pulp Ltd. (West)")
-  ml[["FMA Boundaries Updated"]][["Name"]][ids] <- newNames
-  ml[["FMA Boundaries Updated"]][["shinyLabel"]][ids] <- newNames
-
-  ## National ecozones
-  ml <- mapAdd(map = ml, layerName = "National Ecozones",
-               useSAcrs = TRUE, poly = TRUE, overwrite = TRUE,
-               url = "https://sis.agr.gc.ca/cansis/nsdb/ecostrat/zone/ecozone_shp.zip",
-               columnNameForLabels = "REGION_NAM", isStudyArea = FALSE, filename2 = NULL)
-  ml[["National Ecozones"]][["Name"]] <- tools::toTitleCase(tolower(ml[["National Ecozones"]][["ZONE_NAME"]]))
-
-  ## National ecoregions
-  ml <- mapAdd(map = ml, layerName = "National Ecoregions",
-               useSAcrs = TRUE, poly = TRUE, overwrite = TRUE,
-               url = "https://sis.agr.gc.ca/cansis/nsdb/ecostrat/region/ecoregion_shp.zip",
-               columnNameForLabels = "REGION_NAM", isStudyArea = FALSE, filename2 = NULL)
-  ml[["National Ecoregions"]][["Name"]] <- ml[["National Ecoregions"]][["REGION_NAM"]]
-
-  ## Alberta Natural Subregions (ANSRs)
-  ## TODO: only add if studyAreaReporting in AB
-  ml <- mapAdd(map = ml, layerName = "Alberta Natural Subregions",
-               useSAcrs = TRUE, poly = TRUE, overwrite = TRUE,
-               url = "https://drive.google.com/file/d/1hW6zy0CpUBdk-K2IAjzW4INjVl1J4aLJ",
-               columnNameForLabels = "Name", isStudyArea = FALSE, filename2 = NULL)
-
-  ## BC biogeoclimatic zones
-  ## TODO: only add if studyAreaReporting in BC
-  ml <- mapAdd(map = ml, layerName = "BC Biogeoclimatic zones",
-               useSAcrs = TRUE, poly = TRUE, overwrite = TRUE,
-               url = "https://drive.google.com/file/d/1NS15Gd7dHEhvPOy-Ol_LBtf-4Ch6mPnS",
-               columnNameForLabels = "ZONE_NAME", isStudyArea = FALSE, filename2 = NULL)
-  ml[["BC Biogeoclimatic zones"]][["Name"]] <- ml[["BC Biogeoclimatic zones"]][["ZONE_NAME"]]
-
-  ## NWT ecoregions
-  ## TODO: only add if studyAreaReporting in NWT
-  ml <- mapAdd(map = ml, layerName = "Northwest Territories Ecoregions",
-               useSAcrs = TRUE, poly = TRUE, overwrite = TRUE,
-               url = "https://drive.google.com/file/d/1iRAQfARkmS6-XVHFnTkB-iltzMNPAczC",
-               columnNameForLabels = "ECO4_NAM_1", isStudyArea = FALSE, filename2 = NULL)
-  ml[["Northwest Territories Ecoregions"]][["Name"]] <- ml[["Northwest Territories Ecoregions"]][["ECO4_NAM_1"]]
-
-  ## Caribou Ranges
-  # ml <- mapAdd(map = ml, layerName = "Boreal Caribou Ranges",
-  #              useSAcrs = TRUE, poly = TRUE, overwrite = TRUE,
-  #              url = "https://drive.google.com/file/d/1PYLou8J1wcrme7Z2tx1wtA4GvaWnU1Jy",
-  #              columnNameForLabels = "Name", isStudyArea = FALSE, filename2 = NULL)
-  # ml <- mapAdd(map = ml, layerName = "BC Caribou Ranges",
-  #              useSAcrs = TRUE, poly = TRUE, overwrite = TRUE,
-  #              url = "https://drive.google.com/file/d/1uqEVID74y4enPMee2w3axBcR1agw_kMT",
-  #              columnNameForLabels = "HERD_NAME", isStudyArea = FALSE, filename2 = NULL) ## untested
-  # ml <- mapAdd(map = ml, layerName = "AB Caribou Ranges",
-  #              useSAcrs = TRUE, poly = TRUE, overwrite = TRUE,
-  #              url = "https://extranet.gov.ab.ca/srd/geodiscover/srd_pub/LAT/FWDSensitivity/CaribouRange.zip",
-  #              columnNameForLabels = "SUBUNIT", isStudyArea = FALSE, filename2 = NULL) ## untested
-  ml <- mapAdd(map = ml, layerName = "SK Caribou Ranges",
-               useSAcrs = TRUE, poly = TRUE, overwrite = TRUE,
-               url = "https://drive.google.com/file/d/1LiizDyXOfJPQ76FQM8SQ1_kYG9hJUDdK",
-               columnNameForLabels = "RGEUNIT", isStudyArea = FALSE, filename2 = NULL)
-  ml[["SK Caribou Ranges"]][["Name"]] <- ml[["SK Caribou Ranges"]][["RGEUNIT"]]
-
-  if (grepl("provMB", P(sim)$.studyAreaName)) {
-    ## TODO: .zipx file; needs 'manual' extract 1st time
-    ml <- mapAdd(map = ml, layerName = "MB Caribou Ranges",
-                 useSAcrs = TRUE, poly = TRUE, overwrite = TRUE,
-                 url = "https://drive.google.com/file/d/1Y_Qi3twoU3fHaNgMzF5QEl1CosGmGyha/",
-                 targetFile = "Boreal_caribou_MUs_MB_2015.shp", alsoExtract = "similar",
-                 columnNameForLabels = "RANGE_NAME", isStudyArea = FALSE, filename2 = NULL)
-    ml[["MB Caribou Ranges"]][["Name"]] <- ml[["MB Caribou Ranges"]][["RANGE_NAME"]]
-  }
-
-  ml <- mapAdd(map = ml, layerName = "LandWeb Caribou Ranges",
-               useSAcrs = TRUE, poly = TRUE, overwrite = TRUE,
-               url = "https://drive.google.com/file/d/1mrsxIJfdP-XxEZkO6vs2J6lYbGry67A2",
-               columnNameForLabels = "Name", isStudyArea = FALSE, filename2 = NULL)
-
-  ## Provincial Boundaries
-  ml <- mapAdd(sim$canProvs, map = ml, layerName = "Provincial Boundaries",
-               useSAcrs = TRUE, poly = TRUE, overwrite = TRUE,
-               columnNameForLabels = "NAME_1", isStudyArea = FALSE, filename2 = NULL)
-
-  ################################################################################
-  ## COMPANY-SPECIFIC STUDY AREAS -- be sure to update allowedStudyAreaNames above !!
-  dataDir <- checkPath(file.path(inputPath(sim), "studyAreas"), create = TRUE)
-
-  if (grepl("ANC", P(sim)$.studyAreaName)) {
-    ml <- fmaANC(ml, P(sim)$.studyAreaName, dataDir, sim$canProvs, P(sim)$bufferDist, asStudyArea = TRUE)
-  } else if (grepl("AlPac", P(sim)$.studyAreaName)) {
-    ml <- fmaAlpac(ml, P(sim)$.studyAreaName, dataDir, sim$canProvs, P(sim)$bufferDist, asStudyArea = TRUE)
-  } else if (grepl("DMI|MPR", P(sim)$.studyAreaName)) {
-    ml <- fmaDMI(ml, P(sim)$.studyAreaName, dataDir, sim$canProvs, P(sim)$bufferDist, asStudyArea = TRUE)
-  } else if (grepl("Edson", P(sim)$.studyAreaName)) {
-    ml <- fmaEdsonFP(ml, P(sim)$.studyAreaName, dataDir, sim$canProvs, P(sim)$bufferDist, asStudyArea = TRUE)
-  } else if (grepl("FMANWT", P(sim)$.studyAreaName)) {
-    ml <- fmaNWT(ml, P(sim)$.studyAreaName, dataDir, sim$canProvs, P(sim)$bufferDist, asStudyArea = TRUE)
-  } else if (grepl("FMU", P(sim)$.studyAreaName)) {
-    ml <- fmu(ml, P(sim)$.studyAreaName, dataDir, sim$canProvs, P(sim)$bufferDist, asStudyArea = TRUE)
-  } else if (grepl("LandWeb", P(sim)$.studyAreaName)) {
-    ml <- allLandWeb(ml, P(sim)$.studyAreaName, dataDir, sim$canProvs, P(sim)$bufferDist, asStudyArea = TRUE)
-  } else if (grepl("LP", P(sim)$.studyAreaName)) {
-    ml <- fmaLP(ml, P(sim)$.studyAreaName, dataDir, sim$canProvs, P(sim)$bufferDist, asStudyArea = TRUE)
-  } else if (grepl("Manning", P(sim)$.studyAreaName)) {
-    ml <- fmaManning(ml, P(sim)$.studyAreaName, dataDir, sim$canProvs, P(sim)$bufferDist, asStudyArea = TRUE)
-  } else if (grepl("MillarWestern", P(sim)$.studyAreaName)) {
-    ml <- fmaMillarWestern(ml, P(sim)$.studyAreaName, dataDir, sim$canProvs, P(sim)$bufferDist, asStudyArea = TRUE)
-  } else if (grepl("Mistik", P(sim)$.studyAreaName)) {
-    ml <- fmaMistik(ml, P(sim)$.studyAreaName, dataDir, sim$canProvs, P(sim)$bufferDist, asStudyArea = TRUE)
-  } else if (grepl("SprayLake", P(sim)$.studyAreaName)) {
-    ml <- fmaSprayLake(ml, P(sim)$.studyAreaName, dataDir, sim$canProvs, P(sim)$bufferDist, asStudyArea = TRUE)
-  } else if (grepl("Sundre", P(sim)$.studyAreaName)) {
-    ml <- fmaSundreFP(ml, P(sim)$.studyAreaName, dataDir, sim$canProvs, P(sim)$bufferDist, asStudyArea = TRUE)
-  } else if (grepl("Tolko|tolko", P(sim)$.studyAreaName)) {
-    ml <- fmaTolko(ml, P(sim)$.studyAreaName, dataDir, sim$canProvs, P(sim)$bufferDist, asStudyArea = TRUE)
-  } else if (grepl("Vanderwell", P(sim)$.studyAreaName)) {
-    ml <- fmaVanderwell(ml, P(sim)$.studyAreaName, dataDir, sim$canProvs, P(sim)$bufferDist, asStudyArea = TRUE)
-  } else if (grepl("WeyCo", P(sim)$.studyAreaName)) {
-    ml <- fmaWeyCo(ml, P(sim)$.studyAreaName, dataDir, sim$canProvs, P(sim)$bufferDist, asStudyArea = TRUE)
-  } else if (grepl("WestFraser|BlueRidge", P(sim)$.studyAreaName)) {
-    ml <- fmaWestFraser(ml, P(sim)$.studyAreaName, dataDir, sim$canProvs, P(sim)$bufferDist, asStudyArea = TRUE)
-  } else if (grepl("provAB", P(sim)$.studyAreaName)) {
-    ml <- provAB(ml, P(sim)$.studyAreaName, dataDir, sim$canProvs, P(sim)$bufferDist, asStudyArea = TRUE)
-  } else if (grepl("provMB", P(sim)$.studyAreaName)) {
-    ml <- provMB(ml, P(sim)$.studyAreaName, dataDir, sim$canProvs, P(sim)$bufferDist, asStudyArea = TRUE)
-  } else if (grepl("provNWT", P(sim)$.studyAreaName)) {
-    ml <- provNWT(ml, P(sim)$.studyAreaName, dataDir, sim$canProvs, P(sim)$bufferDist, asStudyArea = TRUE)
-  } else if (grepl("provSK", P(sim)$.studyAreaName)) {
-    ml <- provSK(ml, P(sim)$.studyAreaName, dataDir, sim$canProvs, P(sim)$bufferDist, asStudyArea = TRUE)
-  } else if (grepl("random", P(sim)$.studyAreaName)) {
-    ## use a small random study area
-    message(crayon::red("Using random study area."))
-    ranSeed <- .Random.seed
-    set.seed(867)
-    rnd <- SpaDES.tools::randomPolygon(ml[["Alberta Natural Subregions"]], area = 4e5) ## random area in Central-East AB
-    set.seed(ranSeed)
-
-    if (FALSE) {
-      sp::plot(spTransform(sim$canProvs[sim$canProvs$NAME_1 == "Alberta", ], targetCRS))
-      sp::plot(rnd, col = "darkgrey", add = TRUE)
-    }
-
-    ml <- mapAdd(rnd, ml, layerName = "Random Study Area", useSAcrs = TRUE, poly = TRUE,
-                 analysisGroupReportingPolygon = "Random Study Area", isStudyArea = TRUE,
-                 columnNameForLabels = "Name", filename2 = NULL)
-
-    rnd_sr <- postProcess(ml[["LandWeb Study Area"]],
-                          studyArea = amc::outerBuffer(rnd, P(sim)$bufferDist),
-                          useSAcrs = TRUE, filename2 = NULL)
-    ml <- mapAdd(rnd_sr, ml, isStudyArea = TRUE, layerName = "Random Study Area SR",
-                 useSAcrs = TRUE, poly = TRUE, studyArea = NULL, # don't crop/mask to studyArea(ml, 2)
-                 columnNameForLabels = "NSN", filename2 = NULL)
-  }
+    nngeo::st_remove_holes()
 
   ## study areas ---------------------------------------------------------------------------------
-  sim$studyArea <- studyArea(ml, 3)           ## buffered study area
-  #sim$studyAreaLarge <- studyArea(ml, 1)     ## entire LandWeb area (too big for fitting etc. for now)
-  sim$studyAreaLarge <- amc::outerBuffer(studyArea(ml, 2), P(sim)$bufferDistLarge) ## further buffered study area
-  sim$studyAreaReporting <- studyArea(ml, 2)  ## reporting area (e.g., FMA)
+  ## studyAreaReporting is the study area used for reporting (e.g., FMA);
+  ## studyArea buffered to reduce edge effects in simulation;
+  ## studyAreaLarge is further buffered for model parameter calibration.
+  sim$studyAreaReporting <- LandWebUtils::prepStudyArea(
+    name = P(sim)$.studyAreaName,
+    destinationPath = mod$dPath,
+    targetCRS = LandWebUtils::LandWebCRS
+  )
+  sim$studyArea <- spatialutils::outerBuffer(sim$studyAreaReporting, P(sim)$bufferDist)
+  sim$studyAreaLarge <- spatialutils::outerBuffer(sim$studyAreaReporting, P(sim)$bufferDistLarge)
 
-  ## LCC 2005 / raster to match ------------------------------------------------------------------
-  LCC2005large <- prepInputsLCC(year = 2005, studyArea = sim$studyAreaLarge, destinationPath = Paths$inputPath)
-  if (P(sim)$pixelSize != 250) {
-    stopifnot(P(sim)$pixelSize %in% c(125, 50, 25))
-    LCC2005large <- Cache(raster::disaggregate, x = LCC2005large,
-                          fact = as.integer(250 / P(sim)$pixelSize))
+  ## save study area maps to file
+  studyAreaDir <- file.path(inputPath(sim), "studyAreas") |> fs::dir_create()
+  sf::st_write(
+    obj = sim$studyAreaReporting,
+    dsn = file.path(studyAreaDir, glue::glue("{P(sim)$.studyAreaName}.shp")),
+    append = FALSE
+  )
+
+  ## LCC / rasterToMatch -------------------------------------------------------------------------
+  LCClarge <- LandR::prepInputs_SCANFI_LCC_FAO( ## TODO: prepInputs fails to unzip
+    year = 2020,
+    destinationPath = mod$dPath,
+    cropTo = sim$studyAreaLarge,
+    maskTo = sim$studyAreaLarge
+  ) |>
+    Cache()
+
+  if (P(sim)$pixelSize != 30) {
+    stopifnot(P(sim)$pixelSize %in% c(240, 120, 90))
+    LCClarge <- terra::aggregate(LCClarge, fact = as.integer(P(sim)$pixelSize / 30), fun = "modal")
   }
-  LCC2005large[] <- as.integer(LCC2005large[])
+  LCClarge <- terra::as.int(LCClarge)
 
-  ml <- mapAdd(LCC2005large, layerName = "LCC2005large", map = ml, filename2 = NULL, leaflet = FALSE,
-               isRasterToMatch = TRUE, method = "ngb")
-  ## TODO: should be rasterToMatch, but not getting studyAreaLarge
-  ml[[ml@metadata[ml@metadata$rasterToMatch == 1, ]$layerName]] <- LCC2005large ## workaround
+  sim$rasterToMatch <- terra::crop(LCClarge, terra::vect(sim$studyArea), mask = TRUE)
+  sim$rasterToMatchLarge <- LCClarge
+  sim$rasterToMatchReporting <- terra::crop(LCClarge, terra::vect(sim$studyAreaReporting), mask = TRUE)
 
-  sim$rasterToMatch <- postProcess(rasterToMatch(ml), studyArea = sim$studyArea, filename2 = NULL)
-  sim$rasterToMatchLarge <- LCC2005large
-  sim$rasterToMatchReporting <- postProcess(rasterToMatch(ml), studyArea = sim$studyAreaReporting, filename2 = NULL)
+  if (FALSE) {
+    terra::plot(sim$rasterToMatchReporting)
+
+    terra::plot(sim$rasterToMatch)
+    terra::plot(terra::vect(sim$studyAreaReporting), add = TRUE)
+
+    terra::plot(sim$rasterToMatchLarge)
+    terra::plot(terra::vect(sim$studyArea), add = TRUE)
+    terra::plot(terra::vect(sim$studyAreaReporting), add = TRUE)
+  }
 
   ## Current Conditions --------------------------------------------------------------------------
 
+  browser() ## TODO: need CC maps at 30 m resolution to match SCANFI -- in progress (Heather)
+
   ## Manitoba uses current conditions layers (2016) which cover the province;
   ## otherwise, use the original CC layers
-  if (grepl("provMB", P(sim)$.studyAreaName)) {
+  if (LandWebUtils::studyAreaIn(P(sim)$.studyAreaName, "MB")) {
     ccURL <- "https://drive.google.com/file/d/1KTqNBntNrEsDL6jk-5bchsBOcraDqNHe/"
     fname_age <- "MB_Age2016_NRV.tif"
-    LandTypeFileCC <- file.path(Paths$inputPath, "MB_Landtype2016_NRV.tif")
+    LandTypeFileCC <- file.path(mod$dPath, "MB_Landtype2016_NRV.tif")
   } else {
     ccURL <- "https://drive.google.com/file/d/1JnKeXrw0U9LmrZpixCDooIm62qiv4_G1"
     fname_age <- "Age1.tif"
-    LandTypeFileCC <- file.path(Paths$inputPath, "LandType1.tif")
+    LandTypeFileCC <- file.path(mod$dPath, "LandType1.tif")
   }
 
-  sim$LandTypeCC <- Cache(prepInputs, LandTypeFileCC,
-                          studyArea = sim$studyAreaLarge,
-                          url = ccURL, method = "ngb",
-                          rasterToMatch = rasterToMatch(ml),
-                          filename2 = NULL)
+  sim$LandTypeCC <- prepInputs(
+    LandTypeFileCC,
+    url = ccURL,
+    method = "near",
+    to = sim$rasterToMatchLarge,
+    filename2 = NULL
+  ) |>
+    Cache()
   sim$LandTypeCC[] <- as.integer(sim$LandTypeCC[])
 
   ## Non-Tree pixels -----------------------------------------------------------------------------
@@ -467,28 +309,45 @@ InitMaps <- function(sim) {
   noDataPixelsCC <- LandTypeCCNA | (sim$LandTypeCC[] == 5)
   treePixelsCC <- which(treePixelsCCTF)
 
-  uniqueLCCClasses <- na.omit(unique(ml$LCC2005large[]))
+  ## LCC map codes:
+  ##  20 = water
+  ##  30 = snow_ice, rock_rubble, exposed_barren_land
+  ##  40 = bryoids
+  ##  50 = shrubs
+  ##  80 = wetland
+  ##  81 = wetland-treed
+  ##  100 = herbs
+  ##  210 = coniferous
+  ##  220 = broadleaf
+  ##  230 = mixedwood
+  ##  240 = recently disturbed
+  uniqueLCCClasses <- na.omit(unique(LCClarge[]))
   nontreeClassesLCC <- sort(uniqueLCCClasses[!uniqueLCCClasses %in% P(sim)$treeClassesLCC])
 
-  ## for each LCC2005 + CC class combo, define which LCC2005 code should be used
-  ## remember, setting a pixel to NA will omit it entirely (i.e., non-vegetated)
-  remapDT <- as.data.table(expand.grid(LCC2005 = c(NA_integer_, sort(uniqueLCCClasses)),
-                                       CC = c(NA_integer_, 0:5)))
-  remapDT[LCC2005 == 0, newLCC := NA_integer_]
-  remapDT[is.na(CC) | CC == 5, newLCC := LCC2005]
+  ## for each LCC + CC class combo, define which LCC code should be used:
+  ## setting a pixel to NA will omit it entirely (i.e., non-vegetated)
+  remapDT <- expand.grid(
+    LCC = c(NA_integer_, sort(uniqueLCCClasses)),
+    CC = c(NA_integer_, 0:5)
+  ) |>
+    as.data.table() ## TODO: confirm conversions
+  remapDT[LCC %in% c(0, 20, 30), newLCC := NA_integer_]
+  remapDT[is.na(CC) | CC == 5, newLCC := LCC]
   remapDT[CC == 4, newLCC := NA_integer_]
-  remapDT[CC %in% 0:3, newLCC := LCC2005]
-  remapDT[is.na(LCC2005) & CC %in% 0:2, newLCC := 99] ## reclassification needed
-  remapDT[LCC2005 %in% P(sim)$treeClassesToReplace, newLCC := 99] ## reclassification needed
+  remapDT[CC %in% 0:3, newLCC := LCC]
+  remapDT[is.na(LCC) & CC %in% 0:2, newLCC := 99] ## reclassification needed
+  remapDT[LCC %in% P(sim)$treeClassesToReplace, newLCC := 99] ## reclassification needed
 
   message("Overlaying land cover maps...")
-  LCClarge <- Cache(overlayLCCs,
-                    LCCs = list(CC = sim$LandTypeCC, LCC2005 = ml$LCC2005large),
-                    forestedList = list(CC = 0, LCC2005 = P(sim)$treeClassesLCC),
-                    outputLayer = "LCC2005",
-                    remapTable = remapDT,
-                    classesToReplace = c(P(sim)$treeClassesToReplace, 99),
-                    availableERC_by_Sp = NULL)
+  LCClarge <- overlayLCCs(
+    LCCs = list(CC = sim$LandTypeCC, LCC = LCClarge),
+    forestedList = list(CC = 0, LCC = P(sim)$treeClassesLCC),
+    outputLayer = "LCC",
+    remapTable = remapDT,
+    classesToReplace = c(P(sim)$treeClassesToReplace, 99),
+    availableERC_by_Sp = NULL
+  ) |>
+    Cache()
   message("...done.")
 
   treePixelsLCC <- which(LCClarge[] %in% P(sim)$treeClassesLCC)
@@ -497,57 +356,55 @@ InitMaps <- function(sim) {
   sim$nonTreePixels <- nonTreePixels
 
   ## Update rasterToMatch layer with all trees
-  ml[[ml@metadata[ml@metadata$rasterToMatch == 1, ]$layerName]][sim$nonTreePixels] <- NA
-  sim$rasterToMatch <- postProcess(rasterToMatch(ml), studyArea = sim$studyArea, filename2 = NULL)
+  sim$rasterToMatchLarge[sim$nonTreePixels] <- NA
+  sim$rasterToMatch <- postProcess(sim$rasterToMatchLarge, to = sim$studyArea, filename2 = NULL)
 
   ## Age from Current Conditions -----------------------------------------------------------------
-  TSFLayerName <- "CC TSF"
-  ml <- mapAdd(map = ml, url = ccURL, layerName = TSFLayerName, CC = TRUE,
-               tsf = file.path(Paths$inputPath, fname_age), analysisGroup1 = "CC",
-               targetFile = fname_age, filename2 = NULL,
-               useCache = TRUE, isRasterToMatch = FALSE,
-               alsoExtract = "similar", leaflet = FALSE)
-  ml[[TSFLayerName]][] <- as.integer(ml[[TSFLayerName]][])
+  browser() ## TODO: need updated age map
+  CC_TSF <- prepInputs(
+    url = ccURL,
+    targetFile = fname_age,
+    filename2 = NULL,
+    alsoExtract = "similar",
+    to = sim$rasterToMatch
+  ) |>
+    terra::as.int()
 
-  ageCClarge <- Cache(postProcess,
-                      x = raster(file.path(Paths$inputPath, fname_age)),
-                      filename1 = NULL,
-                      filename2 = NULL,
-                      studyArea = sim$studyAreaLarge,
-                      rasterToMatch = sim$rasterToMatchLarge,
-                      maskWithRTM = TRUE,
-                      method = "bilinear",
-                      datatype = "INT2U",
-                      userTags = c("stable", currentModule(sim)))
+  ageCClarge <- postProcess(
+    x = terra::rast(file.path(mod$dPath, fname_age)),
+    filename1 = NULL,
+    filename2 = NULL,
+    to = sim$rasterToMatchLarge,
+    maskWithRTM = TRUE,
+    method = "bilinear",
+    datatype = "INT2U"
+  ) |>
+    Cache(userTags = c("stable", currentModule(sim)))
   ageCClarge[ageCClarge < 0] <- 0
-  ml[[TSFLayerName]] <- as.integer(ageCClarge)
+  CC_TSF <- as.int(ageCClarge)
 
-  ## Age from kNN --------------------------------------------------------------------------------
-  ## see https://open.canada.ca/data/en/dataset/ec9e2659-1c29-4ddb-87a2-6aced147a990
-  standAgeMapURL <- paste0(
-    "https://ftp.maps.canada.ca/pub/nrcan_rncan/Forests_Foret/",
-    "canada-forests-attributes_attributs-forests-canada/2001-attributes_attributs-2001/",
-    "NFI_MODIS250m_2001_kNN_Structure_Stand_Age_v1.tif"
+  ## Age map -------------------------------------------------------------------------------------
+
+  standAgeMap <- prepInputsStandAgeMap(
+    dataSource = "SCANFI",
+    dataYear = 2020, ## TODO: add dataYear param to module?
+    ageFun = "terra::rast",
+    maskWithRTM = TRUE,
+    method = "bilinear",
+    datatype = "INT2U",
+    destinationPath = mod$dPath,
+    writeTo = NULL,
+    firePerimeters = NULL,
+    fireURL = "https://cwfis.cfs.nrcan.gc.ca/downloads/nfdb/fire_poly/current_version/NFDB_poly.zip",
+    fireFun = "terra::vect",
+    fireField = "YEAR",
+    rasterToMatch = sim$rasterToMatchLarge,
+    startTime = NULL
   )
-  standAgeMapFileName <- basename(standAgeMapURL)
 
-  httr::with_config(config = httr::config(ssl_verifypeer = P(sim)$.sslVerify), {
-    standAgeMap <- Cache(prepInputs, #notOlderThan = Sys.time(),
-                         targetFile = standAgeMapFileName,
-                         destinationPath = Paths$inputPath,
-                         url = standAgeMapURL,
-                         fun = "raster::raster",
-                         studyArea = sim$studyAreaLarge,
-                         rasterToMatch = sim$rasterToMatchLarge,
-                         maskWithRTM = TRUE,
-                         method = "bilinear",
-                         datatype = "INT2U",
-                         filename2 = NULL, overwrite = TRUE,
-                         userTags = c("stable", currentModule(sim)))
-  })
-  ml[[TSFLayerName]][noDataPixelsCC] <- standAgeMap[noDataPixelsCC]
-  ml[[TSFLayerName]][sim$nonTreePixels] <- NA
-  attr(ml[[TSFLayerName]], "imputedPixID") <- integer(0) ## TODO: reassess whether overlay counts as imputation
+  CC_TSF[noDataPixelsCC] <- standAgeMap[noDataPixelsCC]
+  CC_TSF[sim$nonTreePixels] <- NA
+  attr(CC_TSF, "imputedPixID") <- integer(0) ## TODO: reassess whether overlay counts as imputation
 
   ## Flammability and Fire Return Interval rasters -----------------------------------------------
 
@@ -555,57 +412,52 @@ InitMaps <- function(sim) {
   #    NAs outside the buffered study & snow/rock/ice area are the only values we want NA
   #    use the LCC flammability map to fill in NA / nodata values
 
-  # No data class is 5 -- these will be filled in by LCC2005 layer
+  ## No data class is 5 -- these will be filled in by LCC layer
   # NA_ids <- which(is.na(sim$LandTypeCC[]) | sim$LandTypeCC[] == 5)
-  # Only class 4 is considered non-flammable
+  ## Only class 4 is considered non-flammable
   rstFlammableCC <- defineFlammable(sim$LandTypeCC, nonFlammClasses = 4L,
                                     mask = NULL, filename2 = NULL)
-  rstFlammableCC <- deratify(rstFlammableCC, complete = TRUE)
 
-  # Only classes 36, 37, 38, 39 is considered non-flammable
-  rstFlammableLCC <- defineFlammable(LCC2005large, nonFlammClasses = 36L:39L,
-                                     mask = NULL, filename2 = NULL)
-  rstFlammableLCC <- deratify(rstFlammableLCC, complete = TRUE)
+  rstFlammableLCC <- defineFlammable(
+    LCClarge,
+    nonFlammClasses = c(20, 30, 40, 80), ## see LCC classes above
+    mask = NULL,
+    filename2 = NULL
+  )
 
   sim$rstFlammable <- rstFlammableCC
   sim$rstFlammable[LandTypeCCNA] <- rstFlammableLCC[LandTypeCCNA]
-  sim$rstFlammable[] <- as.integer(sim$rstFlammable[])
-  sim$rstFlammable <- crop(sim$rstFlammable, sim$rasterToMatch) ## ensure it matches studyArea
+  sim$rstFlammable <- terra::as.int(sim$rstFlammable)
 
   ## fireReturnInterval needs to be masked by rstFlammable
-  rstFireReturnInterval <- fasterize::fasterize(sf::st_as_sf(ml[["LTHFC"]]),
-                                                raster = rasterToMatch(ml),
-                                                field = "fireReturnInterval")
-  rstFireReturnInterval <- crop(rstFireReturnInterval, sim$rasterToMatch) ## ensure it matches studyArea
+  rstFireReturnInterval <- terra::rasterize(
+    x = terra::vect(lthfc_clean),
+    y = sim$rasterToMatch,
+    field = "fireReturnInterval",
+    wopt = list(datatype = "INT1U")
+  ) |>
+    terra::as.int() |>
+    terra::classify(matrix(c(0, NA_integer_), ncol = 2))
 
-  if (!is.integer(rstFireReturnInterval[])) {
-    rstFireReturnInterval[] <- as.integer(rstFireReturnInterval[])
+  if (FALSE) {
+    terra::plot(rstFireReturnInterval)
   }
 
-  ml <- mapAdd(rstFireReturnInterval, layerName = "fireReturnInterval", filename2 = NULL,
-               map = ml, leaflet = FALSE, maskWithRTM = FALSE)
-  ml$fireReturnInterval <- crop(ml$fireReturnInterval, sim$rasterToMatch) ## ensure it matches studyArea
-
-  if (P(sim)$friMultiple != 1) {
-    ml$fireReturnInterval <- as.integer(P(sim)$friMultiple * ml$fireReturnInterval)
-  }
-
-  sim$fireReturnInterval <- ml$fireReturnInterval
+  sim$fireReturnInterval <- rstFireReturnInterval
   sim$LCC <- LCClarge
-  sim[[TSFLayerName]] <- ml[[TSFLayerName]]
-
-  sim$ml <- ml
+  sim$CC_TSF <- CC_TSF
 
   ## some assertions:
   testObjs <- c("studyArea", "studyAreaLarge", "studyAreaReporting",
                 "rasterToMatch", "rasterToMatchLarge", "rasterToMatchReporting",
-                "fireReturnInterval", TSFLayerName)
+                "fireReturnInterval", "CC_TSF")
   lapply(testObjs, function(x) {
-    if (is.null(sim[[x]]))
+    if (is.null(sim[[x]])) {
       stop("LandWeb_preamble: ", paste0("sim$", x, " returned NULL."), call. = FALSE)
+    }
   })
 
-  compareRaster(sim$rasterToMatch, rstFireReturnInterval, sim$rstFlammable)
+  compareGeom(sim$rasterToMatch, rstFireReturnInterval, sim$rstFlammable)
   ## end assertions
 
   return(invisible(sim))
@@ -790,18 +642,4 @@ PlotMaps <- function(sim) {
   }
   Plot(sim$studyAreaReporting, sim$studyArea, sim$studyAreaLarge,
        sim$rasterToMatchReporting, sim$rasterToMatch, sim$rasterToMatchLarge)
-}
-
-.inputObjects <- function(sim) {
-  #cacheTags <- c(currentModule(sim), "function:.inputObjects")
-  mod$dPath <- asPath(getOption("reproducible.destinationPath", dataPath(sim)), 1)
-  message(currentModule(sim), ": using dataPath '", mod$dPath, "'.")
-
-  if (!suppliedElsewhere("canProvs", sim)) {
-    sim$canProvs <- geodata::gadm(country = "CAN", level = 1, path = mod$dPath) %>%
-      sf::st_as_sf() %>%
-      sf::as_Spatial()
-  }
-
-  return(invisible(sim))
 }
