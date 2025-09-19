@@ -118,14 +118,16 @@ defineModule(sim, list(
                                "and should also contain a color for 'Mixed'")),
     createsOutput("sppEquiv", "data.table",
                   desc = "table of species equivalencies. See `LandR::sppEquivalencies_CA`."),
-    createsOutput("studyArea", "SpatialPolygonsDataFrame",
+    createsOutput("studyArea", "sf",
                   desc = "Polygon to use as the simulation study area."),
-    createsOutput("studyAreaLarge", "SpatialPolygonsDataFrame",
+    createsOutput("StudyAreaLandWeb", "sf",
+                  desc = "Polygon boundary of the full LandWeb study area"),
+    createsOutput("studyAreaLarge", "sf",
                   desc = paste("Polygon to use as the parametrisation study area.",
                                "Note that `studyAreaLarge` is only used for parameter estimation, and",
                                "can be larger than the actual study area used for LandR simulations",
                                "(e.g, larger than `studyArea` in LandR `Biomass_core`).")),
-    createsOutput("studyAreaReporting", "SpatialPolygonsDataFrame",
+    createsOutput("studyAreaReporting", "sf",
                   desc = paste("multipolygon (typically smaller/unbuffered than `studyAreaLarge` and `studyArea`",
                                "in LandR `Biomass_core`) to use for plotting/reporting."))
   )
@@ -140,15 +142,6 @@ doEvent.LandWeb_preamble = function(sim, eventTime, eventType) {
       sim <- InitMaps(sim)
       sim <- InitSpecies(sim)
       sim <- InitLandMine(sim)
-
-      if (anyPlotting(P(sim)$.plots)) {
-        if ("screen" %in% P(sim)$.plots) {
-          sim <- scheduleEvent(sim, time(sim) + P(sim)$.plotInterval, "LandWeb_preamble", "plotMaps")
-        }
-      }
-    },
-    plotMaps = {
-      PlotMaps(sim)
     },
     warning(paste("Undefined event type: '", current(sim)[1, "eventType", with = FALSE],
                   "' in module '", current(sim)[1, "moduleName", with = FALSE], "'", sep = ""))
@@ -220,6 +213,8 @@ InitMaps <- function(sim) {
     sf::st_union() |>
     sf::st_make_valid() |>
     nngeo::st_remove_holes()
+
+  sim$StudyAreaLandWeb <- landweb_area
 
   ## study areas ---------------------------------------------------------------------------------
   ## studyAreaReporting is the study area used for reporting (e.g., FMA);
@@ -427,7 +422,8 @@ InitMaps <- function(sim) {
 
   sim$rstFlammable <- rstFlammableCC
   sim$rstFlammable[LandTypeCCNA] <- rstFlammableLCC[LandTypeCCNA]
-  sim$rstFlammable <- terra::as.int(sim$rstFlammable)
+  sim$rstFlammable <- terra::as.int(sim$rstFlammable) |>
+    terra::crop(sim$rasterToMatch) ## ensure it matches studyArea
 
   ## fireReturnInterval needs to be masked by rstFlammable
   rstFireReturnInterval <- terra::rasterize(
@@ -466,31 +462,52 @@ InitMaps <- function(sim) {
 InitSpecies <- function(sim) {
   sppEquiv <- LandR::sppEquivalencies_CA
 
-  sppEquiv[grep("Pin", LandR), `:=`(EN_generic_short = "Pine",
-                                    EN_generic_full = "Pine",
-                                    Leading = "Pine leading")]
+  if (FALSE) {
+    LandR::speciesInStudyArea(sim$studyArea, dataSource = "SCANFI")
 
-  ## Make LandWeb spp equivalencies
-  sppEquiv[, LandWeb := c(Pice_mar = "Pice_mar", Pice_gla = "Pice_gla",
-                          Pinu_con = "Pinu_sp", Pinu_ban = "Pinu_sp",
-                          Popu_tre = "Popu_sp", Betu_pap = "Popu_sp",
-                          Abie_bal = "Abie_sp", Abie_las = "Abie_sp", Abie_sp = "Abie_sp")[LandR]]
-
-  sppEquiv[LandWeb == "Abie_sp", `:=`(EN_generic_full = "Fir",
-                                      EN_generic_short = "Fir",
-                                      Leading = "Fir leading")]
-
-  sppEquiv[LandWeb == "Popu_sp", `:=`(EN_generic_full = "Deciduous",
-                                      EN_generic_short = "Decid",
-                                      Leading = "Deciduous leading")]
-
-  if (grepl("SprayLake", P(sim)$.studyAreaName)) {
-    ## 2024-09-23: add Douglas fir for Spray Lakes + C5 runs
-    sppEquiv[LandR == "Pseu_men", LandWeb := "Pseu_men"]
-    sppEquiv[LandWeb == "Pseu_men",  `:=`(EN_generic_full = "Douglas fir",
-                                          EN_generic_short = "Doug fir",
-                                          Leading = "Doug fir leading")]
+    LandR::speciesInStudyArea(sim$StudyAreaLandWeb, dataSource = "SCANFI")
+    ## $speciesList
+    ## [1] "PICE_MAR"     "PINU_CON_LAT" "PICE_GLA"     "BETU_PAP"     "POPU_TRE"
+    ## [6] "PINU_BAN"     "LARI_LAR"     "POPU_BAL"     "ABIE_LAS"     "PICE_ENG_GLA"
+    ## [11] "TSUG_HET"     "ABIE_BAL"     "PICE_ENG"     "PSEU_MEN_GLA" "PSEU_MEN"
+    ## [16] "THUJ_PLI"     "POPU_GRA"     "LARI_OCC"
   }
+browser()
+  ## Make LandWeb spp equivalencies
+  sppEquiv[, LandWeb := c(
+    ABIE_BAL = "Abie_spp", ABIE_LAS = "Abie_spp",
+    BETU_PAP = "Popu_spp",
+    LARI_LAR = "Lari_spp", LARI_OCC = "Lari_spp",
+    PICE_ENG = "Pice_gla", PICE_ENG_GLA = "Pice_gla", ## TODO: confirm merge with Pice_gla
+    PICE_GLA = "Pice_gla",
+    PICE_MAR = "Pice_mar",
+    PINU_BAN = "Pinu_spp",
+    PINU_CON = "Pinu_spp", PINU_CON_CON = "Pinu_spp", PINU_CON_LAT = "Pinu_spp",
+    POPU_BAL = "Popu_spp", POPU_GRA = "Popu_spp", POPU_TRE = "Popu_spp",
+    PSEU_MEN = "Pseu_men", PSEU_MEN_GLA = "Pseu_men",
+    THUJ_PLI = "Thuj_pli",
+    TSUG_HET = "Tsug_het"
+  )[SCANFI]]
+
+  sppEquiv[LandWeb == "Lari_spp", `:=`(EN_generic_full = "Western Larch & Tamarack",
+                                       EN_generic_short = "Larch & Tamarack",
+                                       Leading = "Larch & Tamarack leading")]
+
+  sppEquiv[LandWeb == "Pice_gla", `:=`(EN_generic_full = "White & Engelmann's Spruce",
+                                       EN_generic_short = "Whi & Eng Spr",
+                                       Leading = "White & Engelmann's Spruce leading")]
+
+  sppEquiv[grep("Pin", LandWeb), `:=`(EN_generic_short = "Pine",
+                                      EN_generic_full = "Pine",
+                                      Leading = "Pine leading")]
+
+  sppEquiv[LandWeb == "Popu_spp", `:=`(EN_generic_full = "Deciduous",
+                                       EN_generic_short = "Decid",
+                                       Leading = "Deciduous leading")]
+
+  sppEquiv[LandWeb == "Pseu_men",  `:=`(EN_generic_full = "Douglas fir",
+                                        EN_generic_short = "Doug fir",
+                                        Leading = "Douglas fir leading")]
 
   sim$sppEquiv <- sppEquiv[!is.na(LandWeb), ]
   sim$sppColorVect <- LandR::sppColors(sim$sppEquiv, "LandWeb", newVals = "Mixed", palette = "Accent")
@@ -498,103 +515,15 @@ InitSpecies <- function(sim) {
   ## species parameter tables
   sim$speciesTable <- LandR::getSpeciesTable(dPath = mod$dPath) ## uses default URL
 
-  ## TODO: don't change params at all in v3;
-  ## maybe restore changes made by LandR::speciesTableUpdate,
-  ## so shadetol to 'defaults' listed below -- except perhaps increase Pinu to 1.5
+  ## TODO: restore changes made by LandR::speciesTableUpdate,
+  ## so shadetol to 'defaults' listed below -- except perhaps increase Pinu to 1.5 or 2
   speciesParams <- list(
-    growthcurve = list(Abie_sp = 0, Pice_gla = 1, Pice_mar = 1, Pinu_sp = 0, Popu_sp = 0),
-    mortalityshape = list(Abie_sp = 15L, Pice_gla = 15L, Pice_mar = 15L, Pinu_sp = 15L, Popu_sp = 25L),
-    resproutage_min = list(Popu_sp = 25L), # default 10L
-    # resproutprob = list(Popu_sp = 0.1), # default 0.5
-    shadetolerance = list(Abie_sp = 3, Pice_gla = 2, Pice_mar = 3, Pinu_sp = 1, Popu_sp = 1) # defaults 4, 3, 4, 1, 1
-  )
-
-  if (grepl("SprayLake", P(sim)$.studyAreaName)) {
-    ## 2024-09-23: add Douglas fir for Spray Lakes + C5 runs
-    speciesParams <- modifyList(speciesParams, list(
-      growthcurve = list(Pseu_men = 1), ## default 1
-      mortalityshape = list(Pseu_men = 15L), ## default 15L
-      shadetolerance = list(Pseu_men = 3) ## default 3
-    ))
-  }
-
-  ## seed dispersal (see LandWeb#96, LandWeb#112)
-  stopifnot(P(sim)$dispersalType %in% c("default", "aspen", "high", "none"))
-
-  if (isTRUE(P(sim)$forceResprout)) {
-    speciesParams <- append(speciesParams, list(
-      postfireregen = list(Abie_sp = "resprout", Pice_gla = "resprout", Pice_mar = "resprout",
-                           Pinu_sp = "resprout", Popu_sp = "resprout"),
-      resproutage_max = list(Abie_sp = 400L, Pice_gla = 400L, Pice_mar = 400L, Pinu_sp = 400L, Popu_sp = 400L),
-      resproutage_min = list(Abie_sp = 0L, Pice_gla = 0L, Pice_mar = 0L, Pinu_sp = 0L, Popu_sp = 0L),
-      resproutprob = list(Abie_sp = 1.0, Pice_gla = 1.0, Pice_mar = 1.0, Pinu_sp = 1.0, Popu_sp = 1.0)
-    ))
-
-    if (grepl("SprayLake", P(sim)$.studyAreaName)) {
-      ## 2024-09-23: add Douglas fir for Spray Lakes + C5 runs
-      speciesParams <- modifyList(speciesParams, list(
-        postfireregen = list(Pseu_men = "resprout"),
-        resproutage_max = list(Pseu_men = 400L),
-        resproutage_min = list(Pseu_men = 0L),
-        resproutprob = list(Pseu_men = 1.0)
-      ))
-    }
-  }
-
-  speciesParams <- append(speciesParams, switch(
-    P(sim)$dispersalType,
-    aspen = list(
-      seeddistance_eff = list(Abie_sp = 1L, Pice_gla = 1L, Pice_mar = 1L, Pinu_sp = 1L, Popu_sp = 100L),
-      seeddistance_max = list(Abie_sp = 125L, Pice_gla = 125L, Pice_mar = 125L, Pinu_sp = 125L, Popu_sp = 235L)
-    ),
-    high = list(
-      seeddistance_eff = list(Abie_sp = 250L, Pice_gla = 100L, Pice_mar = 320L, Pinu_sp = 300L, Popu_sp = 500L),
-      seeddistance_max = list(Abie_sp = 1250L, Pice_gla = 1250L, Pice_mar = 1250L, Pinu_sp = 3000L, Popu_sp = 3000L)
-    ),
-    none = list(
-      seeddistance_eff = list(Abie_sp = 25L, Pice_gla = 100L, Pice_mar = 80L, Pinu_sp = 30L, Popu_sp = 200L), ## default but disabled downstream
-      seeddistance_max = list(Abie_sp = 160L, Pice_gla = 303L, Pice_mar = 200L, Pinu_sp = 100L, Popu_sp = 2000L) ## default but disabled downstream
-    ),
-    default = list(
-      seeddistance_eff = list(Abie_sp = 25L, Pice_gla = 100L, Pice_mar = 80L, Pinu_sp = 30L, Popu_sp = 200L),
-      seeddistance_max = list(Abie_sp = 160L, Pice_gla = 303L, Pice_mar = 200L, Pinu_sp = 100L, Popu_sp = 2000L)
+    # resproutage_min = list(Popu_spp = 25L), # default 10L
+    shadetolerance = list(
+      ## defaults: 4, 3, 4, 1, 1, 3
+      Abie_spp = 3, Pice_gla = 2, Pice_mar = 3, Pinu_spp = 1, Popu_spp = 1, Pseu_men = 3
     )
-  ))
-
-  if (grepl("SprayLake", P(sim)$.studyAreaName)) {
-    ## 2024-09-23: add Douglas fir for Spray Lakes + C5 runs
-    speciesParams <- modifyList(speciesParams, switch(
-      P(sim)$dispersalType,
-      aspen = list(
-        seeddistance_eff = list(Pseu_men = 0L),
-        seeddistance_max = list(Pseu_men = 125L)
-      ),
-      high = list(
-        seeddistance_eff = list(Pseu_men = 300L),
-        seeddistance_max = list(Pseu_men = 1250L)
-      ),
-      none = list(
-        seeddistance_eff = list(Pseu_men = 100L), ## default but disabled downstream
-        seeddistance_max = list(Pseu_men = 500L) ## default but disabled downstream
-      ),
-      default = list(
-        seeddistance_eff = list(Pseu_men = 100L),
-        seeddistance_max = list(Pseu_men = 500L)
-      )
-    ))
-  }
-
-  # if (grepl("SprayLake", P(sim)$.studyAreaName)) {
-  #   message(crayon::red("Fir shade tolerance lowered below default (3). Using value 2."))
-  #   message(crayon::red("Spruce shade tolerance raised above default (2, 3). Using values 3, 4."))
-  #   speciesParams <- append(speciesParams, list(
-  #     shadetolerance = list(
-  #       Abie_sp = 2,
-  #       Pice_gla = 3,
-  #       Pice_mar = 4
-  #     )
-  #   ))
-  # }
+  )
 
   sim$speciesParams <- speciesParams
 
@@ -602,22 +531,25 @@ InitSpecies <- function(sim) {
 }
 
 InitLandMine <- function(sim) {
-  stopifnot(P(sim)$ROStype %in% c("default", "burny", "equal", "log"))
+  stopifnot(P(sim)$ROStype %in% c("default", "burny"))
 
+  ## ROS classes and values from Table 3.2 of Andison 1996
+  ## - omitting 'water', 'non-productive brush', and 'non-productive black spruce' classes;
+  ## - typo in Andison 1996: 'young mixed wood = 6' is really 'young hardwood = 6'.
   LandMineROStable <- data.table::rbindlist(list(
-    list("mature", "decid", 9L),
-    list("immature_young", "decid", 6L),
+    list("immature_young", "decid", 6L), ## aka hardwood
+    list("mature", "decid", 9L), ## aka hardwood
     list("immature_young", "mixed", 12L),
-    list("mature", "mixed", 17L),
     list("immature", "pine", 14L),
+    list("mature", "mixed", 17L),
+    list("immature_young", "softwood", 18L),
+    list("immature_young", "spruce", 20L),
     list("mature", "pine", 21L),
     list("young", "pine", 22L),
-    list("immature_young", "softwood", 18L),
     list("mature", "softwood", 27L),
-    list("immature_young", "spruce", 20L),
     list("mature", "spruce", 30L)
-  ))
-  data.table::setnames(LandMineROStable, old = 1:3, new = c("age", "leading", "ros"))
+  )) |>
+    data.table::setnames(old = 1:3, new = c("age", "leading", "ros"))
 
   if (P(sim)$ROStype == "equal") {
     LandMineROStable$ros <- 1L
@@ -628,18 +560,4 @@ InitLandMine <- function(sim) {
   sim$ROSTable <- LandMineROStable
 
   return(invisible(sim))
-}
-
-PlotMaps <- function(sim) {
-  if (isFALSE(quickPlot::isRstudioServer())) {
-    lapply(dev.list(), function(x) {
-      try(quickPlot::clearPlot(force = TRUE))
-      try(dev.off())
-    })
-    quickPlot::dev(2, width = 18, height = 10)
-    grid::grid.rect(0.90, 0.03, width = 0.2, height = 0.06, gp = gpar(fill = "white", col = "white"))
-    grid::grid.text(label = P(sim)$.studyAreaName, x = 0.90, y = 0.03)
-  }
-  Plot(sim$studyAreaReporting, sim$studyArea, sim$studyAreaLarge,
-       sim$rasterToMatchReporting, sim$rasterToMatch, sim$rasterToMatchLarge)
 }
