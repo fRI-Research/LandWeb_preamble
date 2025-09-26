@@ -14,8 +14,8 @@ defineModule(sim, list(
   citation = list("citation.bib"),
   documentation = list("README.md", "LandWeb_preamble.Rmd"),
   reqdPkgs = list(
-    "crayon", "curl", "dplyr", "fasterize", "geodata", "ggplot2", "httr",
-    "nngeo", "RColorBrewer", "RCurl", "scales", "sf", "sp", "SpaDES.tools", "XML",
+    "curl", "dplyr", "fasterize", "geodata", "ggplot2", "httr",
+    "nngeo", "RColorBrewer", "RCurl", "scales", "sf", "SpaDES.tools", "XML",
     "FOR-CAST/spatialutils",
     "PredictiveEcology/LandR@development (>= 1.1.0.9015)",
     "PredictiveEcology/LandWebUtils@development (>= 0.1.5.9000)",
