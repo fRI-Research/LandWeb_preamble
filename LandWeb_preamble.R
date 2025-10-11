@@ -410,8 +410,12 @@ InitMaps <- function(sim) {
   ## No data class is 5 -- these will be filled in by LCC layer
   # NA_ids <- which(is.na(sim$LandTypeCC[]) | sim$LandTypeCC[] == 5)
   ## Only class 4 is considered non-flammable
-  rstFlammableCC <- defineFlammable(sim$LandTypeCC, nonFlammClasses = 4L,
-                                    mask = NULL, filename2 = NULL)
+  rstFlammableCC <- defineFlammable(
+    sim$LandTypeCC,
+    nonFlammClasses = 4L,
+    mask = NULL,
+    filename2 = NULL
+  )
 
   rstFlammableLCC <- defineFlammable(
     LCClarge,
