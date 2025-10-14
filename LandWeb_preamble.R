@@ -487,7 +487,7 @@ browser()
     PICE_MAR = "Pice_mar",
     PINU_BAN = "Pinu_spp",
     PINU_CON = "Pinu_spp", PINU_CON_CON = "Pinu_spp", PINU_CON_LAT = "Pinu_spp",
-    POPU_BAL = "Popu_spp", POPU_GRA = "Popu_spp", POPU_TRE = "Popu_spp",
+    POPU_BAL = "Popu_spp", POPU_TRE = "Popu_spp",
     PSEU_MEN = "Pseu_men", PSEU_MEN_GLA = "Pseu_men",
     THUJ_PLI = "Thuj_pli",
     TSUG_HET = "Tsug_het"
