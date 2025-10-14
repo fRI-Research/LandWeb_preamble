@@ -472,12 +472,13 @@ InitSpecies <- function(sim) {
   if (FALSE) {
     LandR::speciesInStudyArea(sim$studyArea, dataSource = "SCANFI")
 
-    LandR::speciesInStudyArea(sim$StudyAreaLandWeb, dataSource = "SCANFI")
-    ## $speciesList
-    ## [1] "PICE_MAR"     "PINU_CON_LAT" "PICE_GLA"     "BETU_PAP"     "POPU_TRE"
-    ## [6] "PINU_BAN"     "LARI_LAR"     "POPU_BAL"     "ABIE_LAS"     "PICE_ENG_GLA"
-    ## [11] "TSUG_HET"     "ABIE_BAL"     "PICE_ENG"     "PSEU_MEN_GLA" "PSEU_MEN"
-    ## [16] "THUJ_PLI"     "POPU_GRA"     "LARI_OCC"
+    LandR::speciesInStudyArea(sim$StudyAreaLandWeb, dataSource = "SCANFI")$speciesList |> sort()
+    ##>  [1] "ABIE_BAL"     "ABIE_LAS"     "BETU_PAP"     "LARI_LAR"     "LARI_OCC"
+    ##>  [6] "PICE_ENG"     "PICE_ENG_GLA" "PICE_GLA"     "PICE_MAR"     "PINU_BAN"
+    ##> [11] "PINU_CON_LAT" "POPU_BAL"     "POPU_GRA"     "POPU_TRE"     "PSEU_MEN"
+    ##> [16] "PSEU_MEN_GLA" "THUJ_PLI"     "TSUG_HET"
+
+    ## NOTE: POPU_GRA is unreliable, do not use!
   }
 browser()
   ## Make LandWeb spp equivalencies
