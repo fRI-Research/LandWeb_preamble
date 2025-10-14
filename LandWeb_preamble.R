@@ -27,7 +27,7 @@ defineModule(sim, list(
     defineParameter("bufferDist", "numeric", 25000, 20000, 100000,
                     "Study area buffer distance (m) used to make `studyArea`."),
     defineParameter("bufferDistLarge", "numeric", 50000, 20000, 100000,
-                    "Study area buffer distance (m) used to make `studyAreaLarge`."),
+                    "Study area buffer distance (m) used to make `studyArea_biomassParam`."),
     defineParameter("forceResprout", "logical", FALSE, NA, NA,
                     paste("`TRUE` forces all species to resprout, setting `resproutage_min` to zero,",
                           "`resproutage_max` to 400, and `resproutProb` to 1.0.")),
@@ -67,7 +67,7 @@ defineModule(sim, list(
                           "(NFI) datasets. Set to 0L if necessary to bypass checking the SSL certificate (this",
                           "may be necessary when NFI's website SSL certificate is not correctly configured).")),
     defineParameter(".studyAreaName", "character", NA, NA, NA,
-                    "Human-readable name for the study area used. If `NA`, a hash of `studyAreaLarge` will be used."),
+                    "Human-readable name for the study area used. If `NA`, a hash of `studyArea_biomassParam` will be used."),
     defineParameter(".useCache", "logical", FALSE, NA, NA,
                     paste("Should this entire module be run with caching activated?",
                           "This is generally intended for data-type modules, where stochasticity and time are not relevant"))
@@ -122,14 +122,17 @@ defineModule(sim, list(
                   desc = "Polygon to use as the simulation study area."),
     createsOutput("StudyAreaLandWeb", "sf",
                   desc = "Polygon boundary of the full LandWeb study area"),
-    createsOutput("studyAreaLarge", "sf",
-                  desc = paste("Polygon to use as the parametrisation study area.",
-                               "Note that `studyAreaLarge` is only used for parameter estimation, and",
-                               "can be larger than the actual study area used for LandR simulations",
-                               "(e.g, larger than `studyArea` in LandR `Biomass_core`).")),
+    createsOutput("studyArea_biomassParam", "sf",
+                  desc = paste(
+                    "Polygon to use as the parametrisation study area.",
+                    "Note that `studyArea_biomassParam` is used for species parameter estimation,",
+                    "and should be larger than the actual study area used for LandR simulations",
+                    "(e.g, larger than `studyArea` in LandR `Biomass_core`).")),
     createsOutput("studyAreaReporting", "sf",
-                  desc = paste("multipolygon (typically smaller/unbuffered than `studyAreaLarge` and `studyArea`",
-                               "in LandR `Biomass_core`) to use for plotting/reporting."))
+                  desc = paste(
+                    "multipolygon (typically smaller than `studyArea_biomassParam` and `studyArea`",
+                    "in LandR `Biomass_core`) to use for plotting/reporting."
+                  ))
   )
 ))
 
@@ -219,14 +222,14 @@ InitMaps <- function(sim) {
   ## study areas ---------------------------------------------------------------------------------
   ## studyAreaReporting is the study area used for reporting (e.g., FMA);
   ## studyArea buffered to reduce edge effects in simulation;
-  ## studyAreaLarge is further buffered for model parameter calibration.
+  ## studyArea_biomassParam is further buffered for model parameter calibration.
   sim$studyAreaReporting <- LandWebUtils::prepStudyArea(
     name = P(sim)$.studyAreaName,
     destinationPath = mod$dPath,
     targetCRS = LandWebUtils::LandWebCRS
   )
   sim$studyArea <- spatialutils::outerBuffer(sim$studyAreaReporting, P(sim)$bufferDist)
-  sim$studyAreaLarge <- spatialutils::outerBuffer(sim$studyAreaReporting, P(sim)$bufferDistLarge)
+  sim$studyArea_biomassParam <- spatialutils::outerBuffer(sim$studyAreaReporting, P(sim)$bufferDistLarge)
 
   ## save study area maps to file
   studyAreaDir <- file.path(inputPath(sim), "studyAreas") |> fs::dir_create()
@@ -240,8 +243,8 @@ InitMaps <- function(sim) {
   LCClarge <- LandR::prepInputs_SCANFI_LCC_FAO( ## TODO: prepInputs fails to unzip
     year = 2020,
     destinationPath = mod$dPath,
-    cropTo = sim$studyAreaLarge,
-    maskTo = sim$studyAreaLarge
+    cropTo = sim$studyArea_biomassParam,
+    maskTo = sim$studyArea_biomassParam
   ) |>
     Cache()
 
@@ -448,7 +451,7 @@ InitMaps <- function(sim) {
   sim$CC_TSF <- CC_TSF
 
   ## some assertions:
-  testObjs <- c("studyArea", "studyAreaLarge", "studyAreaReporting",
+  testObjs <- c("studyArea", "studyArea_biomassParam", "studyAreaReporting",
                 "rasterToMatch", "rasterToMatchLarge", "rasterToMatchReporting",
                 "fireReturnInterval", "CC_TSF")
   lapply(testObjs, function(x) {
