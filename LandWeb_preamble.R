@@ -222,14 +222,26 @@ InitMaps <- function(sim) {
   ## study areas ---------------------------------------------------------------------------------
   ## studyAreaReporting is the study area used for reporting (e.g., FMA);
   ## studyArea buffered to reduce edge effects in simulation;
-  ## studyArea_biomassParam is further buffered for model parameter calibration.
+  ## studyArea_biomassParam uses ecological boundaries for model parameter calibration (see below).
   sim$studyAreaReporting <- LandWebUtils::prepStudyArea(
     name = P(sim)$.studyAreaName,
     destinationPath = mod$dPath,
     targetCRS = LandWebUtils::LandWebCRS
   )
+
   sim$studyArea <- spatialutils::outerBuffer(sim$studyAreaReporting, P(sim)$bufferDist)
-  sim$studyArea_biomassParam <- spatialutils::outerBuffer(sim$studyAreaReporting, P(sim)$bufferDistLarge)
+
+  ## use ecological boundaries to create studyArea_biomassParam
+  sA_bP <- prepInputs(
+    # url = "https://sis.agr.gc.ca/cansis/nsdb/ecostrat/district/ecodistrict_shp.zip",
+    url = "https://sis.agr.gc.ca/cansis/nsdb/ecostrat/region/ecoregion_shp.zip",
+    destinationPath = mod$dPath,
+    projectTo = sim$studyArea,
+    fun = "sf::st_read",
+    overwrite = TRUE
+  )
+  sA_bP <- sA_bP[which(sapply(sf::st_intersects(sA_bP, sim$studyArea), length) > 0), ]
+  sim$studyArea_biomassParam <- sA_bP
 
   ## save study area maps to file
   studyAreaDir <- file.path(inputPath(sim), "studyAreas") |> fs::dir_create()
@@ -238,6 +250,15 @@ InitMaps <- function(sim) {
     dsn = file.path(studyAreaDir, glue::glue("{P(sim)$.studyAreaName}.shp")),
     append = FALSE
   )
+
+  f_gg_studyAreas <- file.path(figurePath(sim), "studyAreas.png")
+  gg_studyAreas <- ggplot() +
+    geom_sf(data = sim$studyArea_biomassParam, fill = "gray") +
+    geom_sf(data = sim$studyArea, fill = "lightblue", alpha = 0.3) +
+    geom_sf(data = sim$studyAreaReporting, fill = "violet", alpha = 0.3)
+
+  ggsave(f_gg_studyAreas, gg_studyAreas)
+  sim <- registerOutputs(f_gg_studyAreas)
 
   ## LCC / rasterToMatch -------------------------------------------------------------------------
   LCClarge <- LandR::prepInputs_SCANFI_LCC_FAO( ## TODO: prepInputs fails to unzip
