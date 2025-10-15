@@ -7,7 +7,7 @@ defineModule(sim, list(
     person(c("Alex", "M."), "Chubaty", email = "achubaty@for-cast.ca", role = c("aut", "cre"))
   ),
   childModules = character(0),
-  version = list(LandWeb_preamble = "1.0.0"),
+  version = list(LandWeb_preamble = "1.0.1"),
   spatialExtent = raster::extent(rep(NA_real_, 4)),
   timeframe = as.POSIXlt(c(NA, NA)),
   timeunit = "year",
@@ -235,7 +235,7 @@ InitMaps <- function(sim) {
 
   sim$studyArea <- spatialutils::outerBuffer(sim$studyAreaReporting, P(sim)$bufferDist)
   sim$studyArea_biomassParam <- spatialutils::outerBuffer(sim$studyAreaReporting, P(sim)$bufferDistLarge)
-  browser()
+  browser() ## TODO: is ecoprovince a good size? ecoregion not big enough
   ## use ecological boundaries to create studyAreaANPP
   studyAreaANPP <- prepInputs(
     # url = "https://sis.agr.gc.ca/cansis/nsdb/ecostrat/district/ecodistrict_shp.zip",
@@ -282,8 +282,8 @@ InitMaps <- function(sim) {
   }
   LCClarge <- terra::as.int(LCClarge)
 
+  sim$rasterToMatch_biomassParam <- LCClarge
   sim$rasterToMatch <- terra::crop(LCClarge, terra::vect(sim$studyArea), mask = TRUE)
-  sim$rasterToMatchLarge <- LCClarge
   sim$rasterToMatchReporting <- terra::crop(LCClarge, terra::vect(sim$studyAreaReporting), mask = TRUE)
 
   if (FALSE) {
@@ -292,7 +292,7 @@ InitMaps <- function(sim) {
     terra::plot(sim$rasterToMatch)
     terra::plot(terra::vect(sim$studyAreaReporting), add = TRUE)
 
-    terra::plot(sim$rasterToMatchLarge)
+    terra::plot(sim$rasterToMatch_biomassParam)
     terra::plot(terra::vect(sim$studyArea), add = TRUE)
     terra::plot(terra::vect(sim$studyAreaReporting), add = TRUE)
   }
@@ -317,7 +317,7 @@ InitMaps <- function(sim) {
     LandTypeFileCC,
     url = ccURL,
     method = "near",
-    to = sim$rasterToMatchLarge,
+    to = sim$rasterToMatch_biomassParam,
     filename2 = NULL
   ) |>
     Cache()
@@ -382,8 +382,8 @@ InitMaps <- function(sim) {
   sim$nonTreePixels <- nonTreePixels
 
   ## Update rasterToMatch layer with all trees
-  sim$rasterToMatchLarge[sim$nonTreePixels] <- NA
-  sim$rasterToMatch <- postProcess(sim$rasterToMatchLarge, to = sim$studyArea, filename2 = NULL)
+  sim$rasterToMatch_biomassParam[sim$nonTreePixels] <- NA
+  sim$rasterToMatch <- postProcess(sim$rasterToMatch_biomassParam, to = sim$studyArea, filename2 = NULL)
 
   ## Age from Current Conditions -----------------------------------------------------------------
   browser() ## TODO: need updated age map
@@ -400,7 +400,7 @@ InitMaps <- function(sim) {
     x = terra::rast(file.path(mod$dPath, fname_age)),
     filename1 = NULL,
     filename2 = NULL,
-    to = sim$rasterToMatchLarge,
+    to = sim$rasterToMatch_biomassParam,
     maskWithRTM = TRUE,
     method = "bilinear",
     datatype = "INT2U"
@@ -424,7 +424,7 @@ InitMaps <- function(sim) {
     fireURL = "https://cwfis.cfs.nrcan.gc.ca/downloads/nfdb/fire_poly/current_version/NFDB_poly.zip",
     fireFun = "terra::vect",
     fireField = "YEAR",
-    rasterToMatch = sim$rasterToMatchLarge,
+    rasterToMatch = sim$rasterToMatch_biomassParam,
     startTime = NULL
   )
 
@@ -480,7 +480,7 @@ InitMaps <- function(sim) {
 
   ## some assertions:
   testObjs <- c("studyArea", "studyArea_biomassParam", "studyAreaReporting",
-                "rasterToMatch", "rasterToMatchLarge", "rasterToMatchReporting",
+                "rasterToMatch", "rasterToMatch_biomassParam", "rasterToMatchReporting",
                 "fireReturnInterval", "CC_TSF")
   lapply(testObjs, function(x) {
     if (is.null(sim[[x]])) {
