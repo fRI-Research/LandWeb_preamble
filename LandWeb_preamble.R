@@ -120,6 +120,9 @@ defineModule(sim, list(
                   desc = "table of species equivalencies. See `LandR::sppEquivalencies_CA`."),
     createsOutput("studyArea", "sf",
                   desc = "Polygon to use as the simulation study area."),
+    createsOutput("studyAreaANPP", "sf",
+                  desc = paste("study area to use for parameterization with PSP data in",
+                               "`Biomass_speciesParameters`.")),
     createsOutput("StudyAreaLandWeb", "sf",
                   desc = "Polygon boundary of the full LandWeb study area"),
     createsOutput("studyArea_biomassParam", "sf",
@@ -221,8 +224,9 @@ InitMaps <- function(sim) {
 
   ## study areas ---------------------------------------------------------------------------------
   ## studyAreaReporting is the study area used for reporting (e.g., FMA);
-  ## studyArea buffered to reduce edge effects in simulation;
-  ## studyArea_biomassParam uses ecological boundaries for model parameter calibration (see below).
+  ## studyArea is buffered version of studyAreaReporting to reduce edge effects in simulation;
+  ## studyArea_biomassParam is used for parameter estimation in Biomass_borealDataPrep;
+  ## studyAreaANPP uses ecological boundaries for getting PSP data in Biomass_speciesParameters.
   sim$studyAreaReporting <- LandWebUtils::prepStudyArea(
     name = P(sim)$.studyAreaName,
     destinationPath = mod$dPath,
@@ -230,18 +234,20 @@ InitMaps <- function(sim) {
   )
 
   sim$studyArea <- spatialutils::outerBuffer(sim$studyAreaReporting, P(sim)$bufferDist)
-
+  sim$studyAreaLarge <- spatialutils::outerBuffer(sim$studyAreaReporting, P(sim)$bufferDistLarge)
+  browser()
   ## use ecological boundaries to create studyArea_biomassParam
-  sA_bP <- prepInputs(
+  studyAreaANPP <- prepInputs(
     # url = "https://sis.agr.gc.ca/cansis/nsdb/ecostrat/district/ecodistrict_shp.zip",
     url = "https://sis.agr.gc.ca/cansis/nsdb/ecostrat/region/ecoregion_shp.zip",
+    # url = "https://sis.agr.gc.ca/cansis/nsdb/ecostrat/province/ecoprovince_shp.zip",
     destinationPath = mod$dPath,
     projectTo = sim$studyArea,
     fun = "sf::st_read",
     overwrite = TRUE
   )
-  sA_bP <- sA_bP[which(sapply(sf::st_intersects(sA_bP, sim$studyArea), length) > 0), ]
-  sim$studyArea_biomassParam <- sA_bP
+  studyAreaANPP <- studyAreaANPP[which(sapply(sf::st_intersects(studyAreaANPP, sim$studyArea), length) > 0), ]
+  sim$studyAreaANPP <- studyAreaANPP
 
   ## save study area maps to file
   studyAreaDir <- file.path(inputPath(sim), "studyAreas") |> fs::dir_create()
