@@ -88,7 +88,7 @@ defineModule(sim, list(
                   desc = NA),
     createsOutput("rasterToMatch", "RasterLayer",
                   desc = NA),
-    createsOutput("rasterToMatchLarge", "RasterLayer",
+    createsOutput("rasterToMatch_biomassParam", "RasterLayer",
                   desc = NA),
     createsOutput("rasterToMatchReporting", "RasterLayer",
                   desc = NA),
@@ -234,13 +234,13 @@ InitMaps <- function(sim) {
   )
 
   sim$studyArea <- spatialutils::outerBuffer(sim$studyAreaReporting, P(sim)$bufferDist)
-  sim$studyAreaLarge <- spatialutils::outerBuffer(sim$studyAreaReporting, P(sim)$bufferDistLarge)
+  sim$studyArea_biomassParam <- spatialutils::outerBuffer(sim$studyAreaReporting, P(sim)$bufferDistLarge)
   browser()
-  ## use ecological boundaries to create studyArea_biomassParam
+  ## use ecological boundaries to create studyAreaANPP
   studyAreaANPP <- prepInputs(
     # url = "https://sis.agr.gc.ca/cansis/nsdb/ecostrat/district/ecodistrict_shp.zip",
-    url = "https://sis.agr.gc.ca/cansis/nsdb/ecostrat/region/ecoregion_shp.zip",
-    # url = "https://sis.agr.gc.ca/cansis/nsdb/ecostrat/province/ecoprovince_shp.zip",
+    # url = "https://sis.agr.gc.ca/cansis/nsdb/ecostrat/region/ecoregion_shp.zip",
+    url = "https://sis.agr.gc.ca/cansis/nsdb/ecostrat/province/ecoprovince_shp.zip",
     destinationPath = mod$dPath,
     projectTo = sim$studyArea,
     fun = "sf::st_read",
@@ -259,9 +259,10 @@ InitMaps <- function(sim) {
 
   f_gg_studyAreas <- file.path(figurePath(sim), "studyAreas.png")
   gg_studyAreas <- ggplot() +
-    geom_sf(data = sim$studyArea_biomassParam, fill = "gray") +
-    geom_sf(data = sim$studyArea, fill = "lightblue", alpha = 0.3) +
-    geom_sf(data = sim$studyAreaReporting, fill = "violet", alpha = 0.3)
+    geom_sf(data = sim$studyAreaANPP, fill = "gray") +
+    geom_sf(data = sim$studyArea_biomassParam, fill = "lightblue", alpha = 0.3) +
+    geom_sf(data = sim$studyArea, fill = "violet", alpha = 0.3) +
+    geom_sf(data = sim$studyAreaReporting, fill = "darkblue", alpha = 0.3)
 
   ggsave(f_gg_studyAreas, gg_studyAreas)
   sim <- registerOutputs(f_gg_studyAreas)
