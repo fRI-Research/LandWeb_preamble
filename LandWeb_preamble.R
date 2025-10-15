@@ -123,7 +123,7 @@ defineModule(sim, list(
     createsOutput("studyAreaANPP", "sf",
                   desc = paste("study area to use for parameterization with PSP data in",
                                "`Biomass_speciesParameters`.")),
-    createsOutput("StudyAreaLandWeb", "sf",
+    createsOutput("studyAreaLandWeb", "sf",
                   desc = "Polygon boundary of the full LandWeb study area"),
     createsOutput("studyArea_biomassParam", "sf",
                   desc = paste(
@@ -220,7 +220,7 @@ InitMaps <- function(sim) {
     sf::st_make_valid() |>
     nngeo::st_remove_holes()
 
-  sim$StudyAreaLandWeb <- landweb_area
+  sim$studyAreaLandWeb <- landweb_area
 
   ## study areas ---------------------------------------------------------------------------------
   ## studyAreaReporting is the study area used for reporting (e.g., FMA);
@@ -500,7 +500,7 @@ InitSpecies <- function(sim) {
   if (FALSE) {
     LandR::speciesInStudyArea(sim$studyArea, dataSource = "SCANFI")
 
-    LandR::speciesInStudyArea(sim$StudyAreaLandWeb, dataSource = "SCANFI")$speciesList |> sort()
+    LandR::speciesInStudyArea(sim$studyAreaLandWeb, dataSource = "SCANFI")$speciesList |> sort()
     ##>  [1] "ABIE_BAL"     "ABIE_LAS"     "BETU_PAP"     "LARI_LAR"     "LARI_OCC"
     ##>  [6] "PICE_ENG"     "PICE_ENG_GLA" "PICE_GLA"     "PICE_MAR"     "PINU_BAN"
     ##> [11] "PINU_CON_LAT" "POPU_BAL"     "POPU_GRA"     "POPU_TRE"     "PSEU_MEN"
@@ -508,7 +508,7 @@ InitSpecies <- function(sim) {
 
     ## NOTE: POPU_GRA is unreliable, do not use!
   }
-browser()
+
   ## Make LandWeb spp equivalencies
   sppEquiv[, LandWeb := c(
     ABIE_BAL = "Abie_spp", ABIE_LAS = "Abie_spp",
