@@ -44,6 +44,8 @@ joinReportingPolygons <- function(x, y) {
     z[["shinyLabel"]] <- paste(z[["shinyLabel.2"]], z[["shinyLabel.1"]])
     z[["shinyLabel.1"]] <- z[["shinyLabel.2"]] <- NULL
   } else {
+    stopifnot(raster::compareCRS(x, y))
+
     if (!is(x, "sf")) {
       x <- sf::st_as_sf(x)
     }
@@ -53,6 +55,13 @@ joinReportingPolygons <- function(x, y) {
 
     x <- sf::st_set_precision(x, 1e5) |> fixErrors()
     y <- sf::st_set_precision(y, 1e5) |> fixErrors()
+
+    ## workaround "same but different" crs issue
+    ## (i.e., passes compareCRS test above but sf thinks they're different)
+    if (st_crs(x) != st_crs(y)) {
+      y <- sf::st_transform(y, sf::st_crs(x))
+    }
+
     z <- sf::st_intersection(x, y)
 
     ## sfc_GEOMETRY may itself contain points, so filter them out
