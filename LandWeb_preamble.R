@@ -7,7 +7,7 @@ defineModule(sim, list(
     person(c("Alex", "M."), "Chubaty", email = "achubaty@for-cast.ca", role = c("aut"))
   ),
   childModules = character(0),
-  version = list(LandWeb_preamble = "0.0.9"),
+  version = list(LandWeb_preamble = "0.0.10"),
   spatialExtent = raster::extent(rep(NA_real_, 4)),
   timeframe = as.POSIXlt(c(NA, NA)),
   timeunit = "year",
@@ -35,6 +35,8 @@ defineModule(sim, list(
                     "Multiplication factor for adjusting fire return intervals."),
     defineParameter("dispersalType", "character", "default", NA, NA,
                     "One of 'aspen', 'high', 'none', or 'default'."),
+    defineParameter("lthfc_option", "character", "NW_AB_LTHFC_OptionB", NA, NA,
+                    "One of 'NW_AB_LTHFC_OptionA', 'NW_AB_LTHFC_OptionB', 'NW_AB_LTHFC_OptionC'"),
     defineParameter("mergeSlivers", "logical", FALSE, NA, NA,
                     "Should sliver polygons in LTHFC map be merged into nearest non-zero polygon?"),
     defineParameter("minFRI", "numeric", 40, 0, 200,
@@ -138,6 +140,9 @@ doEvent.LandWeb_preamble = function(sim, eventTime, eventType) {
   switch(
     eventType,
     init = {
+      mod$dPath <- asPath(getOption("reproducible.destinationPath", dataPath(sim)), 1)
+      message(currentModule(sim), ": using dataPath '", mod$dPath, "'.")
+
       sim <- InitMaps(sim)
       sim <- InitSpecies(sim)
       sim <- InitLandMine(sim)
@@ -160,7 +165,7 @@ doEvent.LandWeb_preamble = function(sim, eventTime, eventType) {
 InitMaps <- function(sim) {
   allowedStudyAreaNames <- c("ANC", "AlPac", "BlueRidge", "DMI", "Edson", "FMANWT", "FMU",
                              "LandWeb", "LP", "Manning", "MillarWestern", "Mistik", "MPR",
-                             "provAB", "provMB", "provNWT", "provSK", "random",
+                             "NW_AB", "provAB", "provMB", "provNWT", "provSK", "random",
                              "SprayLake", "Sundre", "Tolko", "Vanderwell", "WeyCo", "WestFraser")
   if (!grepl(paste(allowedStudyAreaNames, collapse = "|"), P(sim)$.studyAreaName)) {
     stop(".studyAreaName, ", P(sim)$.studyAreaName, ", does not contain valid study area name.\n",
@@ -174,7 +179,12 @@ InitMaps <- function(sim) {
   ## TODO: use terra
   opts <- options(reproducible.useTerra = FALSE)
 
-  if (grepl("SprayLake", P(sim)$.studyAreaName)) {
+  if (grepl("NW_AB", P(sim)$.studyAreaName)) {
+    ## Study area will only be NW AB
+    layerName <- P(sim)$lthfc_option
+    lthfc_url <- "https://drive.google.com/file/d/1vB1diojxBT4Zr7hTxdj-fx44SvSQL1Ls" ## .gpkg on Drive
+    stopifnot(layerName %in% c('NW_AB_LTHFC_OptionA', 'NW_AB_LTHFC_OptionB', 'NW_AB_LTHFC_OptionC'))
+  } else if (grepl("SprayLake", P(sim)$.studyAreaName)) {
     ## 2024-09-23 per Dave, use custom lthfc only for Spray Lake + C5 runs;
     ## LTHFCS are *much* lower (200/150 reduced to 50 in eastern portion of study area)
     # lthfc_url <- "https://drive.google.com/file/d/1vvwqlS0hrD2s7Eq4N7NKrRDKWon4RvUw" ## ltfc_sls_v2.shp
@@ -185,12 +195,28 @@ InitMaps <- function(sim) {
     # lthfc_url <- "https://drive.google.com/file/d/1wNxOeV1vl05WDp6DsyuyRSbDZOu87N17" ## landweb_ltfc_v8a.shp
     lthfc_url <- "https://drive.google.com/file/d/1R9QLvW_yD482xv_6ZF1yhB32blaDPWjV" ## landweb_ltfc_v8c.shp
   }
-  lthfc <- prepInputs(
-    url = lthfc_url,
-    targetCRS = targetCRS,
-    overwrite = TRUE,
-    filename2 = NULL
-  )
+
+  if (grepl("NW_AB", P(sim)$.studyAreaName)) {
+    lthfc <- reproducible::prepInputs(
+      url = lthfc_url,
+      targetFile = "LTHFC_NW_AB.gpkg",
+      destinationPath = mod$dPath,
+      fun = "sf::st_read",
+      layer = layerName,
+      quiet = TRUE,
+      targetCRS = targetCRS,
+      overwrite = TRUE,
+      filename2 = NULL
+    )
+  } else {
+    lthfc <- reproducible::prepInputs(
+      url = lthfc_url,
+      targetCRS = targetCRS,
+      overwrite = TRUE,
+      filename2 = NULL
+    )
+  }
+
   options(opts)
 
   ## keep only the LTHFC column
@@ -255,7 +281,7 @@ InitMaps <- function(sim) {
   ## TODO: only add if studyAreaReporting in AB
   ml <- mapAdd(map = ml, layerName = "AB FMU Boundaries",
                useSAcrs = TRUE, poly = TRUE, overwrite = TRUE,
-               url = "https://drive.google.com/open?id=1OH3b5pwjumm1ToytDBDI6jthVe2pp0tS", # 2020-06
+               url = "https://drive.google.com/file/d/1OH3b5pwjumm1ToytDBDI6jthVe2pp0tS", ## 2025 update
                columnNameForLabels = "FMU_NAME", isStudyArea = FALSE, filename2 = NULL)
 
   ### Rename some polygons:
@@ -315,11 +341,14 @@ InitMaps <- function(sim) {
   #              useSAcrs = TRUE, poly = TRUE, overwrite = TRUE,
   #              url = "https://extranet.gov.ab.ca/srd/geodiscover/srd_pub/LAT/FWDSensitivity/CaribouRange.zip",
   #              columnNameForLabels = "SUBUNIT", isStudyArea = FALSE, filename2 = NULL) ## untested
-  ml <- mapAdd(map = ml, layerName = "SK Caribou Ranges",
-               useSAcrs = TRUE, poly = TRUE, overwrite = TRUE,
-               url = "https://drive.google.com/file/d/1LiizDyXOfJPQ76FQM8SQ1_kYG9hJUDdK",
-               columnNameForLabels = "RGEUNIT", isStudyArea = FALSE, filename2 = NULL)
-  ml[["SK Caribou Ranges"]][["Name"]] <- ml[["SK Caribou Ranges"]][["RGEUNIT"]]
+
+  if (grepl("provSK", P(sim)$.studyAreaName)) {
+    ml <- mapAdd(map = ml, layerName = "SK Caribou Ranges",
+                 useSAcrs = TRUE, poly = TRUE, overwrite = TRUE,
+                 url = "https://drive.google.com/file/d/1LiizDyXOfJPQ76FQM8SQ1_kYG9hJUDdK",
+                 columnNameForLabels = "RGEUNIT", isStudyArea = FALSE, filename2 = NULL)
+    ml[["SK Caribou Ranges"]][["Name"]] <- ml[["SK Caribou Ranges"]][["RGEUNIT"]]
+  }
 
   if (grepl("provMB", P(sim)$.studyAreaName)) {
     ## TODO: .zipx file; needs 'manual' extract 1st time
@@ -367,6 +396,8 @@ InitMaps <- function(sim) {
     ml <- fmaMillarWestern(ml, P(sim)$.studyAreaName, dataDir, sim$canProvs, P(sim)$bufferDist, asStudyArea = TRUE)
   } else if (grepl("Mistik", P(sim)$.studyAreaName)) {
     ml <- fmaMistik(ml, P(sim)$.studyAreaName, dataDir, sim$canProvs, P(sim)$bufferDist, asStudyArea = TRUE)
+  } else if (grepl("NW_AB", P(sim)$.studyAreaName)) {
+    ml <- NW_AB(ml, P(sim)$.studyAreaName, dataDir, sim$canProvs, P(sim)$bufferDist, asStudyArea = TRUE)
   } else if (grepl("SprayLake", P(sim)$.studyAreaName)) {
     ml <- fmaSprayLake(ml, P(sim)$.studyAreaName, dataDir, sim$canProvs, P(sim)$bufferDist, asStudyArea = TRUE)
   } else if (grepl("Sundre", P(sim)$.studyAreaName)) {
@@ -414,7 +445,7 @@ InitMaps <- function(sim) {
 
   ## study areas ---------------------------------------------------------------------------------
   sim$studyArea <- studyArea(ml, 3)           ## buffered study area
-  #sim$studyAreaLarge <- studyArea(ml, 1)     ## entire LandWeb area (too big for fitting etc. for now)
+  # sim$studyAreaLarge <- studyArea(ml, 1)     ## entire LandWeb area (too big for fitting etc. for now)
   sim$studyAreaLarge <- amc::outerBuffer(studyArea(ml, 2), P(sim)$bufferDistLarge) ## further buffered study area
   sim$studyAreaReporting <- studyArea(ml, 2)  ## reporting area (e.g., FMA)
 
