@@ -182,8 +182,12 @@ InitMaps <- function(sim) {
   if (grepl("NW_AB", P(sim)$.studyAreaName)) {
     ## Study area will only be NW AB
     layerName <- P(sim)$lthfc_option
-    lthfc_url <- "https://drive.google.com/file/d/1vB1diojxBT4Zr7hTxdj-fx44SvSQL1Ls" ## .gpkg on Drive
-    stopifnot(layerName %in% c('NW_AB_LTHFC_OptionA', 'NW_AB_LTHFC_OptionB', 'NW_AB_LTHFC_OptionC'))
+    if (layerName == "NW_AB_LTHFC_Option0") {
+      lthfc_url <- "https://drive.google.com/file/d/1R9QLvW_yD482xv_6ZF1yhB32blaDPWjV" ## landweb_ltfc_v8c.shp
+    } else {
+      lthfc_url <- "https://drive.google.com/file/d/1vB1diojxBT4Zr7hTxdj-fx44SvSQL1Ls" ## .gpkg on Drive
+    }
+    stopifnot(layerName %in% c('NW_AB_LTHFC_Option0', 'NW_AB_LTHFC_OptionA', 'NW_AB_LTHFC_OptionB', 'NW_AB_LTHFC_OptionC'))
   } else if (grepl("SprayLake", P(sim)$.studyAreaName)) {
     ## 2024-09-23 per Dave, use custom lthfc only for Spray Lake + C5 runs;
     ## LTHFCS are *much* lower (200/150 reduced to 50 in eastern portion of study area)
@@ -197,17 +201,27 @@ InitMaps <- function(sim) {
   }
 
   if (grepl("NW_AB", P(sim)$.studyAreaName)) {
-    lthfc <- reproducible::prepInputs(
-      url = lthfc_url,
-      targetFile = "LTHFC_NW_AB.gpkg",
-      destinationPath = mod$dPath,
-      fun = "sf::st_read",
-      layer = layerName,
-      quiet = TRUE,
-      targetCRS = targetCRS,
-      overwrite = TRUE,
-      filename2 = NULL
-    )
+    if (layerName == "NW_AB_LTHFC_Option0") {
+      ## use original LandWeb LTHFC layer
+      lthfc <- reproducible::prepInputs(
+        url = lthfc_url,
+        targetCRS = targetCRS,
+        overwrite = TRUE,
+        filename2 = NULL
+      )
+    } else {
+      lthfc <- reproducible::prepInputs(
+        url = lthfc_url,
+        targetFile = "LTHFC_NW_AB.gpkg",
+        destinationPath = mod$dPath,
+        fun = "sf::st_read",
+        layer = layerName,
+        quiet = TRUE,
+        targetCRS = targetCRS,
+        overwrite = TRUE,
+        filename2 = NULL
+      )
+    }
   } else {
     lthfc <- reproducible::prepInputs(
       url = lthfc_url,
