@@ -57,7 +57,7 @@ fmaManning <- function(ml, studyAreaName, dataDir, canProvs, bufferDist, asStudy
 
   ## studyArea shouldn't use analysisGroup because it's not a reportingPolygon
   manning_sr <- postProcess(ml[["LandWeb Study Area"]],
-                            studyArea = amc::outerBuffer(manning, bufferDist),
+                            studyArea = spatialutils::outerBuffer(manning, bufferDist),
                             useSAcrs = TRUE,
                             filename2 = file.path(dataDir, "Manning_SR.shp"),
                             overwrite = TRUE)

@@ -20,7 +20,7 @@ fmaEdsonFP <- function(ml, studyAreaName, dataDir, canProvs, bufferDist, asStudy
 
   ## studyArea shouldn't use analysisGroup because it's not a reportingPolygon
   edson_sr <- postProcess(ml[["LandWeb Study Area"]],
-                          studyArea = amc::outerBuffer(edson, bufferDist),
+                          studyArea = spatialutils::outerBuffer(edson, bufferDist),
                           useSAcrs = TRUE,
                           filename2 = file.path(dataDir, "EdsonFP_SR.shp"),
                           overwrite = TRUE)

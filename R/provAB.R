@@ -82,7 +82,7 @@ provAB <- function(ml, studyAreaName, dataDir, canProvs, bufferDist, asStudyArea
 
   ## studyArea shouldn't use analysisGroup because it's not a reportingPolygon
   AB_sr <- postProcess(ml[["LandWeb Study Area"]],
-                       studyArea = amc::outerBuffer(AB, bufferDist),
+                       studyArea = spatialutils::outerBuffer(AB, bufferDist),
                        useSAcrs = TRUE,
                        filename2 = file.path(dataDir, "AB_SR.shp"),
                        overwrite = TRUE)

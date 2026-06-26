@@ -35,7 +35,7 @@ fmaANC <- function(ml, studyAreaName, dataDir, canProvs, bufferDist, asStudyArea
 
   ## studyArea shouldn't use analysisGroup because it's not a reportingPolygon
   anc_sr <- postProcess(ml[["LandWeb Study Area"]],
-                        studyArea = amc::outerBuffer(anc, bufferDist),
+                        studyArea = spatialutils::outerBuffer(anc, bufferDist),
                         useSAcrs = TRUE,
                         filename2 = file.path(dataDir, "ANC_SR.shp"),
                         overwrite = TRUE)

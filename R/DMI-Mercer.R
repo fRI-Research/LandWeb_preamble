@@ -53,7 +53,7 @@ fmaDMI <- function(ml, studyAreaName, dataDir, canProvs, bufferDist, asStudyArea
 
   ## buffered study area (needs to have LTHFC data) ---------------------------#
   dmi_sr <- postProcess(ml[["LandWeb Study Area"]],
-                        studyArea = amc::outerBuffer(dmi.full, bufferDist),
+                        studyArea = spatialutils::outerBuffer(dmi.full, bufferDist),
                         useSAcrs = TRUE,
                         filename2 = file.path(dataDir, "DMI_SR.shp"))
 

@@ -69,7 +69,7 @@ fmaSundreFP <- function(ml, studyAreaName, dataDir, canProvs, bufferDist, asStud
 
   ## studyArea shouldn't use analysisGroup because it's not a reportingPolygon
   sundre_sr <- postProcess(ml[["LandWeb Study Area"]],
-                           studyArea = amc::outerBuffer(sundre, bufferDist),
+                           studyArea = spatialutils::outerBuffer(sundre, bufferDist),
                            useSAcrs = TRUE,
                            filename2 = file.path(dataDir, "SundreFP_SR.shp"),
                            overwrite = TRUE)

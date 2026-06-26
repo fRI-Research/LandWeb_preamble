@@ -29,7 +29,7 @@ provNWT <- function(ml, studyAreaName, dataDir, canProvs, bufferDist, asStudyAre
 
   ## studyArea shouldn't use analysisGroup because it's not a reportingPolygon
   NWT_sr <- postProcess(ml[["LandWeb Study Area"]],
-                        studyArea = amc::outerBuffer(NWT, bufferDist),
+                        studyArea = spatialutils::outerBuffer(NWT, bufferDist),
                         useSAcrs = TRUE,
                         filename2 = file.path(dataDir, "NWT_SR.shp"),
                         overwrite = TRUE)

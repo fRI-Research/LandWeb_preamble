@@ -33,7 +33,7 @@ fmaWeyCo <- function(ml, studyAreaName, dataDir, canProvs, bufferDist, asStudyAr
 
     ## studyArea shouldn't use analysisGroup because it's not a reportingPolygon
     weyco_gp_sr <- postProcess(ml[["LandWeb Study Area"]],
-                               studyArea = amc::outerBuffer(weyco_gp, bufferDist),
+                               studyArea = spatialutils::outerBuffer(weyco_gp, bufferDist),
                                useSAcrs = TRUE,
                                filename2 = file.path(dataDir, "WeyCo_GP_SR.shp"),
                                overwrite = TRUE)
@@ -72,7 +72,7 @@ fmaWeyCo <- function(ml, studyAreaName, dataDir, canProvs, bufferDist, asStudyAr
 
     ## studyArea shouldn't use analysisGroup because it's not a reportingPolygon
     weyco_pt_sr <- postProcess(ml[["LandWeb Study Area"]],
-                               studyArea = amc::outerBuffer(weyco_pt, bufferDist),
+                               studyArea = spatialutils::outerBuffer(weyco_pt, bufferDist),
                                useSAcrs = TRUE,
                                filename2 = file.path(dataDir, "WeyCo_PT_SR.shp"),
                                overwrite = TRUE)
@@ -116,7 +116,7 @@ fmaWeyCo <- function(ml, studyAreaName, dataDir, canProvs, bufferDist, asStudyAr
 
     ## studyArea shouldn't use analysisGroup because it's not a reportingPolygon
     weyco_sk_sr <- postProcess(ml[["LandWeb Study Area"]],
-                               studyArea = amc::outerBuffer(weyco_sk, bufferDist),
+                               studyArea = spatialutils::outerBuffer(weyco_sk, bufferDist),
                                useSAcrs = TRUE,
                                filename2 = file.path(dataDir, "WeyCo_SK_SR.shp"),
                                overwrite = TRUE)

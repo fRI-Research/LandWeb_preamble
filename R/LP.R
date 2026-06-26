@@ -31,7 +31,7 @@ fmaLP <- function(ml, studyAreaName, dataDir, canProvs, bufferDist, asStudyArea 
 
     ## studyArea shouldn't use analysisGroup because it's not a reportingPolygon
     lp_bc_sr <- postProcess(ml[["LandWeb Study Area"]],
-                            studyArea = amc::outerBuffer(lp_bc, bufferDist),
+                            studyArea = spatialutils::outerBuffer(lp_bc, bufferDist),
                             useSAcrs = TRUE,
                             filename2 = file.path(dataDir, "LP_BC_SR.shp"),
                             overwrite = TRUE)
@@ -73,7 +73,7 @@ fmaLP <- function(ml, studyAreaName, dataDir, canProvs, bufferDist, asStudyArea 
 
     ## studyArea shouldn't use analysisGroup because it's not a reportingPolygon
     lp_mb_sr <- postProcess(ml[["LandWeb Study Area"]],
-                            studyArea = amc::outerBuffer(lp_mb, bufferDist),
+                            studyArea = spatialutils::outerBuffer(lp_mb, bufferDist),
                             useSAcrs = TRUE,
                             filename2 = file.path(dataDir, "LP_MB_SR.shp"),
                             overwrite = TRUE)

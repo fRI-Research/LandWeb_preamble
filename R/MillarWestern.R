@@ -28,7 +28,7 @@ fmaMillarWestern <- function(ml, studyAreaName, dataDir, canProvs, bufferDist, a
 
   ## studyArea shouldn't use analysisGroup because it's not a reportingPolygon
   mw_sr <- postProcess(ml[["LandWeb Study Area"]],
-                       studyArea = amc::outerBuffer(mw, bufferDist),
+                       studyArea = spatialutils::outerBuffer(mw, bufferDist),
                        useSAcrs = TRUE,
                        filename2 = file.path(dataDir, "Millar_Western_SR.shp"),
                        overwrite = TRUE)

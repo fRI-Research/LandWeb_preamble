@@ -34,7 +34,7 @@ fmaNWT <- function(ml, studyAreaName, dataDir, canProvs, bufferDist, asStudyArea
 
     ## studyArea shouldn't use analysisGroup because it's not a reportingPolygon
     fmanwt_FP_sr <- postProcess(ml[["LandWeb Study Area"]],
-                                studyArea = amc::outerBuffer(fmanwt_FP, bufferDist),
+                                studyArea = spatialutils::outerBuffer(fmanwt_FP, bufferDist),
                                 useSAcrs = TRUE,
                                 filename2 = file.path(dataDir, "FMA_NWT_FP_SR.shp"),
                                 overwrite = TRUE)
@@ -74,7 +74,7 @@ fmaNWT <- function(ml, studyAreaName, dataDir, canProvs, bufferDist, asStudyArea
 
     ## studyArea shouldn't use analysisGroup because it's not a reportingPolygon
     fmanwt_FR_sr <- postProcess(ml[["LandWeb Study Area"]],
-                                studyArea = amc::outerBuffer(fmanwt_FR, bufferDist),
+                                studyArea = spatialutils::outerBuffer(fmanwt_FR, bufferDist),
                                 useSAcrs = TRUE,
                                 filename2 = file.path(dataDir, "FMA_NWT_FR_SR.shp"),
                                 overwrite = TRUE)

@@ -19,7 +19,7 @@ fmaMistik <- function(ml, studyAreaName, dataDir, canProvs, bufferDist, asStudyA
 
   ## studyArea shouldn't use analysisGroup because it's not a reportingPolygon
   mistik_sr <- postProcess(ml[["LandWeb Study Area"]],
-                           studyArea = amc::outerBuffer(mistik, bufferDist),
+                           studyArea = spatialutils::outerBuffer(mistik, bufferDist),
                            useSAcrs = TRUE,
                            filename2 = file.path(dataDir, "Mistik_SR.shp"),
                            overwrite = TRUE)

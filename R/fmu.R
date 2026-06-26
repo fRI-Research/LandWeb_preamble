@@ -33,7 +33,7 @@ fmu <- function(ml, studyAreaName, dataDir, canProvs, bufferDist, asStudyArea = 
 
   ## buffered study area (needs to have LTHFC data) ---------------------------#
   fmu_sr <- postProcess(ml[["LandWeb Study Area"]],
-                        studyArea = amc::outerBuffer(fmu, bufferDist),
+                        studyArea = spatialutils::outerBuffer(fmu, bufferDist),
                         useSAcrs = TRUE,
                         filename2 = file.path(dataDir, paste0("FMU", fmuNum, "_SR.shp")))
 

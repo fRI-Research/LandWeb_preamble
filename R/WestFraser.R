@@ -78,7 +78,7 @@ fmaWestFraser <- function(ml, studyAreaName, dataDir, canProvs, bufferDist, asSt
 
     ## studyArea shouldn't use analysisGroup because it's not a reportingPolygon
     wf_br_sr <- postProcess(ml[["LandWeb Study Area"]],
-                            studyArea = amc::outerBuffer(wf_br, bufferDist),
+                            studyArea = spatialutils::outerBuffer(wf_br, bufferDist),
                             useSAcrs = TRUE,
                             filename2 = file.path(dataDir, "WestFraser_BlueRidge_SR.shp"),
                             overwrite = TRUE)
@@ -207,7 +207,7 @@ fmaWestFraser <- function(ml, studyAreaName, dataDir, canProvs, bufferDist, asSt
 
     ## studyArea shouldn't use analysisGroup because it's not a reportingPolygon
     wf_n_sr <- postProcess(ml[["LandWeb Study Area"]],
-                           studyArea = amc::outerBuffer(wf_n, bufferDist),
+                           studyArea = spatialutils::outerBuffer(wf_n, bufferDist),
                            useSAcrs = TRUE,
                            filename2 = file.path(dataDir, "WestFraser_N_SR.shp"),
                            overwrite = TRUE)
@@ -252,7 +252,7 @@ fmaWestFraser <- function(ml, studyAreaName, dataDir, canProvs, bufferDist, asSt
 
     ## studyArea shouldn't use analysisGroup because it's not a reportingPolygon
     wf_s_sr <- postProcess(ml[["LandWeb Study Area"]],
-                           studyArea = amc::outerBuffer(wf_s, bufferDist),
+                           studyArea = spatialutils::outerBuffer(wf_s, bufferDist),
                            useSAcrs = TRUE,
                            filename2 = file.path(dataDir, "WestFraser_S_SR.shp"),
                            overwrite = TRUE)

@@ -27,7 +27,7 @@ fmaAlpac <- function(ml, studyAreaName, dataDir, canProvs, bufferDist, asStudyAr
 
   ## studyArea shouldn't use analysisGroup because it's not a reportingPolygon
   alpac_sr <- postProcess(ml[["LandWeb Study Area"]],
-                          studyArea = amc::outerBuffer(alpac, bufferDist),
+                          studyArea = spatialutils::outerBuffer(alpac, bufferDist),
                           useSAcrs = TRUE,
                           filename2 = file.path(dataDir, "Alpac_SR.shp"),
                           overwrite = TRUE)

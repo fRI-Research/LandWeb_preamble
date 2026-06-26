@@ -88,7 +88,7 @@ fmaTolko <- function(ml, studyAreaName, dataDir, canProvs, bufferDist, asStudyAr
 
     ## studyArea shouldn't use analysisGroup because it's not a reportingPolygon
     tolko_ab_n_sr <- postProcess(ml[["LandWeb Study Area"]],
-                                 studyArea = amc::outerBuffer(tolko_ab_n, bufferDist),
+                                 studyArea = spatialutils::outerBuffer(tolko_ab_n, bufferDist),
                                  useSAcrs = TRUE,
                                  filename2 = file.path(dataDir, "Tolko_AB_N_SR.shp"),
                                  overwrite = TRUE)
@@ -133,7 +133,7 @@ fmaTolko <- function(ml, studyAreaName, dataDir, canProvs, bufferDist, asStudyAr
 
     ## studyArea shouldn't use analysisGroup because it's not a reportingPolygon
     tolko_ab_s_sr <- postProcess(ml[["LandWeb Study Area"]],
-                                 studyArea = amc::outerBuffer(tolko_ab_s, bufferDist),
+                                 studyArea = spatialutils::outerBuffer(tolko_ab_s, bufferDist),
                                  useSAcrs = TRUE,
                                  filename2 = file.path(dataDir, "Tolko_AB_S_SR.shp"),
                                  overwrite = TRUE)
@@ -176,7 +176,7 @@ fmaTolko <- function(ml, studyAreaName, dataDir, canProvs, bufferDist, asStudyAr
 
     ## studyArea shouldn't use analysisGroup because it's not a reportingPolygon
     tolko_sk_sr <- postProcess(ml[["LandWeb Study Area"]],
-                               studyArea = amc::outerBuffer(tolko_sk, bufferDist),
+                               studyArea = spatialutils::outerBuffer(tolko_sk, bufferDist),
                                useSAcrs = TRUE,
                                filename2 = file.path(dataDir, "Tolko_SK_SR.shp"),
                                overwrite = TRUE)

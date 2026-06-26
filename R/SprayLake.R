@@ -83,7 +83,7 @@ fmaSprayLake <- function(ml, studyAreaName, dataDir, canProvs, bufferDist, asStu
 
   ## studyArea shouldn't use analysisGroup because it's not a reportingPolygon
   spraylake_sr <- postProcess(ml[["LandWeb Study Area"]],
-                              studyArea = amc::outerBuffer(spraylake_sa, bufferDist),
+                              studyArea = spatialutils::outerBuffer(spraylake_sa, bufferDist),
                               useSAcrs = TRUE,
                               filename2 = file.path(dataDir, "SprayLake_SR.shp"),
                               overwrite = TRUE)
