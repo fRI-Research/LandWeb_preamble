@@ -827,8 +827,15 @@ InitSpecies <- function(sim) {
       POPU_TRE = "Popu_spp",
       PSEU_MEN = "Pseu_men",
       PSEU_MEN_GLA = "Pseu_men",
-      THUJ_PLI = "Thuj_pli",
-      TSUG_HET = "Tsug_het"
+      ## Western redcedar & western hemlock are absent from the original Silvacom
+      ## CurrentConditions species groups (White/Black Spruce, Pine, Fir, Deciduous) and
+      ## look like SCANFI over-attribution in AB (e.g. Tsug_het is ~25% of the Spray Lake
+      ## FMA, well outside its real range). Merge both into Abie_spp -- the closest
+      ## shade-tolerant softwood analog -- rather than simulating them as distinct species.
+      ## TODO: revisit -- confirm Abie_spp is the right target (vs. dropping them, or a
+      ## per-study-area rule for FMAs nearer the BC coast where they may genuinely occur).
+      THUJ_PLI = "Abie_spp",
+      TSUG_HET = "Abie_spp"
     )[SCANFI]
   ]
 
