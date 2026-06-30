@@ -820,9 +820,8 @@ InitSpecies <- function(sim) {
       PICE_GLA = "Pice_gla",
       PICE_MAR = "Pice_mar",
       PINU_BAN = "Pinu_spp",
-      PINU_CON = "Pinu_spp",
-      PINU_CON_CON = "Pinu_spp",
-      PINU_CON_LAT = "Pinu_spp",
+      PINU_CON_CON = "Pinu_spp", ## shore pine (Pinus contorta var. contorta; coastal)
+      PINU_CON_LAT = "Pinu_spp", ## lodgepole pine (Pinus contorta var. latifolia; interior)
       POPU_BAL = "Popu_spp",
       POPU_TRE = "Popu_spp",
       PSEU_MEN = "Pseu_men",
