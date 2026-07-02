@@ -275,7 +275,7 @@ defineModule(
           "`ros` gives the rate of spread values for each age and type."
         )
       ),
-      createsOutput("rstFlammable", "RasterLayer", desc = NA),
+      createsOutput("flammableMap", "RasterLayer", desc = NA),
       createsOutput(
         "speciesParams",
         "list",
@@ -719,7 +719,7 @@ InitMaps <- function(sim) {
   ## With no CC layer (LandTypeCC all NA), flammability comes entirely from the LCC map:
   ## defineFlammable() errors on an all-NA layer, and the CC values would be fully overwritten
   ## by LCC below anyway (LandTypeCCNA all TRUE). Only blend a CC-based layer when CC has data.
-  rstFlammableLCC <- defineFlammable(
+  flammableMapLCC <- defineFlammable(
     LCClarge,
     nonFlammClasses = c(20, 30, 40, 80), ## see LCC classes above
     mask = NULL,
@@ -727,21 +727,21 @@ InitMaps <- function(sim) {
   )
 
   if (all(LandTypeCCNA)) {
-    sim$rstFlammable <- rstFlammableLCC
+    sim$flammableMap <- flammableMapLCC
   } else {
-    rstFlammableCC <- defineFlammable(
+    flammableMapCC <- defineFlammable(
       sim$LandTypeCC,
       nonFlammClasses = 4L,
       mask = NULL,
       filename2 = NULL
     )
-    sim$rstFlammable <- rstFlammableCC
-    sim$rstFlammable[LandTypeCCNA] <- rstFlammableLCC[LandTypeCCNA]
+    sim$flammableMap <- flammableMapCC
+    sim$flammableMap[LandTypeCCNA] <- flammableMapLCC[LandTypeCCNA]
   }
-  sim$rstFlammable <- terra::as.int(sim$rstFlammable) |>
+  sim$flammableMap <- terra::as.int(sim$flammableMap) |>
     terra::crop(sim$rasterToMatch) ## ensure it matches studyArea
 
-  ## fireReturnInterval needs to be masked by rstFlammable
+  ## fireReturnInterval needs to be masked by flammableMap
   rstFireReturnInterval <- terra::rasterize(
     x = lthfc_clean, ## already a SpatVector (tidyterra); terra::vect() has no SpatVector method
     y = sim$rasterToMatch,
@@ -782,7 +782,7 @@ InitMaps <- function(sim) {
     }
   })
 
-  compareGeom(sim$rasterToMatch, rstFireReturnInterval, sim$rstFlammable)
+  compareGeom(sim$rasterToMatch, rstFireReturnInterval, sim$flammableMap)
   ## end assertions
 
   return(invisible(sim))
