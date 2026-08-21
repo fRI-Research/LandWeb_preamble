@@ -242,7 +242,20 @@ defineModule(
       createsOutput(
         "LandTypeCC",
         "RasterLayer",
-        desc = "Land Cover Classification map derived from Current Conditions data."
+        desc = paste(
+          "Current-conditions land cover (Canada LCC 2020, NALCMS level-II codes), aligned to",
+          "`rasterToMatch_biomassParam`. SIMULATION-side copy: urban is sent to 99 by `remapDT`",
+          "and reclassified to the nearest type, approximating the pre-industrial state."
+        )
+      ),
+      createsOutput(
+        "LandTypeCC_reporting",
+        "RasterLayer",
+        desc = paste(
+          "Current-conditions land cover (Canada LCC 2020) with urban RETAINED -- the reporting",
+          "reference, so current condition reflects the actual landscape rather than the",
+          "pre-industrial approximation the simulation runs on. Do NOT feed this to the overlay."
+        )
       ),
       createsOutput(
         "LCC",
@@ -561,15 +574,40 @@ InitMaps <- function(sim) {
     }
   )
 
-  if (P(sim)$pixelSize != 30) {
-    stopifnot(P(sim)$pixelSize %in% c(240, 120, 90))
-    LCClarge <- terra::aggregate(
-      LCClarge,
-      fact = as.integer(P(sim)$pixelSize / 30),
-      fun = "modal"
+  ## Canada LCC 2020 (NALCMS/CCRS) -- the CURRENT-CONDITIONS land cover, independent of SCANFI.
+  ## Public datacube COG (no auth), EPSG:3979, tiled with overviews, so windowed reads are cheap.
+  ## Reprojected onto the SCANFI grid: same LCC projection family but lat_0 = 0 vs 49, a constant
+  ## 6,585,077 m northing shift that is NOT a whole pixel (/30 = 219502.57), so this always
+  ## resamples -- `method = "near"` because the values are categorical.
+  ## Guard the download: for a plain http source `preProcess()` ERRORS when the target file is
+  ## already present ("already exists ... Use overwrite = TRUE?") rather than skipping the way the
+  ## Drive path does. Re-downloading 2 GB every run to dodge that is not an option, so fetch once.
+  ccFile <- file.path(mod$dPath, "landcover-2020-classification.tif")
+  if (!file.exists(ccFile)) {
+    reproducible::preProcess(
+      url = paste0(
+        "https://datacube-prod-data-public.s3.ca-central-1.amazonaws.com/",
+        "store/land/landcover/landcover-2020-classification.tif"
+      ),
+      targetFile = basename(ccFile),
+      destinationPath = mod$dPath
     )
   }
+  cc2020 <- terra::rast(ccFile)
+  cc2020 <- terra::crop(cc2020, terra::ext(terra::project(sa, terra::crs(cc2020)))) |>
+    terra::project(lcc, method = "near") |>
+    terra::as.int()
+
+  if (P(sim)$pixelSize != 30) {
+    stopifnot(P(sim)$pixelSize %in% c(240, 120, 90))
+    aggFact <- as.integer(P(sim)$pixelSize / 30)
+    LCClarge <- terra::aggregate(LCClarge, fact = aggFact, fun = "modal")
+    ## MUST use the same fact/fun as LCClarge: the NRV envelope (from the simulated landscape)
+    ## and the current-condition marker (from this layer) have to share one grid.
+    cc2020 <- terra::aggregate(cc2020, fact = aggFact, fun = "modal")
+  }
   LCClarge <- terra::as.int(LCClarge)
+  cc2020 <- terra::as.int(cc2020)
 
   sim$rasterToMatch_biomassParam <- LCClarge
   sim$rasterToMatch <- terra::crop(
@@ -596,26 +634,44 @@ InitMaps <- function(sim) {
 
   ## Current Conditions --------------------------------------------------------------------------
 
-  ## TODO (CC data -- follow up with Julie): the "Species Percent - Composite BC AB
-  ## SBFI" current-condition layers are per-SPECIES % cover only -- they include NO
-  ## land-cover class raster and NO age raster (SBFI/AVI/VRI normally carry age, so
-  ## these should be addable). That species composite feeds Biomass_speciesData
-  ## (overlay with SCANFI + Pickell), NOT the preamble. For now, fall back to SCANFI
-  ## for both land cover and age: leave LandTypeCC empty (all NA) so the overlay
-  ## below defers entirely to the SCANFI LCC (remapDT: NA CC -> use LCC).
-  sim$LandTypeCC <- terra::rast(sim$rasterToMatch_biomassParam)
-  terra::values(sim$LandTypeCC) <- NA_integer_
+  ## Current-conditions land cover = Canada LCC 2020, NOT SCANFI. Using SCANFI here would be
+  ## circular: it is already the LCC that drives the simulation. The two are methodologically
+  ## independent (NFI photo-plot training vs unsupervised clustering + expert interpretation;
+  ## kNN imputation vs per-tile random forest; CFS vs CCRS) -- see report 06.
+  ##
+  ## TWO layers are kept, deliberately:
+  ##   sim$LandTypeCC           -- feeds the overlay; urban is sent to 99 and reclassified to the
+  ##                               nearest type, approximating the PRE-INDUSTRIAL state we simulate.
+  ##   sim$LandTypeCC_reporting -- urban RETAINED; the current-condition reference for reporting,
+  ##                               so "where the landscape sits now" reflects the actual landscape.
+  ## Feeding one layer to both would count imputed forest as real current forest.
+  ##
+  ## NB LandTypeCC keeps NATIVE LCC 2020 codes (1-19); it is not remapped to v2's 0-5 scheme.
+  ## The semantics are carried by remapDT below instead.
+  sim$LandTypeCC <- cc2020
+  sim$LandTypeCC_reporting <- cc2020
+
+  ## TODO (CC age -- follow up with Julie): LCC 2020 carries no age, so the current-condition
+  ## age basis is still the SCANFI stand-age map below. Unchanged by this switch.
 
   ## Non-Tree pixels -----------------------------------------------------------------------------
-  ## Setting NA values
-  ## 3 is shrub, wetland, grassland -- no veg dynamics happen -- will burn in fire modules
-  ## 4 is water, rock, ice
-  ## 5 is no Data ... this is currently cropland -- will be treated as grassland for fires
-  treeClassesCC <- c(0, 1, 2)
-  nontreeClassesCC <- c(3, 4)
+  ## Canada LCC 2020 (NALCMS level-II) classes, and the v2 CC class each stands in for:
+  ##   1, 2, 5, 6   forest (needleleaf / taiga / broadleaf / mixed)  <- v2 CC 0-2 (tree)
+  ##   8, 10-13     shrubland / grassland / lichen-moss              <- v2 CC 3 (no veg dynamics,
+  ##   14           wetland                                             but burns)
+  ##   15           cropland                                         <- v2 CC 5 (grassland for fire)
+  ##   16, 18, 19   barren / water / snow-ice                        <- v2 CC 4 (dropped)
+  ##   17           urban                                            <- NO v2 equivalent (see below)
+  treeClassesCC <- c(1L, 2L, 5L, 6L)
+  nonFlammClassesCC <- c(16L, 18L, 19L) ## barren, water, snow/ice
+  ## Urban has no v2 counterpart: v2's CC layer had no urban class at all. It is sent to 99 so
+  ## convertUnwantedLCC() imputes the nearest type -- the correct PRE-INDUSTRIAL treatment, since
+  ## that land was forest. Measured footprint is small: 0.15% of the FMA reporting area at 240 m
+  ## (0.50% at 30 m; modal aggregation suppresses it 3.4x), max 1.44% in any one FMA.
+  urbanClassCC <- 17L
   treePixelsCCTF <- sim$LandTypeCC[] %in% treeClassesCC
   LandTypeCCNA <- is.na(sim$LandTypeCC[])
-  noDataPixelsCC <- LandTypeCCNA | (sim$LandTypeCC[] == 5)
+  noDataPixelsCC <- LandTypeCCNA | (sim$LandTypeCC[] == 15L) ## cropland == v2's "no data" class 5
   treePixelsCC <- which(treePixelsCCTF)
 
   ## LCC map codes:
@@ -637,32 +693,47 @@ InitMaps <- function(sim) {
 
   ## for each LCC + CC class combo, define which LCC code should be used:
   ## setting a pixel to NA will omit it entirely (i.e., non-vegetated)
+  ## Rule ORDER matters -- later assignments overwrite earlier ones. This mirrors v2's ordering
+  ## exactly, with LCC 2020 codes substituted for v2's CC 0-5 (and urban added).
+  ## NB CC does NOT override LCC's forest determination: every CC class except
+  ## barren/water/snow-ice defers to the LCC code, so LCC 2020 calling treed wetland "wetland"
+  ## will not strip forest out of the simulation -- SCANFI still drives forest extent.
   remapDT <- expand.grid(
     LCC = c(NA_integer_, sort(uniqueLCCClasses)),
-    CC = c(NA_integer_, 0:5)
+    CC = c(NA_integer_, sort(unique(na.omit(sim$LandTypeCC[]))))
   ) |>
-    as.data.table() ## TODO: confirm conversions
+    as.data.table()
   remapDT[LCC %in% c(0, 20, 30), newLCC := NA_integer_]
-  remapDT[is.na(CC) | CC == 5, newLCC := LCC]
-  remapDT[CC == 4, newLCC := NA_integer_]
-  remapDT[CC %in% 0:3, newLCC := LCC]
-  remapDT[is.na(LCC) & CC %in% 0:2, newLCC := 99] ## reclassification needed
+  remapDT[is.na(CC) | CC == 15L, newLCC := LCC] ## cropland: defer to LCC (v2 CC 5)
+  remapDT[CC %in% nonFlammClassesCC, newLCC := NA_integer_] ## drop water/barren/ice (v2 CC 4)
+  remapDT[CC %in% c(treeClassesCC, 8L, 10L, 11L, 12L, 13L, 14L), newLCC := LCC] ## v2 CC 0-3
+  remapDT[is.na(LCC) & CC %in% treeClassesCC, newLCC := 99] ## CC says forest, LCC has none
+  remapDT[CC == urbanClassCC, newLCC := 99] ## urban -> reclassify to nearest type
   remapDT[LCC %in% P(sim)$treeClassesToReplace, newLCC := 99] ## reclassification needed
 
-  ## overlayLCCs cannot digest an all-NA CC layer -- it builds a logical `pixelIndex` and
-  ## its internal convertUnwantedLCC join then fails (see _tmp_upstream_issues.md #5). CC is
-  ## absent here, so feed an all-"5" filler: remapDT treats CC 5 identically to NA
-  ## (`is.na(CC) | CC == 5 -> newLCC := LCC`), so the overlay still defers entirely to the
-  ## SCANFI LCC. sim$LandTypeCC stays all-NA for the LandTypeCCNA flammability logic below.
-  LandTypeCCfiller <- terra::rast(sim$LandTypeCC)
-  terra::values(LandTypeCCfiller) <- 5L
+  ## LandTypeCC now carries real data (Canada LCC 2020), so the all-NA workaround that forced an
+  ## all-"5" filler is no longer needed (it existed because overlayLCCs cannot digest an all-NA
+  ## CC layer -- see _tmp_upstream_issues.md #5).
+  LandTypeCCfiller <- sim$LandTypeCC
   message("Overlaying land cover maps...")
   LCClarge <- overlayLCCs(
     LCCs = list(CC = LandTypeCCfiller, LCC = LCClarge),
-    forestedList = list(CC = 0, LCC = P(sim)$treeClassesLCC),
+    forestedList = list(CC = treeClassesCC, LCC = P(sim)$treeClassesLCC),
     outputLayer = "LCC",
     remapTable = remapDT,
-    classesToReplace = c(P(sim)$treeClassesToReplace, 99),
+    ## `convertUnwantedLCC()` draws each replaced pixel's new class from the surrounding pixels
+    ## that are NOT in `classesToReplace` -- so membership here is also what excludes a class from
+    ## the DONOR pool. `30` is included deliberately: SCANFI conflates urban into its `30`
+    ## (rock/barren) code, so leaving it available let urban pixels be "reclassified" straight back
+    ## to another urban pixel's code, perpetuating the industrial footprint this step exists to
+    ## remove (37% of urban landed on `30` before this change).
+    ##
+    ## This is surgical rather than broad: genuine barren -- where SCANFI AND LCC 2020 agree
+    ## (`CC %in% c(16, 18, 19)`) -- is already sent to NA by `remapDT` above and is untouched here.
+    ## The only `30`s that survive to this point are pixels SCANFI reads as barren while LCC 2020
+    ## calls them vegetated or cropland, i.e. roads/clearings/industrial disturbance. Those are
+    ## exactly what should be reclassified, not donated from.
+    classesToReplace = c(P(sim)$treeClassesToReplace, 99L, 30L),
     availableERC_by_Sp = NULL
   ) |>
     Cache()
@@ -731,7 +802,7 @@ InitMaps <- function(sim) {
   } else {
     flammableMapCC <- defineFlammable(
       sim$LandTypeCC,
-      nonFlammClasses = 4L,
+      nonFlammClasses = nonFlammClassesCC, ## LCC 2020: barren, water, snow/ice
       mask = NULL,
       filename2 = NULL
     )
