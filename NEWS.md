@@ -2,6 +2,13 @@ Known issues: <https://github.com/fRI-Research/LandWeb_preamble/issues>
 
 # LandWeb_preamble (development version)
 
+## 1.0.7
+
+* **The current-condition age composite, the missing-age check and the LCC 2020 remap now call `LandWebUtils`** (>= 1.0.3.9035) -- `cc_age_composite()`, `cc_age_pct_missing()`, `lcc2020_remap_table()` and `lcc2020_classes()` -- instead of running inline, so each is covered by package tests and CI rather than exercised only by a full preamble run. Proven behaviour-neutral on real data: on LacSeulUpland (130,360,104 cells) the composite is cell-for-cell identical to 1.0.6 (0 NA-pattern differences, max difference 0) and the missing-age figure matches exactly (0.8220%).
+* Two latent fragilities of the inline code do not carry over. Its `stopifnot(identical(NAflag(x), 65535))` fails for an in-memory raster even when the sentinel was converted (terra reports `NaN`); the package clears sentinels with `classify()` instead. And its forest mask, `ifel(lcc2020 %in% treeClassesCC, ...)`, only worked because SpaDES attaches `terra`: `%in%` is a plain base closure, so terra's method is found only on the search path.
+* The LCC 2020 class groups (`treeClassesCC`, `nonFlammClassesCC`) now come from `LandWebUtils::lcc2020_classes()`, so the remap, flammability map and age check share one definition.
+* **Removed the `R/` directory**: 21 per-FMA/province study-area helpers plus `utils.R`, about 1,900 lines of LandWeb v2 code. Nothing called them -- they were reachable only through `allLandWeb()`, which nothing called -- and `utils.R` redefined `extractFMA()`, `extractFMU()` and `joinReportingPolygons()`, which `LandWebUtils` exports in diverged form. Study areas come from `LandWebUtils::prepStudyArea()`, and landbase processing from `LandWebUtils::buildLandbasePolygons()`.
+
 ## 1.0.6
 
 * **`ccAgeMaxMissing` now measures the share of FOREST with no age, not the share of the study area.** Stand age is only defined for forest, and NTEMS maps only treed pixels, so after the fill the polygon-wide figure mostly measured lakes: ChurchillRiverUpland still stopped at 39.4% missing, and 76% of what remained was water/barren/ice (47%) or wetland (29%); LacSeulUpland's remainder was 89% water. Over forest (percent of forest with no age):

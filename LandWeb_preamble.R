@@ -19,7 +19,7 @@ defineModule(
       )
     ),
     childModules = character(0),
-    version = list(LandWeb_preamble = "1.0.6"),
+    version = list(LandWeb_preamble = "1.0.7"),
     spatialExtent = raster::extent(rep(NA_real_, 4)),
     timeframe = as.POSIXlt(c(NA, NA)),
     timeunit = "year",
@@ -45,7 +45,7 @@ defineModule(
       "FOR-CAST/spatialutils",
       "FOR-CAST/workflowtools@development",
       "PredictiveEcology/LandR@development (>= 1.1.0.9015)",
-      "PredictiveEcology/LandWebUtils@development (>= 0.1.5.9000)",
+      "PredictiveEcology/LandWebUtils@development (>= 1.0.3.9035)",
       "PredictiveEcology/map@development (>= 0.0.5)",
       "PredictiveEcology/pemisc@development (>= 0.0.3.9007)",
       "PredictiveEcology/reproducible@development (>= 1.2.16.9024)"
@@ -711,7 +711,7 @@ InitMaps <- function(sim) {
   sim$LandTypeCC_reporting <- cc2020
 
   ## NOTE: LCC 2020 carries no age. The current-condition age comes from fRI's `age_in2025`
-  ## composite below (gap-filled from SBFI), deliberately NOT from SCANFI. Unchanged by this switch.
+  ## composite below (gap-filled from NTEMS), deliberately NOT from SCANFI. Unchanged by this switch.
 
   ## Non-Tree pixels -----------------------------------------------------------------------------
   ## Canada LCC 2020 (NALCMS level-II) classes, and the v2 CC class each stands in for:
@@ -721,13 +721,15 @@ InitMaps <- function(sim) {
   ##   15           cropland                                         <- v2 CC 5 (grassland for fire)
   ##   16, 18, 19   barren / water / snow-ice                        <- v2 CC 4 (dropped)
   ##   17           urban                                            <- NO v2 equivalent (see below)
-  treeClassesCC <- c(1L, 2L, 5L, 6L)
-  nonFlammClassesCC <- c(16L, 18L, 19L) ## barren, water, snow/ice
+  ## The class groups are defined once, in `LandWebUtils::lcc2020_classes()`, so the remap, the
+  ## flammability map and the age check below cannot drift apart.
+  lccCC <- LandWebUtils::lcc2020_classes()
+  treeClassesCC <- lccCC$forest
+  nonFlammClassesCC <- lccCC$nonFlammable ## barren, water, snow/ice
   ## Urban has no v2 counterpart: v2's CC layer had no urban class at all. It is sent to 99 so
   ## convertUnwantedLCC() imputes the nearest type -- the correct PRE-INDUSTRIAL treatment, since
   ## that land was forest. Measured footprint is small: 0.15% of the FMA reporting area at 240 m
   ## (0.50% at 30 m; modal aggregation suppresses it 3.4x), max 1.44% in any one FMA.
-  urbanClassCC <- 17L
   treePixelsCCTF <- sim$LandTypeCC[] %in% treeClassesCC
   LandTypeCCNA <- is.na(sim$LandTypeCC[])
   noDataPixelsCC <- LandTypeCCNA | (sim$LandTypeCC[] == 15L) ## cropland == v2's "no data" class 5
@@ -752,23 +754,15 @@ InitMaps <- function(sim) {
 
   ## for each LCC + CC class combo, define which LCC code should be used:
   ## setting a pixel to NA will omit it entirely (i.e., non-vegetated)
-  ## Rule ORDER matters -- later assignments overwrite earlier ones. This mirrors v2's ordering
-  ## exactly, with LCC 2020 codes substituted for v2's CC 0-5 (and urban added).
-  ## NB CC does NOT override LCC's forest determination: every CC class except
-  ## barren/water/snow-ice defers to the LCC code, so LCC 2020 calling treed wetland "wetland"
-  ## will not strip forest out of the simulation -- SCANFI still drives forest extent.
-  remapDT <- expand.grid(
-    LCC = c(NA_integer_, sort(uniqueLCCClasses)),
-    CC = c(NA_integer_, sort(unique(na.omit(sim$LandTypeCC[]))))
-  ) |>
-    as.data.table()
-  remapDT[LCC %in% c(0, 20, 30), newLCC := NA_integer_]
-  remapDT[is.na(CC) | CC == 15L, newLCC := LCC] ## cropland: defer to LCC (v2 CC 5)
-  remapDT[CC %in% nonFlammClassesCC, newLCC := NA_integer_] ## drop water/barren/ice (v2 CC 4)
-  remapDT[CC %in% c(treeClassesCC, 8L, 10L, 11L, 12L, 13L, 14L), newLCC := LCC] ## v2 CC 0-3
-  remapDT[is.na(LCC) & CC %in% treeClassesCC, newLCC := 99] ## CC says forest, LCC has none
-  remapDT[CC == urbanClassCC, newLCC := 99] ## urban -> reclassify to nearest type
-  remapDT[LCC %in% P(sim)$treeClassesToReplace, newLCC := 99] ## reclassification needed
+  ## CC does NOT override LCC's forest determination -- SCANFI still drives forest extent. Rule
+  ## order matters (later rules overwrite earlier ones); the rules and their rationale are documented
+  ## and tested in `LandWebUtils::lcc2020_remap_table()`, which reproduces v2's ordering verbatim.
+  remapDT <- LandWebUtils::lcc2020_remap_table(
+    lccClasses = uniqueLCCClasses,
+    ccClasses = sim$LandTypeCC[],
+    treeClassesToReplace = P(sim)$treeClassesToReplace,
+    classes = lccCC
+  )
 
   ## LandTypeCC now carries real data (Canada LCC 2020), so the all-NA workaround that forced an
   ## all-"5" filler is no longer needed (it existed because overlayLCCs cannot digest an all-NA
@@ -847,21 +841,13 @@ InitMaps <- function(sim) {
   workflowtools::archive_extract_once(ccAgeZip, dir = ccAgeDir)
   ccAge <- terra::rast(file.path(ccAgeDir, "age_in2025.tif"))
 
-  ## The GeoTIFF declares NoData 65535 but `terra` does NOT pick the tag up (`NAflag()` returns
-  ## `NaN`). Left unset, 65535 reads as a real stand age of 65,535 years and silently poisons
-  ## every downstream aggregation. Assert rather than assume, since a future re-delivery could
-  ## change the sentinel.
-  terra::NAflag(ccAge) <- 65535
-  stopifnot(identical(terra::NAflag(ccAge), 65535))
-
-  ## FILL, not MINIMUM. `age_in2025` stays authoritative wherever it has a value; the fills only
-  ## supply pixels it left empty. Using `min()` here instead would let a MODELLED age drag down
-  ## the AB/BC INVENTORY ages, and because `min()` is one-directional that is a systematic young
-  ## bias into exactly the areas where the data is best. Where CanLAD already recorded a
-  ## 1985-2024 disturbance, that value is in `age_in2025` and correctly survives the fill.
-  ##
-  ## The fill is age-at-`ntemsAgeYear` and the composite is age-at-2025, hence the forward ageing;
-  ## omitting it would put a step discontinuity along the AB/BC boundary.
+  ## FILL, not MINIMUM: `age_in2025` stays authoritative wherever it has a value, and the fill only
+  ## supplies pixels it left empty. The fill is age-at-`ntemsAgeYear`, aged forward to 2025;
+  ## omitting that would put a step discontinuity along the AB/BC boundary. The mechanics --
+  ## cropping first (`age_in2025` alone is 6.5e9 cells), clearing both NoData sentinels (65535,
+  ## which terra does NOT read from the tag; NTEMS 255 = non-treed), and reprojecting the fill,
+  ## which is NOT co-registered with `age_in2025` -- live in `LandWebUtils::cc_age_composite()`,
+  ## where each is tested.
   ##
   ## NTEMS is the fill: national, and unlike CanLAD it is not censored at 1985 -- it derives age
   ## three ways (Landsat disturbance 1985+, spectral recovery back to 1965, and allometric
@@ -871,21 +857,7 @@ InitMaps <- function(sim) {
   ## it with fRI's SBFI-derived species percent outside AB/BC is internally consistent rather than
   ## a mix of methodologies.
 
-  ## CROP FIRST, then fill, then project ONCE. `age_in2025` alone is 83,547 x 78,338 = 6.5e9 cells,
-  ## so aligning a fill at full extent would move billions of cells to produce a study area's
-  ## worth of output.
   saVect <- terra::vect(sf::st_as_sf(sim$studyArea_biomassParam))
-  ccAge <- terra::crop(ccAge, terra::project(saVect, terra::crs(ccAge)), mask = TRUE)
-
-  ## `cover()` fills NA in the first argument from the second, cropped and aligned to the window
-  ## already established. `near` keeps the source's own ages rather than inventing intermediates.
-  ##
-  ## NOTE: unlike fRI's rasters, NTEMS is NOT co-registered with `age_in2025` -- it is on its own
-  ## Lambert variant (NAD83 LCC, sp 49/77, cm -95), so this is a true reprojection, not a crop.
-  fillFrom <- function(base, src, offset) {
-    src <- terra::crop(src, terra::project(saVect, terra::crs(src)), mask = TRUE)
-    terra::cover(base, terra::project(src, base, method = "near") + as.integer(offset))
-  }
 
   ## DELIBERATELY NOT SCANFI. Two independent reasons:
   ##
@@ -941,65 +913,47 @@ InitMaps <- function(sim) {
   ## disturbance rate accounts for it -- it does not generalise: disturbance-share/expectation runs
   ## 0.13-0.55 across groups with no correspondence to the old-share ratios. Left unexplained
   ## deliberately rather than rationalised; flag the group when reporting it.
-  if (!is.na(P(sim)$ntemsAgeFile)) {
-    ntemsAge <- terra::rast(file.path(inputPath(sim), P(sim)$ntemsAgeFile))
-    ## 255 is non-treed, not an age. Left unflagged it would enter the composite as a 255-year
-    ## stand and register as Old across every non-treed pixel the fill touches.
-    terra::NAflag(ntemsAge) <- 255
-    stopifnot(identical(terra::NAflag(ntemsAge), 255))
-    ## 151 means '>150' (NTEMS stops resolving age there). Kept as-is: it is already past the
-    ## 120-year Old cutoff, so the cap cannot change any seral-stage assignment.
-    ccAge <- fillFrom(ccAge, ntemsAge, 2025 - P(sim)$ntemsAgeYear)
-  }
+
+  ## 151 means '>150' (NTEMS stops resolving age there) and is kept as-is: it is already past the
+  ## 120-year Old cutoff, so the cap cannot change any seral-stage assignment.
+  useNtems <- !is.na(P(sim)$ntemsAgeFile)
+  ccAge <- LandWebUtils::cc_age_composite(
+    base = ccAge,
+    studyArea = saVect,
+    fill = if (useNtems) terra::rast(file.path(inputPath(sim), P(sim)$ntemsAgeFile)),
+    fillYear = if (useNtems) P(sim)$ntemsAgeYear,
+    epoch = 2025L,
+    baseNAflag = 65535,
+    fillNAflag = 255
+  )
 
   ## Fail loudly rather than initialise a landscape we know is wrong. `age_in2025` has inventory
   ## input only in AB/BC; elsewhere CanLAD is its sole source and cannot date an undisturbed stand,
   ## so coverage collapses.
   ##
-  ## THE DENOMINATOR IS FOREST, and it took two corrections to get there:
+  ## The measure is the percent of FOREST with no age. Forest is LCC 2020 (`treeClassesCC`),
+  ## independent of both age sources and deliberately NOT SCANFI. Why neither the raster, the whole
+  ## study area, nor a coarser grid can be the denominator -- each was tried and each silently
+  ## mis-measured -- is documented and regression-tested in `LandWebUtils::cc_age_pct_missing()`.
+  ## Measured (percent of forest with no age):
   ##
-  ## (1) NOT THE RASTER. `crop(..., mask = TRUE)` sets OUTSIDE-polygon cells to NA, and
-  ##     `mean(is.na(.))` cannot tell those apart from inside cells that genuinely lack an age, so
-  ##     the original check measured the shape of the bounding box. Groups fill only 30-44% of
-  ##     theirs: WesternAlbertaUpland read 71.4% "missing" against a true 3.9% and would have
-  ##     aborted its own test area. (`rasterToMatch_biomassParam` is no help -- it is the UNMASKED
-  ##     `LCClarge`.)
+  ##   group                 forest share   unfilled   filled
+  ##   WesternAlbertaUpland         74.9        3.0       0.8
+  ##   LacSeulUpland                69.2       74.1       0.8
+  ##   ChurchillRiverUpland         52.9       74.6      12.8
   ##
-  ## (2) NOT THE WHOLE POLYGON either. Stand age is only defined for forest, and NTEMS maps only
-  ##     treed pixels, so after the fill the polygon figure mostly measures lakes. Churchill River
-  ##     Upland still stopped at 39.4% filled, and 76% of what remained missing was water/barren
-  ##     (47%) or wetland (29%); Lac Seul's remainder was 89% water. Dividing by forest instead
-  ##     separates a data gap from non-forest cleanly (percent of forest with no age):
-  ##
-  ##       group                 forest share   unfilled   filled
-  ##       WesternAlbertaUpland         74.9        3.0       0.8
-  ##       LacSeulUpland                69.2       74.1       0.8
-  ##       ChurchillRiverUpland         52.9       74.6      12.8
-  ##
-  ##     Unfilled CanLAD-only groups still read ~74%, so the check still stops the landscape it
-  ##     exists for; every filled group passes the unchanged 25% limit.
-  ##
-  ## Forest is LCC 2020 classes 1/2/5/6 (`treeClassesCC`) -- independent of both age sources, and
-  ## deliberately NOT SCANFI, which would bring it back into the current-condition path.
-  ##
-  ## Counted at 30 m, BEFORE the projection. On the coarse grid `average` fills a cell from any one
-  ## of its ~64 children, which loosened the threshold 3-20x and let unfilled WAU through at 0.3%.
-  ## `global()` counts in terra's own chunks, so no 30 m vector is materialised in R.
+  ## Unfilled CanLAD-only groups read ~74% and stop; every filled group passes the 25% limit.
   ##
   ## NOTE Churchill's 12.8% is real, not a denominator artefact: ~8M cells LCC 2020 calls forest
   ## that NTEMS calls non-treed and CanLAD never saw disturbed (0.8% in the other groups). The same
   ## group's NTEMS Old share is half the FRI expectation; that the two share a cause is plausible
   ## but untested. Flag the group when reporting it.
-  saMask <- terra::rasterize(terra::project(saVect, terra::crs(ccAge)), ccAge, field = 1L)
-  lcc2020 <- terra::rast(ccFile)
-  lcc2020 <- terra::crop(lcc2020, terra::project(saVect, terra::crs(lcc2020))) |>
-    terra::project(ccAge, method = "near")
-  forestMask <- terra::ifel(lcc2020 %in% treeClassesCC, 1L, NA) |>
-    terra::mask(saMask)
-  nForest <- terra::global(forestMask, "notNA")[[1L]]
-  stopifnot(nForest > 0) ## a zero denominator would make pctMissing NaN and skip the check
-  nAged <- terra::global(terra::mask(ccAge, forestMask), "notNA")[[1L]]
-  pctMissing <- 100 * (1 - nAged / nForest)
+  pctMissing <- LandWebUtils::cc_age_pct_missing(
+    age = ccAge,
+    studyArea = saVect,
+    landcover = terra::rast(ccFile),
+    forestClasses = treeClassesCC
+  )
   if (pctMissing > P(sim)$ccAgeMaxMissing) {
     stop(
       sprintf(paste(
