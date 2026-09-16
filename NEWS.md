@@ -2,6 +2,13 @@ Known issues: <https://github.com/fRI-Research/LandWeb_preamble/issues>
 
 # LandWeb_preamble (development version)
 
+## 1.0.3
+
+* **Dropped the SCANFI fallback for current-condition stand age**, for two independent reasons.
+    - *Circularity.* `Biomass_borealDataPrep` already derives its default `standAgeMap` from a "SCANFI-derived data product for 2020" via `LandR::prepInputsStandAgeMap()` with NTEMS fire/harvest adjustments. A SCANFI-based current condition would restate the model's own age assumption rather than observe against it — and current-condition-vs-simulated-envelope is precisely the comparison NRV exists to make.
+    - *It is wrong outside Alberta.* Tested against the fire regime itself (equilibrium Poisson, `P(age >= 120) = exp(-120 / FRI)`, from the LTHFC v10 layer and so independent of any age product): SBFI tracks the expectation (Lake of the Woods 19.7 vs 18.0; Big Trout Lake 22.9 vs 20.2; Slave River 25.6 vs 20.2) while SCANFI is 14-100x too low (Lac Seul 1.3 vs 18.0; Slave River 0.2 vs 20.2). Both SCANFI variants (`_age_median_v2`, `_att_age_S_v1_1`) agree with each other, so this is a product-level bias, not a median-vs-mean artefact. In WesternAlbertaUpland both sit *below* expectation (14.0, 17.7 vs 22.9), which is what harvest in a managed landscape should do.
+* New `ccAgeMaxMissing` parameter (default 25%). The preamble now **stops** rather than initialising a landscape whose age is mostly unknown. AB/BC groups sit at 1.5-7.5% missing and proceed; the seven groups whose only age source is CanLAD sit at 62-96% and fail with a message naming the cause and the fix. Raising the threshold does not fix the data — it initialises a landscape with almost no old forest.
+
 ## 1.0.2
 
 * **Current-condition stand age now comes from fRI Research's `age_in2025` composite** rather than the SCANFI median age. New parameters `ccAgeDriveId` (the delivered raster) and `sbfiAgeDriveId` (the SBFI fill, `NA` until fRI deliver it).

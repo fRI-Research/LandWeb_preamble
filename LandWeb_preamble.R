@@ -19,7 +19,7 @@ defineModule(
       )
     ),
     childModules = character(0),
-    version = list(LandWeb_preamble = "1.0.2"),
+    version = list(LandWeb_preamble = "1.0.3"),
     spatialExtent = raster::extent(rep(NA_real_, 4)),
     timeframe = as.POSIXlt(c(NA, NA)),
     timeunit = "year",
@@ -73,8 +73,23 @@ defineModule(
           "Google Drive id of the rasterised SBFI 2020 stand age, used to fill `age_in2025`'s",
           "gaps outside AB/BC (where CanLAD is its only source and cannot date an undisturbed",
           "stand). Expected on the same 30 m grid as fRI's SBFI species-percent rasters, which",
-          "are exactly co-registered with `age_in2025`. `NA` falls back to SCANFI with a warning;",
-          "set it once fRI Research deliver the raster."
+          "are exactly co-registered with `age_in2025`. Deliberately NOT SCANFI: that would be",
+          "circular (`Biomass_borealDataPrep` already derives its default stand age from SCANFI)",
+          "and is 14-100x too low on old forest outside AB. `NA` is allowed only where",
+          "`age_in2025` alone meets `ccAgeMaxMissing`."
+        )
+      ),
+      defineParameter(
+        "ccAgeMaxMissing",
+        "numeric",
+        25,
+        0,
+        100,
+        paste(
+          "Maximum percent of the study area allowed to have no current-condition stand age",
+          "before `LandWeb_preamble` stops. AB/BC groups sit at 1.5-7.5%; groups whose only age",
+          "source is CanLAD sit at 62-96%. Raising this does not fix the data -- it initialises",
+          "a landscape with almost no old forest."
         )
       ),
       defineParameter(
@@ -296,7 +311,13 @@ defineModule(
       createsOutput(
         "standAgeMap",
         "SpatRaster",
-        desc = "Current-condition stand age (SCANFI 2020 median), aligned to the RTM."
+        desc = paste(
+          "Current-condition stand age, aligned to the RTM: fRI Research's `age_in2025`",
+          "(AB/BC inventories + CanLAD), gap-filled from SBFI where configured. NOT",
+          "SCANFI-derived -- `Biomass_borealDataPrep` already defaults its stand age to a",
+          "SCANFI product, so a SCANFI basis here would make the current condition a",
+          "restatement of the model's own assumption rather than an observation against it."
+        )
       ),
       createsOutput("nonTreePixels", "integer", desc = NA),
       createsOutput("rasterToMatch", "RasterLayer", desc = NA),
@@ -677,8 +698,8 @@ InitMaps <- function(sim) {
   sim$LandTypeCC <- cc2020
   sim$LandTypeCC_reporting <- cc2020
 
-  ## TODO (CC age -- follow up with Julie): LCC 2020 carries no age, so the current-condition
-  ## age basis is still the SCANFI stand-age map below. Unchanged by this switch.
+  ## NOTE: LCC 2020 carries no age. The current-condition age comes from fRI's `age_in2025`
+  ## composite below (gap-filled from SBFI), deliberately NOT from SCANFI. Unchanged by this switch.
 
   ## Non-Tree pixels -----------------------------------------------------------------------------
   ## Canada LCC 2020 (NALCMS level-II) classes, and the v2 CC class each stands in for:
@@ -803,18 +824,11 @@ InitMaps <- function(sim) {
 
   ## Age map -------------------------------------------------------------------------------------
 
-  ## SCANFI 2020 stand age (Drive id 1nXPS3bp..., ~5.5 GB). Fetch via the authenticated
-  ## googledrive API (workflowtools::drive_download_once) -- a fresh reproducible Drive download
-  ## of this large restricted file returns an unauthenticated sign-in HTML page (the SA token
-  ## works for the googledrive API but not reproducible's content download; see
-  ## _tmp_upstream_issues.md #6). Then crop windowed + align to the RTM (bilinear), masked by it.
-  ## TODO: this SKIPS prepInputsStandAgeMap's NTEMS fire/harvest + kNN age adjustment -- raw
-  ## SCANFI median age for now; revisit once the upstream Drive-auth issue is resolved.
-  ageFile <- file.path(mod$dPath, "SCANFI_age_median_2020_v2_20260119.tif")
-  workflowtools::drive_download_once(googledrive::as_id("1nXPS3bpFUESYieNfXO25OKlZJEgqtRnD"), ageFile)
-  scanfiAge <- terra::rast(ageFile)
-
   ## fRI `age_in2025` -- the primary current-condition age (see the coverage note above).
+  ## Fetched via the authenticated googledrive API (`workflowtools::drive_download_once`): a
+  ## reproducible Drive download of a large restricted file returns an unauthenticated sign-in
+  ## HTML page, because the SA token works for the googledrive API but not for reproducible's
+  ## content download (see `_tmp_upstream_issues.md` #6).
   ccAgeDir <- file.path(inputPath(sim), "age2025") |> fs::dir_create()
   ccAgeZip <- file.path(ccAgeDir, "age_in2025.zip")
   workflowtools::drive_download_once(googledrive::as_id(P(sim)$ccAgeDriveId), ccAgeZip)
@@ -843,10 +857,10 @@ InitMaps <- function(sim) {
   ## stands), so it can age the old forest CanLAD structurally cannot. fRI already rasterise SBFI
   ## for species percent on a grid EXACTLY co-registered with `age_in2025` (30 m, integer cell
   ## offset), so an SBFI age raster from that same pipeline needs no resampling here.
-  ## SCANFI remains the backstop so the layer can never carry holes into cohort initialisation.
-  ## CROP FIRST, then fill, then project ONCE. `age_in2025` is 83,547 x 78,338 and SCANFI is
-  ## 119,100 x 178,400, so aligning either at full extent would move billions of cells to produce
-  ## a study area's worth of output.
+
+  ## CROP FIRST, then fill, then project ONCE. `age_in2025` alone is 83,547 x 78,338 = 6.5e9 cells,
+  ## so aligning a fill at full extent would move billions of cells to produce a study area's
+  ## worth of output.
   saVect <- terra::vect(sf::st_as_sf(sim$studyArea_biomassParam))
   ccAge <- terra::crop(ccAge, terra::project(saVect, terra::crs(ccAge)), mask = TRUE)
 
@@ -857,20 +871,56 @@ InitMaps <- function(sim) {
     terra::cover(base, terra::project(src, base, method = "near") + 5L)
   }
 
-  if (is.na(P(sim)$sbfiAgeDriveId)) {
-    warning("No SBFI age raster configured (`sbfiAgeDriveId` is NA), so `age_in2025`'s gaps fall ",
-            "through to SCANFI. That closes the coverage gap but NOT the old-forest one: SCANFI's ",
-            "age saturates well below 150 years outside AB/BC (Lac Seul Upland: median 80, p99 ",
-            "120, max 165, 0.00% over 150). Set the parameter once fRI Research deliver the ",
-            "rasterised SBFI age.", call. = FALSE)
-  } else {
+  ## DELIBERATELY NOT SCANFI. Two independent reasons:
+  ##
+  ## (1) CIRCULARITY. `Biomass_borealDataPrep` already uses SCANFI: absent a supplied `standAgeMap`
+  ##     it builds one from the "SCANFI-derived data product for 2020" via
+  ##     `LandR::prepInputsStandAgeMap()` with NTEMS fire/harvest adjustments. A SCANFI-based
+  ##     current condition would therefore restate the model's own age assumption rather than
+  ##     observe against it, and the NRV comparison -- current condition vs simulated envelope --
+  ##     is exactly where that circularity would do damage.
+  ##
+  ## (2) IT IS EMPIRICALLY WRONG OUTSIDE ALBERTA. Tested against the fire regime itself
+  ##     (equilibrium Poisson, `P(age >= 120) = exp(-120 / FRI)`, from the LTHFC v10 layer --
+  ##     independent of any age product):
+  ##
+  ##       group                 FRI   expected %Old   SBFI    SCANFI
+  ##       LakeoftheWoods       70.0            18.0   19.7         -
+  ##       BigTroutLake         74.9            20.2   22.9         -
+  ##       SlaveRiverLowland    75.0            20.2   25.6       0.2
+  ##       LacSeulUpland        70.0            18.0   28.1       1.3
+  ##       WesternAlbertaUpland 82.3            22.9   14.0      17.7
+  ##
+  ##     SBFI tracks the expectation; SCANFI is 14-100x too low outside AB. (Both sit below it in
+  ##     WAU, which is what harvest in a managed landscape should do.) Both SCANFI variants --
+  ##     `_age_median_v2` and `_att_age_S_v1_1` -- agree with each other, so this is a product-level
+  ##     bias, not a median-vs-mean artefact.
+  if (!is.na(P(sim)$sbfiAgeDriveId)) {
     sbfiDir <- file.path(inputPath(sim), "sbfi_age") |> fs::dir_create()
     sbfiFile <- file.path(sbfiDir, "SBFI_age_2020.tif")
     workflowtools::drive_download_once(googledrive::as_id(P(sim)$sbfiAgeDriveId), sbfiFile)
     ccAge <- fillFrom(ccAge, terra::rast(sbfiFile))
   }
 
-  ccAge <- fillFrom(ccAge, scanfiAge)
+  ## Fail loudly rather than initialise a landscape we know is wrong. `age_in2025` has inventory
+  ## input only in AB/BC; elsewhere CanLAD is its sole source and cannot date an undisturbed stand,
+  ## so coverage collapses. AB/BC groups sit at 1.5-7.5% missing and proceed; the seven affected
+  ## groups sit at 62-96% and stop here.
+  ccVals <- terra::values(ccAge, mat = FALSE)
+  pctMissing <- 100 * mean(is.na(ccVals))
+  if (pctMissing > P(sim)$ccAgeMaxMissing) {
+    stop(
+      sprintf(paste(
+        "current-condition stand age is %.1f%% missing for '%s' (limit %.1f%%).",
+        "`age_in2025` has inventory input only in AB/BC; elsewhere CanLAD is its only source and",
+        "cannot date an undisturbed stand. Supply `sbfiAgeDriveId` -- SBFI is national and its age",
+        "structure matches the fire-return interval, which SCANFI's does not (14-100x too low",
+        "outside AB). Raising `ccAgeMaxMissing` instead would initialise a landscape with almost",
+        "no old forest, which is the quantity this project exists to report."
+      ), pctMissing, P(sim)$.studyAreaName, P(sim)$ccAgeMaxMissing),
+      call. = FALSE
+    )
+  }
 
   ## 30 m -> the biomass-parameter grid. `average` AGGREGATES the ~8x8 block of 30 m cells each
   ## coarse cell covers; `bilinear` would sample four neighbours instead and discard the rest.
