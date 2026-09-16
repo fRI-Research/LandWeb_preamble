@@ -19,7 +19,7 @@ defineModule(
       )
     ),
     childModules = character(0),
-    version = list(LandWeb_preamble = "1.0.1"),
+    version = list(LandWeb_preamble = "1.0.2"),
     spatialExtent = raster::extent(rep(NA_real_, 4)),
     timeframe = as.POSIXlt(c(NA, NA)),
     timeunit = "year",
@@ -51,6 +51,32 @@ defineModule(
       "PredictiveEcology/reproducible@development (>= 1.2.16.9024)"
     ),
     parameters = rbind(
+      defineParameter(
+        "ccAgeDriveId",
+        "character",
+        "1fRd8UdCEKM86NyJsMLvmZqgqNra4AwyD",
+        NA,
+        NA,
+        paste(
+          "Google Drive id of fRI Research's `age_in2025.zip` current-condition stand-age",
+          "composite (AB Crown AVI + AB AVIE + BC VEG_COMP 2025 + CanLAD, combined by",
+          "`CellStatistics(MINIMUM, DATA)`). Update if the file is re-delivered."
+        )
+      ),
+      defineParameter(
+        "sbfiAgeDriveId",
+        "character",
+        NA_character_,
+        NA,
+        NA,
+        paste(
+          "Google Drive id of the rasterised SBFI 2020 stand age, used to fill `age_in2025`'s",
+          "gaps outside AB/BC (where CanLAD is its only source and cannot date an undisturbed",
+          "stand). Expected on the same 30 m grid as fRI's SBFI species-percent rasters, which",
+          "are exactly co-registered with `age_in2025`. `NA` falls back to SCANFI with a warning;",
+          "set it once fRI Research deliver the raster."
+        )
+      ),
       defineParameter(
         "bufferDist",
         "numeric",
@@ -753,8 +779,27 @@ InitMaps <- function(sim) {
   )
 
   ## Age from Current Conditions -----------------------------------------------------------------
-  ## No CC age raster available yet (TODO: Julie to add one) -- use the SCANFI
-  ## stand-age map below as the current-condition age (CC_TSF).
+  ## fRI Research's `age_in2025` composite (delivered 2026-08-21). Built in ArcGIS as
+  ## `CellStatistics(MINIMUM, DATA)` over four rasters: AB Crown AVI (origin to 2019), AB AVIE
+  ## (to 2021), BC VEG_COMP_LYR_R1_POLY_2025, and CanLAD 1985-2024. Ignoring NoData makes that
+  ## MINIMUM behave as the hierarchical fill Julie described: inventory first, Crown filling
+  ## AVIE's gaps, CanLAD filling what remains and winning wherever it saw a newer disturbance.
+  ##
+  ## COVERAGE IS NOT UNIFORM, and this is the reason for the SBFI fill below. Only AB and BC have
+  ## inventory input; everywhere else CanLAD is the sole source, and CanLAD cannot date a stand it
+  ## never saw disturbed. Measured on the delivered raster (3e5 regular samples per unit):
+  ##
+  ##   province      %NoData  medianAge  %<=40yr   |  province   %NoData  medianAge  %<=40yr
+  ##   Alberta          51.6         85     34.3   |  Ontario       90.1         22    100.0
+  ##   BritishColumbia  52.8        119     22.9   |  Yukon         98.4         12    100.0
+  ##   Saskatchewan     78.1         15    100.0   |  Nunavut       99.8         33    100.0
+  ##   Manitoba         82.1         28    100.0   |  NWT           84.9         11    100.0
+  ##
+  ## Outside AB/BC NOT ONE PIXEL exceeds 40 years -- exactly the CanLAD window (2025-1985) -- and
+  ## 78-100% carries no age at all. Initialising a study area there from this layer alone would
+  ## start the run with zero old forest, which is precisely the quantity LandWeb exists to model.
+  ## 7 of the 18 study-area groups are affected; WesternAlbertaUpland is not (7.5% NoData,
+  ## median 85, 8.1% over 150 years).
 
   ## Age map -------------------------------------------------------------------------------------
 
@@ -767,13 +812,75 @@ InitMaps <- function(sim) {
   ## SCANFI median age for now; revisit once the upstream Drive-auth issue is resolved.
   ageFile <- file.path(mod$dPath, "SCANFI_age_median_2020_v2_20260119.tif")
   workflowtools::drive_download_once(googledrive::as_id("1nXPS3bpFUESYieNfXO25OKlZJEgqtRnD"), ageFile)
-  ageRast <- terra::rast(ageFile)
-  saAge <- terra::project(terra::vect(sf::st_as_sf(sim$studyArea_biomassParam)), terra::crs(ageRast))
-  standAgeMap <- terra::crop(ageRast, saAge, mask = TRUE) |>
-    terra::project(sim$rasterToMatch_biomassParam, method = "bilinear") |>
+  scanfiAge <- terra::rast(ageFile)
+
+  ## fRI `age_in2025` -- the primary current-condition age (see the coverage note above).
+  ccAgeDir <- file.path(inputPath(sim), "age2025") |> fs::dir_create()
+  ccAgeZip <- file.path(ccAgeDir, "age_in2025.zip")
+  workflowtools::drive_download_once(googledrive::as_id(P(sim)$ccAgeDriveId), ccAgeZip)
+  workflowtools::archive_extract_once(ccAgeZip, dir = ccAgeDir)
+  ccAge <- terra::rast(file.path(ccAgeDir, "age_in2025.tif"))
+
+  ## The GeoTIFF declares NoData 65535 but `terra` does NOT pick the tag up (`NAflag()` returns
+  ## `NaN`). Left unset, 65535 reads as a real stand age of 65,535 years and silently poisons
+  ## every downstream aggregation. Assert rather than assume, since a future re-delivery could
+  ## change the sentinel.
+  terra::NAflag(ccAge) <- 65535
+  stopifnot(identical(terra::NAflag(ccAge), 65535))
+
+  ## FILL, not MINIMUM. `age_in2025` stays authoritative wherever it has a value; the fills only
+  ## supply pixels it left empty. Using `min()` here instead would let a MODELLED age drag down
+  ## the AB/BC INVENTORY ages, and because `min()` is one-directional that is a systematic young
+  ## bias into exactly the areas where the data is best. Where CanLAD already recorded a
+  ## 1985-2024 disturbance, that value is in `age_in2025` and correctly survives the fill.
+  ##
+  ## Both fills are age-at-2020 and the composite is age-at-2025, hence `+ 5`; omitting it would
+  ## put a 5-year step discontinuity along the AB/BC boundary.
+  ##
+  ## SBFI is the intended fill: national, and unlike CanLAD it is not censored at 1985 -- it
+  ## derives age three ways (Landsat disturbance, spectral recovery for pre-1985 disturbance, and
+  ## allometric imputation from inverted site-index equations plus NTEMS structure for undisturbed
+  ## stands), so it can age the old forest CanLAD structurally cannot. fRI already rasterise SBFI
+  ## for species percent on a grid EXACTLY co-registered with `age_in2025` (30 m, integer cell
+  ## offset), so an SBFI age raster from that same pipeline needs no resampling here.
+  ## SCANFI remains the backstop so the layer can never carry holes into cohort initialisation.
+  ## CROP FIRST, then fill, then project ONCE. `age_in2025` is 83,547 x 78,338 and SCANFI is
+  ## 119,100 x 178,400, so aligning either at full extent would move billions of cells to produce
+  ## a study area's worth of output.
+  saVect <- terra::vect(sf::st_as_sf(sim$studyArea_biomassParam))
+  ccAge <- terra::crop(ccAge, terra::project(saVect, terra::crs(ccAge)), mask = TRUE)
+
+  ## `cover()` fills NA in the first argument from the second, cropped and aligned to the window
+  ## already established. `near` keeps the source's own ages rather than inventing intermediates.
+  fillFrom <- function(base, src) {
+    src <- terra::crop(src, terra::project(saVect, terra::crs(src)), mask = TRUE)
+    terra::cover(base, terra::project(src, base, method = "near") + 5L)
+  }
+
+  if (is.na(P(sim)$sbfiAgeDriveId)) {
+    warning("No SBFI age raster configured (`sbfiAgeDriveId` is NA), so `age_in2025`'s gaps fall ",
+            "through to SCANFI. That closes the coverage gap but NOT the old-forest one: SCANFI's ",
+            "age saturates well below 150 years outside AB/BC (Lac Seul Upland: median 80, p99 ",
+            "120, max 165, 0.00% over 150). Set the parameter once fRI Research deliver the ",
+            "rasterised SBFI age.", call. = FALSE)
+  } else {
+    sbfiDir <- file.path(inputPath(sim), "sbfi_age") |> fs::dir_create()
+    sbfiFile <- file.path(sbfiDir, "SBFI_age_2020.tif")
+    workflowtools::drive_download_once(googledrive::as_id(P(sim)$sbfiAgeDriveId), sbfiFile)
+    ccAge <- fillFrom(ccAge, terra::rast(sbfiFile))
+  }
+
+  ccAge <- fillFrom(ccAge, scanfiAge)
+
+  ## 30 m -> the biomass-parameter grid. `average` AGGREGATES the ~8x8 block of 30 m cells each
+  ## coarse cell covers; `bilinear` would sample four neighbours instead and discard the rest.
+  standAgeMap <- terra::project(ccAge, sim$rasterToMatch_biomassParam, method = "average") |>
     terra::mask(sim$rasterToMatch_biomassParam)
 
-  ## current-condition age = SCANFI stand age (no CC age raster yet -- TODO: Julie)
+  ## `CC_TSF` is the same surface with non-treed pixels dropped. NOTE: in the v3 `targets`
+  ## pipeline dataPrep consumes `standAgeMap`, NOT `CC_TSF` (`_targets.R`, dataPrep `sim_objects`);
+  ## `CC_TSF` is consumed only by the legacy v2 orchestration (`00-main.R`), which passes it AS
+  ## `standAgeMap`. Both therefore now resolve to the same composite.
   CC_TSF <- standAgeMap
   CC_TSF[sim$nonTreePixels] <- NA
   attr(CC_TSF, "imputedPixID") <- integer(0) ## TODO: reassess whether overlay counts as imputation
