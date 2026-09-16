@@ -2,6 +2,13 @@ Known issues: <https://github.com/fRI-Research/LandWeb_preamble/issues>
 
 # LandWeb_preamble (development version)
 
+## 1.0.5
+
+* **Fixed `ccAgeMaxMissing` measuring the bounding box instead of the data.** The check computed `mean(is.na(.))` over the whole cropped raster, but `crop(..., mask = TRUE)` sets every *outside*-polygon cell to `NA`, indistinguishable from an inside cell that genuinely lacks an age. Study-area groups are irregular and fill only 30-44% of their bounding boxes, so the figure was inflated roughly tenfold: WesternAlbertaUpland measured **71.4% missing against a true 3.9%**, and would have aborted its own validated test area on the default 25% limit. It never fired only because the check landed in 1.0.3 and nothing had been re-run since (the last preamble output anywhere predates it by almost four weeks).
+* The check now rasterizes the study-area polygon and counts with `terra::global()` over in-polygon cells, so terra works in its own chunks and no 30 m vector is materialised in R. `rasterToMatch_biomassParam` could not be reused as the denominator: it is the *unmasked* `LCClarge`; only `sim$rasterToMatch` is masked to the study area. A zero-cell study area now stops explicitly instead of yielding `NaN` and silently skipping the check.
+* **The check deliberately stays at 30 m, before the projection.** Moving it onto the 240 m grid was tried and rejected: `average` fills a coarse cell from any one of its ~64 children, so a cell reads as missing only when *all* of them are, which loosened the threshold 3-20x (WAU 0.2% vs 3.9%; LacSeulUpland 7.1% vs 19.5%). The 25% limit is calibrated on 30 m completeness, and the coarse version risks passing exactly the CanLAD-only landscape the check exists to stop.
+* The "AB/BC groups sit at 1.5-7.5% missing" figure quoted in 1.0.3 was measured correctly all along; it was the module's own computation that disagreed with it.
+
 ## 1.0.4
 
 * **The current-condition age fill outside AB/BC is now per-pixel NTEMS forest age**, replacing the never-delivered SBFI age raster. `sbfiAgeDriveId` is retired; new parameters are `ntemsAgeFile` (resolved under `inputPath()`, default `CA_forest_age_2022/CA_forest_age_2022.tif`) and `ntemsAgeYear` (default 2022), the latter setting the forward ageing to the 2025 epoch.

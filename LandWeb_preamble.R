@@ -19,7 +19,7 @@ defineModule(
       )
     ),
     childModules = character(0),
-    version = list(LandWeb_preamble = "1.0.4"),
+    version = list(LandWeb_preamble = "1.0.5"),
     spatialExtent = raster::extent(rep(NA_real_, 4)),
     timeframe = as.POSIXlt(c(NA, NA)),
     timeunit = "year",
@@ -954,10 +954,30 @@ InitMaps <- function(sim) {
 
   ## Fail loudly rather than initialise a landscape we know is wrong. `age_in2025` has inventory
   ## input only in AB/BC; elsewhere CanLAD is its sole source and cannot date an undisturbed stand,
-  ## so coverage collapses. AB/BC groups sit at 1.5-7.5% missing and proceed; the seven affected
-  ## groups sit at 62-96% and stop here.
-  ccVals <- terra::values(ccAge, mat = FALSE)
-  pctMissing <- 100 * mean(is.na(ccVals))
+  ## so coverage collapses.
+  ##
+  ## THE DENOMINATOR MUST BE THE STUDY AREA, NOT THE RASTER. `crop(..., mask = TRUE)` sets
+  ## OUTSIDE-polygon cells to NA, and `mean(is.na(.))` cannot tell those apart from inside-polygon
+  ## cells that genuinely lack an age -- so a bare `mean(is.na(.))` measures the shape of the
+  ## bounding box. These groups are irregular and fill only 30-44% of theirs, which inflated the
+  ## figure roughly tenfold: WesternAlbertaUpland measured 71.4% against a true 3.9%, and would
+  ## have aborted its own validated test area on a 25% limit. (That it never fired is luck -- the
+  ## check landed in 1.0.3 and nothing had been re-run since.) `rasterToMatch_biomassParam` cannot
+  ## serve as the denominator: it is the UNMASKED `LCClarge` (only `sim$rasterToMatch` is masked).
+  ##
+  ## AND IT MUST STAY AT 30 m, BEFORE THE PROJECTION. Measured on the coarse grid instead, a cell
+  ## counts as missing only when ALL ~64 of its 30 m children are -- `average` fills it from any
+  ## one -- which silently loosens the threshold 3-20x (WAU 0.2% vs 3.9%; LacSeul 7.1% vs 19.5%).
+  ## The limit is calibrated on 30 m completeness, and the coarse version risks passing exactly the
+  ## CanLAD-only landscape it exists to stop.
+  ##
+  ## `global()` counts in terra's own chunks, so no 30 m vector is materialised in R. Masking by
+  ## the rasterized polygon also drops fill cells the reprojection can place just past its edge.
+  saMask <- terra::rasterize(terra::project(saVect, terra::crs(ccAge)), ccAge, field = 1L)
+  nStudyArea <- terra::global(saMask, "notNA")[[1L]]
+  stopifnot(nStudyArea > 0) ## a zero denominator would make pctMissing NaN and skip the check
+  nAged <- terra::global(terra::mask(ccAge, saMask), "notNA")[[1L]]
+  pctMissing <- 100 * (1 - nAged / nStudyArea)
   if (pctMissing > P(sim)$ccAgeMaxMissing) {
     stop(
       sprintf(paste(
