@@ -2,6 +2,21 @@ Known issues: <https://github.com/fRI-Research/LandWeb_preamble/issues>
 
 # LandWeb_preamble (development version)
 
+## 1.0.6
+
+* **`ccAgeMaxMissing` now measures the share of FOREST with no age, not the share of the study area.** Stand age is only defined for forest, and NTEMS maps only treed pixels, so after the fill the polygon-wide figure mostly measured lakes: ChurchillRiverUpland still stopped at 39.4% missing, and 76% of what remained was water/barren/ice (47%) or wetland (29%); LacSeulUpland's remainder was 89% water. Over forest (percent of forest with no age):
+
+    | group | forest share | unfilled | filled |
+    |---|---:|---:|---:|
+    | WesternAlbertaUpland | 74.9 | 3.0 | 0.8 |
+    | LacSeulUpland | 69.2 | 74.1 | 0.8 |
+    | ChurchillRiverUpland | 52.9 | 74.6 | 12.8 |
+
+    CanLAD-only groups still read ~74% and stop, so the check still catches the landscape it exists for, and every filled group passes the unchanged 25% limit.
+* Forest is **LCC 2020** classes 1/2/5/6 (`treeClassesCC`), independent of both age sources and deliberately *not* SCANFI, which would bring it back into the current-condition path. This adds one 30 m reprojection of LCC 2020 per study area.
+* **ChurchillRiverUpland's 12.8% is a real gap, not a denominator artefact**: roughly 8M 30 m cells that LCC 2020 calls forest, NTEMS calls non-treed, and CanLAD never saw disturbed, against 0.8% in the other groups. The same group's NTEMS Old share is half its fire-return-interval expectation (1.0.4); a shared cause is plausible but untested. Flag the group when reporting it.
+* The `ccAgeMaxMissing` description and its calibration figures are updated to the forest denominator; the old "1.5-7.5% / 62-96%" figures were polygon-wide.
+
 ## 1.0.5
 
 * **Fixed `ccAgeMaxMissing` measuring the bounding box instead of the data.** The check computed `mean(is.na(.))` over the whole cropped raster, but `crop(..., mask = TRUE)` sets every *outside*-polygon cell to `NA`, indistinguishable from an inside cell that genuinely lacks an age. Study-area groups are irregular and fill only 30-44% of their bounding boxes, so the figure was inflated roughly tenfold: WesternAlbertaUpland measured **71.4% missing against a true 3.9%**, and would have aborted its own validated test area on the default 25% limit. It never fired only because the check landed in 1.0.3 and nothing had been re-run since (the last preamble output anywhere predates it by almost four weeks).

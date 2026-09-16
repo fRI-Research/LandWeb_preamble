@@ -19,7 +19,7 @@ defineModule(
       )
     ),
     childModules = character(0),
-    version = list(LandWeb_preamble = "1.0.5"),
+    version = list(LandWeb_preamble = "1.0.6"),
     spatialExtent = raster::extent(rep(NA_real_, 4)),
     timeframe = as.POSIXlt(c(NA, NA)),
     timeunit = "year",
@@ -98,10 +98,10 @@ defineModule(
         0,
         100,
         paste(
-          "Maximum percent of the study area allowed to have no current-condition stand age",
-          "before `LandWeb_preamble` stops. AB/BC groups sit at 1.5-7.5%; groups whose only age",
-          "source is CanLAD sit at 62-96%. Raising this does not fix the data -- it initialises",
-          "a landscape with almost no old forest."
+          "Maximum percent of FOREST (LCC 2020 classes 1/2/5/6) inside the study area allowed to",
+          "have no current-condition stand age before `LandWeb_preamble` stops. Measured: groups",
+          "whose only age source is CanLAD sit near 74%; with the NTEMS fill, 0.8-12.8%. Raising",
+          "this does not fix the data -- it initialises a landscape with almost no old forest."
         )
       ),
       defineParameter(
@@ -956,32 +956,54 @@ InitMaps <- function(sim) {
   ## input only in AB/BC; elsewhere CanLAD is its sole source and cannot date an undisturbed stand,
   ## so coverage collapses.
   ##
-  ## THE DENOMINATOR MUST BE THE STUDY AREA, NOT THE RASTER. `crop(..., mask = TRUE)` sets
-  ## OUTSIDE-polygon cells to NA, and `mean(is.na(.))` cannot tell those apart from inside-polygon
-  ## cells that genuinely lack an age -- so a bare `mean(is.na(.))` measures the shape of the
-  ## bounding box. These groups are irregular and fill only 30-44% of theirs, which inflated the
-  ## figure roughly tenfold: WesternAlbertaUpland measured 71.4% against a true 3.9%, and would
-  ## have aborted its own validated test area on a 25% limit. (That it never fired is luck -- the
-  ## check landed in 1.0.3 and nothing had been re-run since.) `rasterToMatch_biomassParam` cannot
-  ## serve as the denominator: it is the UNMASKED `LCClarge` (only `sim$rasterToMatch` is masked).
+  ## THE DENOMINATOR IS FOREST, and it took two corrections to get there:
   ##
-  ## AND IT MUST STAY AT 30 m, BEFORE THE PROJECTION. Measured on the coarse grid instead, a cell
-  ## counts as missing only when ALL ~64 of its 30 m children are -- `average` fills it from any
-  ## one -- which silently loosens the threshold 3-20x (WAU 0.2% vs 3.9%; LacSeul 7.1% vs 19.5%).
-  ## The limit is calibrated on 30 m completeness, and the coarse version risks passing exactly the
-  ## CanLAD-only landscape it exists to stop.
+  ## (1) NOT THE RASTER. `crop(..., mask = TRUE)` sets OUTSIDE-polygon cells to NA, and
+  ##     `mean(is.na(.))` cannot tell those apart from inside cells that genuinely lack an age, so
+  ##     the original check measured the shape of the bounding box. Groups fill only 30-44% of
+  ##     theirs: WesternAlbertaUpland read 71.4% "missing" against a true 3.9% and would have
+  ##     aborted its own test area. (`rasterToMatch_biomassParam` is no help -- it is the UNMASKED
+  ##     `LCClarge`.)
   ##
-  ## `global()` counts in terra's own chunks, so no 30 m vector is materialised in R. Masking by
-  ## the rasterized polygon also drops fill cells the reprojection can place just past its edge.
+  ## (2) NOT THE WHOLE POLYGON either. Stand age is only defined for forest, and NTEMS maps only
+  ##     treed pixels, so after the fill the polygon figure mostly measures lakes. Churchill River
+  ##     Upland still stopped at 39.4% filled, and 76% of what remained missing was water/barren
+  ##     (47%) or wetland (29%); Lac Seul's remainder was 89% water. Dividing by forest instead
+  ##     separates a data gap from non-forest cleanly (percent of forest with no age):
+  ##
+  ##       group                 forest share   unfilled   filled
+  ##       WesternAlbertaUpland         74.9        3.0       0.8
+  ##       LacSeulUpland                69.2       74.1       0.8
+  ##       ChurchillRiverUpland         52.9       74.6      12.8
+  ##
+  ##     Unfilled CanLAD-only groups still read ~74%, so the check still stops the landscape it
+  ##     exists for; every filled group passes the unchanged 25% limit.
+  ##
+  ## Forest is LCC 2020 classes 1/2/5/6 (`treeClassesCC`) -- independent of both age sources, and
+  ## deliberately NOT SCANFI, which would bring it back into the current-condition path.
+  ##
+  ## Counted at 30 m, BEFORE the projection. On the coarse grid `average` fills a cell from any one
+  ## of its ~64 children, which loosened the threshold 3-20x and let unfilled WAU through at 0.3%.
+  ## `global()` counts in terra's own chunks, so no 30 m vector is materialised in R.
+  ##
+  ## NOTE Churchill's 12.8% is real, not a denominator artefact: ~8M cells LCC 2020 calls forest
+  ## that NTEMS calls non-treed and CanLAD never saw disturbed (0.8% in the other groups). The same
+  ## group's NTEMS Old share is half the FRI expectation; that the two share a cause is plausible
+  ## but untested. Flag the group when reporting it.
   saMask <- terra::rasterize(terra::project(saVect, terra::crs(ccAge)), ccAge, field = 1L)
-  nStudyArea <- terra::global(saMask, "notNA")[[1L]]
-  stopifnot(nStudyArea > 0) ## a zero denominator would make pctMissing NaN and skip the check
-  nAged <- terra::global(terra::mask(ccAge, saMask), "notNA")[[1L]]
-  pctMissing <- 100 * (1 - nAged / nStudyArea)
+  lcc2020 <- terra::rast(ccFile)
+  lcc2020 <- terra::crop(lcc2020, terra::project(saVect, terra::crs(lcc2020))) |>
+    terra::project(ccAge, method = "near")
+  forestMask <- terra::ifel(lcc2020 %in% treeClassesCC, 1L, NA) |>
+    terra::mask(saMask)
+  nForest <- terra::global(forestMask, "notNA")[[1L]]
+  stopifnot(nForest > 0) ## a zero denominator would make pctMissing NaN and skip the check
+  nAged <- terra::global(terra::mask(ccAge, forestMask), "notNA")[[1L]]
+  pctMissing <- 100 * (1 - nAged / nForest)
   if (pctMissing > P(sim)$ccAgeMaxMissing) {
     stop(
       sprintf(paste(
-        "current-condition stand age is %.1f%% missing for '%s' (limit %.1f%%).",
+        "%.1f%% of forest (LCC 2020) has no current-condition stand age for '%s' (limit %.1f%%).",
         "`age_in2025` has inventory input only in AB/BC; elsewhere CanLAD is its only source and",
         "cannot date an undisturbed stand. Supply `ntemsAgeFile` -- NTEMS is national and its age",
         "structure matches the fire-return interval, which SCANFI's does not (14-100x too low",
