@@ -903,8 +903,8 @@ InitMaps <- function(sim) {
   ##       group                  FRI   expected   age_in2025   NTEMS   SBFI   SCANFI
   ##       PeaceLowland          48.7        8.6         18.9     6.4      -        -
   ##       LakeoftheWoods        70.0       18.0            -       -    19.7       -
-  ##       LacSeulUpland         70.0       18.0          0.0    21.3    28.1      1.3
-  ##       ChurchillRiverUpland  73.3       19.4          0.0     5.3      -        -
+  ##       LacSeulUpland         70.0       18.0          0.0    28.0    28.1      1.3
+  ##       ChurchillRiverUpland  73.3       19.4          0.0     9.6      -        -
   ##       BigTroutLake          74.9       20.2            -       -    22.9       -
   ##       SlaveRiverLowland     75.0       20.2            -       -    25.6      0.2
   ##       ClearHillsUpland      80.5       20.7         33.3    18.9      -        -
@@ -912,7 +912,9 @@ InitMaps <- function(sim) {
   ##
   ##     SCANFI is 14-100x too low outside AB, and both its variants (`_age_median_v2`,
   ##     `_att_age_S_v1_1`) agree with each other, so that is a product-level bias rather than a
-  ##     median-vs-mean artefact. NTEMS and SBFI both track the expectation.
+  ##     median-vs-mean artefact. NTEMS and SBFI both track the expectation -- and in LacSeulUpland
+  ##     they agree to within 0.1 (28.0 vs 28.1), which is about as direct a confirmation as we can
+  ##     get that SBFI's stand age IS this product, summarised to polygons.
   ##
   ##     The three AB/BC groups are the informative ones, because only there do `age_in2025` and
   ##     NTEMS both have values. NTEMS sits at 0.74-0.91 of expectation across FRIs from 49 to 82 --
@@ -923,6 +925,22 @@ InitMaps <- function(sim) {
   ##     photo-interpreted stand age vs satellite-modelled age -- and the independent yardstick sits
   ##     between them, nearer NTEMS. `age_in2025` is nonetheless kept authoritative where it exists,
   ##     because switching source WITHIN a study area would be worse than a bias at its edge.
+  ##
+  ## LIMITATION, worth knowing before reading any old-seral result outside AB/BC: 100% of NTEMS's
+  ## Old signal is ALLOMETRIC. Broken down by the companion `_approach` raster, the disturbance and
+  ## recovery approaches contribute 0.0% Old in every group tested, and allometric 6.8-33.0%. That
+  ## is structural rather than incidental -- disturbance detection reaches only 1985 (~40 yr) and
+  ## recovery only 1965 (~60 yr), so neither can EVER produce a 120-year stand. Allometric covers
+  ## 77-93% of treed pixels here (78.3% nationally). Old-seral area outside AB/BC is therefore
+  ## MODELLED, not observed, and rests on the one component carrying the 150-year cap. There is no
+  ## independent alternative: SBFI's old forest is this same model summarised, and SCANFI's is
+  ## 14-100x too low. Document it; it is not a reason to switch source.
+  ##
+  ## ChurchillRiverUpland is the one group that does not fit (9.6% Old vs 19.4% expected, 0.49x;
+  ## its allometric pixels give 12.4% against 20-33% elsewhere). Checked whether its detected
+  ## disturbance rate accounts for it -- it does not generalise: disturbance-share/expectation runs
+  ## 0.13-0.55 across groups with no correspondence to the old-share ratios. Left unexplained
+  ## deliberately rather than rationalised; flag the group when reporting it.
   if (!is.na(P(sim)$ntemsAgeFile)) {
     ntemsAge <- terra::rast(file.path(inputPath(sim), P(sim)$ntemsAgeFile))
     ## 255 is non-treed, not an age. Left unflagged it would enter the composite as a 255-year
