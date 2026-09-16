@@ -2,6 +2,15 @@ Known issues: <https://github.com/fRI-Research/LandWeb_preamble/issues>
 
 # LandWeb_preamble (development version)
 
+## 1.0.4
+
+* **The current-condition age fill outside AB/BC is now per-pixel NTEMS forest age**, replacing the never-delivered SBFI age raster. `sbfiAgeDriveId` is retired; new parameters are `ntemsAgeFile` (resolved under `inputPath()`, default `CA_forest_age_2022/CA_forest_age_2022.tif`) and `ntemsAgeYear` (default 2022), the latter setting the forward ageing to the 2025 epoch.
+* **Why NTEMS rather than a rasterised SBFI.** SBFI's own stand age *is* NTEMS age, summarised to polygons by the same published method (Maltman et al. 2023), so going to the source both avoids asking fRI Research for a derived product and avoids the polygon-collapse loss that rasterising SBFI's `AGE_MEDIAN` would have caused. Pairing it with fRI's SBFI-derived species percent outside AB/BC is therefore internally consistent, not a mix of methodologies: the 2019 and 2022 NTEMS vintages differ only in the disturbance window (1985-2019 vs 1985-2022), documented identically.
+* **The source switch at the AB/BC boundary is a real discontinuity, and is accepted deliberately.** Where both sources exist they disagree — Spearman rho 0.20-0.35 per pixel, NTEMS median 65-75 against `age_in2025`'s 95, and NTEMS reports roughly half the Old-seral area. Judged against the fire regime itself (equilibrium Poisson `P(age >= 120) = exp(-120 / FRI)`, area-weighted over LTHFC v10 and independent of every age product), it is **NTEMS that is better calibrated**: across the three AB/BC groups it sits at 0.74-0.91 of expectation over FRIs from 49 to 82 — consistently just below, as harvest in a managed landscape should put it — while `age_in2025` sits 1.44-2.20x *above* expectation, which harvest cannot explain. `age_in2025` is nonetheless kept authoritative wherever it has a value, because switching source *within* a study area would be worse than a bias at its edge.
+* A single bias correction fitted in the overlap was considered and rejected: the three adjacent AB/BC groups imply corrections of -4.5, -10.3 and -19.6 years, a 4x spread that is direct evidence such a correction would not transfer to Saskatchewan.
+* NTEMS `255` (non-treed) is flagged `NA` and asserted, for the same reason `age_in2025`'s `65535` is: left unset it enters the composite as a 255-year stand and registers as Old across every non-treed pixel the fill touches. `151` (meaning ">150") is kept as-is — it is already past the 120-year Old cutoff, so the cap cannot change a seral-stage assignment.
+* Unlike fRI's rasters, NTEMS is **not** co-registered with `age_in2025` — it is on its own Lambert variant (NAD83 LCC, standard parallels 49/77, central meridian -95) — so the fill is a true reprojection rather than a crop. The existing crop-before-project ordering already bounds the cost.
+
 ## 1.0.3
 
 * **Dropped the SCANFI fallback for current-condition stand age**, for two independent reasons.

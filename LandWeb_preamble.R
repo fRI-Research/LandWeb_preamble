@@ -19,7 +19,7 @@ defineModule(
       )
     ),
     childModules = character(0),
-    version = list(LandWeb_preamble = "1.0.3"),
+    version = list(LandWeb_preamble = "1.0.4"),
     spatialExtent = raster::extent(rep(NA_real_, 4)),
     timeframe = as.POSIXlt(c(NA, NA)),
     timeunit = "year",
@@ -64,19 +64,31 @@ defineModule(
         )
       ),
       defineParameter(
-        "sbfiAgeDriveId",
+        "ntemsAgeFile",
         "character",
-        NA_character_,
+        "CA_forest_age_2022/CA_forest_age_2022.tif",
         NA,
         NA,
         paste(
-          "Google Drive id of the rasterised SBFI 2020 stand age, used to fill `age_in2025`'s",
-          "gaps outside AB/BC (where CanLAD is its only source and cannot date an undisturbed",
-          "stand). Expected on the same 30 m grid as fRI's SBFI species-percent rasters, which",
-          "are exactly co-registered with `age_in2025`. Deliberately NOT SCANFI: that would be",
-          "circular (`Biomass_borealDataPrep` already derives its default stand age from SCANFI)",
-          "and is 14-100x too low on old forest outside AB. `NA` is allowed only where",
-          "`age_in2025` alone meets `ccAgeMaxMissing`."
+          "File name, resolved under `inputPath(sim)`, of the NTEMS per-pixel forest age used to",
+          "fill `age_in2025`'s gaps outside AB/BC (where CanLAD is its only source and cannot",
+          "date an undisturbed stand). Values are 0-150 years, 151 meaning '>150', and 255",
+          "non-treed. Deliberately NOT SCANFI, which would be circular and is 14-100x too low",
+          "on old forest outside AB -- see the fill block in `.inputObjects`. `NA` disables the",
+          "fill and is allowed only where `age_in2025` alone meets `ccAgeMaxMissing`."
+        )
+      ),
+      defineParameter(
+        "ntemsAgeYear",
+        "numeric",
+        2022,
+        1985,
+        NA,
+        paste(
+          "Vintage of `ntemsAgeFile`. The fill is aged forward to the `age_in2025` epoch by",
+          "`2025 - ntemsAgeYear`; omitting that would put a step discontinuity along the AB/BC",
+          "boundary. Must match the file actually supplied -- NTEMS publishes several vintages",
+          "of one product line (2019 and 2022 differ only in the disturbance window)."
         )
       ),
       defineParameter(
@@ -848,15 +860,16 @@ InitMaps <- function(sim) {
   ## bias into exactly the areas where the data is best. Where CanLAD already recorded a
   ## 1985-2024 disturbance, that value is in `age_in2025` and correctly survives the fill.
   ##
-  ## Both fills are age-at-2020 and the composite is age-at-2025, hence `+ 5`; omitting it would
-  ## put a 5-year step discontinuity along the AB/BC boundary.
+  ## The fill is age-at-`ntemsAgeYear` and the composite is age-at-2025, hence the forward ageing;
+  ## omitting it would put a step discontinuity along the AB/BC boundary.
   ##
-  ## SBFI is the intended fill: national, and unlike CanLAD it is not censored at 1985 -- it
-  ## derives age three ways (Landsat disturbance, spectral recovery for pre-1985 disturbance, and
-  ## allometric imputation from inverted site-index equations plus NTEMS structure for undisturbed
-  ## stands), so it can age the old forest CanLAD structurally cannot. fRI already rasterise SBFI
-  ## for species percent on a grid EXACTLY co-registered with `age_in2025` (30 m, integer cell
-  ## offset), so an SBFI age raster from that same pipeline needs no resampling here.
+  ## NTEMS is the fill: national, and unlike CanLAD it is not censored at 1985 -- it derives age
+  ## three ways (Landsat disturbance 1985+, spectral recovery back to 1965, and allometric
+  ## imputation from inverted site-index equations plus structure/productivity for stands showing
+  ## neither), so it can age the old forest CanLAD structurally cannot. It is also the SAME source
+  ## SBFI's own age is built from, by the same published method (Maltman et al. 2023), so pairing
+  ## it with fRI's SBFI-derived species percent outside AB/BC is internally consistent rather than
+  ## a mix of methodologies.
 
   ## CROP FIRST, then fill, then project ONCE. `age_in2025` alone is 83,547 x 78,338 = 6.5e9 cells,
   ## so aligning a fill at full extent would move billions of cells to produce a study area's
@@ -866,9 +879,12 @@ InitMaps <- function(sim) {
 
   ## `cover()` fills NA in the first argument from the second, cropped and aligned to the window
   ## already established. `near` keeps the source's own ages rather than inventing intermediates.
-  fillFrom <- function(base, src) {
+  ##
+  ## NOTE: unlike fRI's rasters, NTEMS is NOT co-registered with `age_in2025` -- it is on its own
+  ## Lambert variant (NAD83 LCC, sp 49/77, cm -95), so this is a true reprojection, not a crop.
+  fillFrom <- function(base, src, offset) {
     src <- terra::crop(src, terra::project(saVect, terra::crs(src)), mask = TRUE)
-    terra::cover(base, terra::project(src, base, method = "near") + 5L)
+    terra::cover(base, terra::project(src, base, method = "near") + as.integer(offset))
   }
 
   ## DELIBERATELY NOT SCANFI. Two independent reasons:
@@ -881,25 +897,41 @@ InitMaps <- function(sim) {
   ##     is exactly where that circularity would do damage.
   ##
   ## (2) IT IS EMPIRICALLY WRONG OUTSIDE ALBERTA. Tested against the fire regime itself
-  ##     (equilibrium Poisson, `P(age >= 120) = exp(-120 / FRI)`, from the LTHFC v10 layer --
-  ##     independent of any age product):
+  ##     (equilibrium Poisson, `P(age >= 120) = exp(-120 / FRI)`, area-weighted over LTHFC v10 --
+  ##     independent of every age product). %Old = percent of treed pixels at age >= 120:
   ##
-  ##       group                 FRI   expected %Old   SBFI    SCANFI
-  ##       LakeoftheWoods       70.0            18.0   19.7         -
-  ##       BigTroutLake         74.9            20.2   22.9         -
-  ##       SlaveRiverLowland    75.0            20.2   25.6       0.2
-  ##       LacSeulUpland        70.0            18.0   28.1       1.3
-  ##       WesternAlbertaUpland 82.3            22.9   14.0      17.7
+  ##       group                  FRI   expected   age_in2025   NTEMS   SBFI   SCANFI
+  ##       PeaceLowland          48.7        8.6         18.9     6.4      -        -
+  ##       LakeoftheWoods        70.0       18.0            -       -    19.7       -
+  ##       LacSeulUpland         70.0       18.0          0.0    21.3    28.1      1.3
+  ##       ChurchillRiverUpland  73.3       19.4          0.0     5.3      -        -
+  ##       BigTroutLake          74.9       20.2            -       -    22.9       -
+  ##       SlaveRiverLowland     75.0       20.2            -       -    25.6      0.2
+  ##       ClearHillsUpland      80.5       20.7         33.3    18.9      -        -
+  ##       WesternAlbertaUpland  82.3       22.9         32.9    18.2    14.0     17.7
   ##
-  ##     SBFI tracks the expectation; SCANFI is 14-100x too low outside AB. (Both sit below it in
-  ##     WAU, which is what harvest in a managed landscape should do.) Both SCANFI variants --
-  ##     `_age_median_v2` and `_att_age_S_v1_1` -- agree with each other, so this is a product-level
-  ##     bias, not a median-vs-mean artefact.
-  if (!is.na(P(sim)$sbfiAgeDriveId)) {
-    sbfiDir <- file.path(inputPath(sim), "sbfi_age") |> fs::dir_create()
-    sbfiFile <- file.path(sbfiDir, "SBFI_age_2020.tif")
-    workflowtools::drive_download_once(googledrive::as_id(P(sim)$sbfiAgeDriveId), sbfiFile)
-    ccAge <- fillFrom(ccAge, terra::rast(sbfiFile))
+  ##     SCANFI is 14-100x too low outside AB, and both its variants (`_age_median_v2`,
+  ##     `_att_age_S_v1_1`) agree with each other, so that is a product-level bias rather than a
+  ##     median-vs-mean artefact. NTEMS and SBFI both track the expectation.
+  ##
+  ##     The three AB/BC groups are the informative ones, because only there do `age_in2025` and
+  ##     NTEMS both have values. NTEMS sits at 0.74-0.91 of expectation across FRIs from 49 to 82 --
+  ##     consistently just below, which is what harvest in a managed landscape should do --
+  ##     while `age_in2025` sits at 1.44-2.20x ABOVE it, which harvest cannot explain. So where the
+  ##     two disagree (and they do: rho = 0.20-0.35 per pixel, NTEMS median 65-75 vs 95), it is
+  ##     NOT the case that the fill is degrading good inventory. They are two measurement systems --
+  ##     photo-interpreted stand age vs satellite-modelled age -- and the independent yardstick sits
+  ##     between them, nearer NTEMS. `age_in2025` is nonetheless kept authoritative where it exists,
+  ##     because switching source WITHIN a study area would be worse than a bias at its edge.
+  if (!is.na(P(sim)$ntemsAgeFile)) {
+    ntemsAge <- terra::rast(file.path(inputPath(sim), P(sim)$ntemsAgeFile))
+    ## 255 is non-treed, not an age. Left unflagged it would enter the composite as a 255-year
+    ## stand and register as Old across every non-treed pixel the fill touches.
+    terra::NAflag(ntemsAge) <- 255
+    stopifnot(identical(terra::NAflag(ntemsAge), 255))
+    ## 151 means '>150' (NTEMS stops resolving age there). Kept as-is: it is already past the
+    ## 120-year Old cutoff, so the cap cannot change any seral-stage assignment.
+    ccAge <- fillFrom(ccAge, ntemsAge, 2025 - P(sim)$ntemsAgeYear)
   }
 
   ## Fail loudly rather than initialise a landscape we know is wrong. `age_in2025` has inventory
@@ -913,7 +945,7 @@ InitMaps <- function(sim) {
       sprintf(paste(
         "current-condition stand age is %.1f%% missing for '%s' (limit %.1f%%).",
         "`age_in2025` has inventory input only in AB/BC; elsewhere CanLAD is its only source and",
-        "cannot date an undisturbed stand. Supply `sbfiAgeDriveId` -- SBFI is national and its age",
+        "cannot date an undisturbed stand. Supply `ntemsAgeFile` -- NTEMS is national and its age",
         "structure matches the fire-return interval, which SCANFI's does not (14-100x too low",
         "outside AB). Raising `ccAgeMaxMissing` instead would initialise a landscape with almost",
         "no old forest, which is the quantity this project exists to report."
