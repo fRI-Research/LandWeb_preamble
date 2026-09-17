@@ -19,7 +19,7 @@ defineModule(
       )
     ),
     childModules = character(0),
-    version = list(LandWeb_preamble = "1.0.7"),
+    version = list(LandWeb_preamble = "1.0.8"),
     spatialExtent = raster::extent(rep(NA_real_, 4)),
     timeframe = as.POSIXlt(c(NA, NA)),
     timeunit = "year",
@@ -45,7 +45,7 @@ defineModule(
       "FOR-CAST/spatialutils",
       "FOR-CAST/workflowtools@development",
       "PredictiveEcology/LandR@development (>= 1.1.0.9015)",
-      "PredictiveEcology/LandWebUtils@development (>= 1.0.3.9035)",
+      "PredictiveEcology/LandWebUtils@development (>= 1.0.3.9036)",
       "PredictiveEcology/map@development (>= 0.0.5)",
       "PredictiveEcology/pemisc@development (>= 0.0.3.9007)",
       "PredictiveEcology/reproducible@development (>= 1.2.16.9024)"
@@ -177,7 +177,7 @@ defineModule(
         "default",
         NA,
         NA,
-        "Rate of spread preset to use. One of 'burny', 'equal', 'log', or 'default'."
+        "Rate of spread preset to use. One of 'default' or 'burny'."
       ),
       defineParameter(
         "treeClassesLCC",
@@ -1063,101 +1063,9 @@ InitMaps <- function(sim) {
 }
 
 InitSpecies <- function(sim) {
-  sppEquiv <- LandR::sppEquivalencies_CA
-
-  if (FALSE) {
-    LandR::speciesInStudyArea(sim$studyArea, dataSource = "SCANFI")
-
-    LandR::speciesInStudyArea(
-      sim$studyAreaLandWeb,
-      dataSource = "SCANFI"
-    )$speciesList |>
-      sort()
-    ##>  [1] "ABIE_BAL"     "ABIE_LAS"     "BETU_PAP"     "LARI_LAR"     "LARI_OCC"
-    ##>  [6] "PICE_ENG"     "PICE_ENG_GLA" "PICE_GLA"     "PICE_MAR"     "PINU_BAN"
-    ##> [11] "PINU_CON_LAT" "POPU_BAL"     "POPU_GRA"     "POPU_TRE"     "PSEU_MEN"
-    ##> [16] "PSEU_MEN_GLA" "THUJ_PLI"     "TSUG_HET"
-
-    ## NOTE: POPU_GRA is unreliable, do not use!
-  }
-
-  ## Make LandWeb spp equivalencies
-  sppEquiv[,
-    LandWeb := c(
-      ABIE_BAL = "Abie_spp",
-      ABIE_LAS = "Abie_spp",
-      BETU_PAP = "Popu_spp",
-      LARI_LAR = "Lari_spp",
-      LARI_OCC = "Lari_spp",
-      PICE_ENG = "Pice_gla",
-      PICE_ENG_GLA = "Pice_gla", ## TODO: confirm merge with Pice_gla
-      PICE_GLA = "Pice_gla",
-      PICE_MAR = "Pice_mar",
-      PINU_BAN = "Pinu_spp",
-      PINU_CON_CON = "Pinu_spp", ## shore pine (Pinus contorta var. contorta; coastal)
-      PINU_CON_LAT = "Pinu_spp", ## lodgepole pine (Pinus contorta var. latifolia; interior)
-      POPU_BAL = "Popu_spp",
-      POPU_TRE = "Popu_spp",
-      PSEU_MEN = "Pseu_men",
-      PSEU_MEN_GLA = "Pseu_men",
-      ## Western redcedar & western hemlock are absent from the original Silvacom
-      ## CurrentConditions species groups (White/Black Spruce, Pine, Fir, Deciduous) and
-      ## look like SCANFI over-attribution in AB (e.g. Tsug_het is ~25% of the Spray Lake
-      ## FMA, well outside its real range). Merge both into Abie_spp -- the closest
-      ## shade-tolerant softwood analog -- rather than simulating them as distinct species.
-      ## TODO: revisit -- confirm Abie_spp is the right target (vs. dropping them, or a
-      ## per-study-area rule for FMAs nearer the BC coast where they may genuinely occur).
-      THUJ_PLI = "Abie_spp",
-      TSUG_HET = "Abie_spp"
-    )[SCANFI]
-  ]
-
-  sppEquiv[
-    LandWeb == "Lari_spp",
-    `:=`(
-      EN_generic_full = "Western Larch & Tamarack",
-      EN_generic_short = "Larch & Tamarack",
-      Leading = "Larch & Tamarack leading"
-    )
-  ]
-
-  sppEquiv[
-    LandWeb == "Pice_gla",
-    `:=`(
-      EN_generic_full = "White & Engelmann's Spruce",
-      EN_generic_short = "Whi & Eng Spr",
-      Leading = "White & Engelmann's Spruce leading"
-    )
-  ]
-
-  sppEquiv[
-    grep("Pin", LandWeb),
-    `:=`(
-      EN_generic_short = "Pine",
-      EN_generic_full = "Pine",
-      Leading = "Pine leading"
-    )
-  ]
-
-  sppEquiv[
-    LandWeb == "Popu_spp",
-    `:=`(
-      EN_generic_full = "Deciduous",
-      EN_generic_short = "Decid",
-      Leading = "Deciduous leading"
-    )
-  ]
-
-  sppEquiv[
-    LandWeb == "Pseu_men",
-    `:=`(
-      EN_generic_full = "Douglas fir",
-      EN_generic_short = "Doug fir",
-      Leading = "Douglas fir leading"
-    )
-  ]
-
-  sim$sppEquiv <- sppEquiv[!is.na(LandWeb), ]
+  ## LandWeb species groups: SCANFI species merged into the simulated species
+  ## (see `LandWebUtils::landweb_species_map()` for the merges and their rationale)
+  sim$sppEquiv <- LandWebUtils::landweb_sppEquiv(LandR::sppEquivalencies_CA)
   sim$sppColorVect <- LandR::sppColors(
     sim$sppEquiv,
     "LandWeb",
@@ -1192,30 +1100,7 @@ InitLandMine <- function(sim) {
   stopifnot(P(sim)$ROStype %in% c("default", "burny"))
 
   ## ROS classes and values from Table 3.2 of Andison 1996
-  ## - omitting 'water', 'non-productive brush', and 'non-productive black spruce' classes;
-  ## - typo in Andison 1996: 'young mixed wood = 6' is really 'young hardwood = 6'.
-  LandMineROStable <- data.table::rbindlist(list(
-    list("immature_young", "decid", 6L), ## aka hardwood
-    list("mature", "decid", 9L), ## aka hardwood
-    list("immature_young", "mixed", 12L),
-    list("immature", "pine", 14L),
-    list("mature", "mixed", 17L),
-    list("immature_young", "softwood", 18L),
-    list("immature_young", "spruce", 20L),
-    list("mature", "pine", 21L),
-    list("young", "pine", 22L),
-    list("mature", "softwood", 27L),
-    list("mature", "spruce", 30L)
-  )) |>
-    data.table::setnames(old = 1:3, new = c("age", "leading", "ros"))
-
-  if (P(sim)$ROStype == "equal") {
-    LandMineROStable$ros <- 1L
-  } else if (P(sim)$ROStype == "log") {
-    LandMineROStable$ros <- log(LandMineROStable$ros)
-  }
-
-  sim$ROSTable <- LandMineROStable
+  sim$ROSTable <- LandWebUtils::landmine_ros_table()
 
   return(invisible(sim))
 }

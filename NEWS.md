@@ -2,6 +2,14 @@ Known issues: <https://github.com/fRI-Research/LandWeb_preamble/issues>
 
 # LandWeb_preamble (development version)
 
+## 1.0.8
+
+* **The species equivalency table and the rate-of-spread table now come from `LandWebUtils`** (>= 1.0.3.9036): `InitSpecies()` calls `landweb_sppEquiv()` and `InitLandMine()` calls `landmine_ros_table()`. On the real `LandR::sppEquivalencies_CA` the species table is identical to 1.0.7's in all 31 columns apart from the `Abie_spp` label below, and the rate-of-spread table is identical to the one written out here and in `LandMine`. The SCANFI-to-LandWeb species merges now have one definition, `landweb_species_map()`.
+* **`Abie_spp` is now labelled "Fir"** in `sppEquiv`'s `EN_generic_short`, `EN_generic_full` and `Leading` columns. It had no group label, so `Biomass_core`'s leading-vegetation maps, which take a group's label from its first row, called the whole group -- subalpine fir, western redcedar and western hemlock included -- "Balsam fir". Species codes, the species merged and all simulation inputs are unchanged.
+* `InitSpecies()` no longer modifies the lazy-loaded `LandR::sppEquivalencies_CA` by reference; the package function works on a copy.
+* Removed `InitLandMine()`'s `ROStype == "equal"` and `"log"` branches, which were unreachable after its own `stopifnot(ROStype %in% c("default", "burny"))`, and corrected `ROStype`'s description to list only those two values.
+* Removed the exploratory `if (FALSE)` block in `InitSpecies()` that listed SCANFI species by study area; its one finding, that `POPU_GRA` is unreliable, is documented on `landweb_species_map()`.
+
 ## 1.0.7
 
 * **The current-condition age composite, the missing-age check and the LCC 2020 remap now call `LandWebUtils`** (>= 1.0.3.9035) -- `cc_age_composite()`, `cc_age_pct_missing()`, `lcc2020_remap_table()` and `lcc2020_classes()` -- instead of running inline, so each is covered by package tests and CI rather than exercised only by a full preamble run. Proven behaviour-neutral on real data: on LacSeulUpland (130,360,104 cells) the composite is cell-for-cell identical to 1.0.6 (0 NA-pattern differences, max difference 0) and the missing-age figure matches exactly (0.8220%).
