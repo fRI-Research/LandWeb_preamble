@@ -596,8 +596,8 @@ InitMaps <- function(sim) {
   ## TODO: move into a LandWebUtils helper (e.g. prepInputs_SCANFI_LCC_FAO_fast).
   ## download only (SCANFI via SA/GOOGLEDRIVE_AUTH, FAO via http), then crop both layers
   ## windowed ourselves. The FAO MUST be windowed before reprojecting or reproducible warps
-  ## the whole ~840 MB Canada-wide raster (>50 min); see LandR::prepInputs_SCANFI_LCC_FAO and
-  ## _tmp_upstream_issues.md #1. SCANFI LCC cropped the same way for consistency/speed.
+  ## the whole ~840 MB Canada-wide raster (>50 min); see LandR::prepInputs_SCANFI_LCC_FAO.
+  ## SCANFI LCC cropped the same way for consistency/speed.
   reproducible::preProcess(
     url = "https://drive.google.com/file/d/1EGp7LUA7cXMR6KpXDmu617xsjwGM6aIx",
     targetFile = "SCANFI_att_nfiLandcover_CanadaLCCclassCodes_2020_v2_20260119.tif",
@@ -766,7 +766,7 @@ InitMaps <- function(sim) {
 
   ## LandTypeCC now carries real data (Canada LCC 2020), so the all-NA workaround that forced an
   ## all-"5" filler is no longer needed (it existed because overlayLCCs cannot digest an all-NA
-  ## CC layer -- see _tmp_upstream_issues.md #5).
+  ## CC layer: its internal pixelIndex join fails on logical vs integer columns).
   LandTypeCCfiller <- sim$LandTypeCC
   message("Overlaying land cover maps...")
   LCClarge <- overlayLCCs(
@@ -834,7 +834,7 @@ InitMaps <- function(sim) {
   ## Fetched via the authenticated googledrive API (`workflowtools::drive_download_once`): a
   ## reproducible Drive download of a large restricted file returns an unauthenticated sign-in
   ## HTML page, because the SA token works for the googledrive API but not for reproducible's
-  ## content download (see `_tmp_upstream_issues.md` #6).
+  ## content download.
   ccAgeDir <- file.path(inputPath(sim), "age2025") |> fs::dir_create()
   ccAgeZip <- file.path(ccAgeDir, "age_in2025.zip")
   workflowtools::drive_download_once(googledrive::as_id(P(sim)$ccAgeDriveId), ccAgeZip)
