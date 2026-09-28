@@ -19,7 +19,7 @@ defineModule(
       )
     ),
     childModules = character(0),
-    version = list(LandWeb_preamble = "1.0.8"),
+    version = list(LandWeb_preamble = "1.0.9"),
     spatialExtent = raster::extent(rep(NA_real_, 4)),
     timeframe = as.POSIXlt(c(NA, NA)),
     timeunit = "year",
@@ -804,6 +804,12 @@ InitMaps <- function(sim) {
     to = sim$studyArea,
     filename2 = NULL
   )
+
+  ## The reporting CC layer is compared cell-for-cell with the simulation's year-0 maps, which are
+  ## on the rasterToMatch grid; built above on the larger biomassParam grid (which the overlay
+  ## needs), it failed NRV_summary's compareGeom() and the urban correction was skipped. Same cell
+  ## grid, so cropping to the extent is exact; no mask, so no LCC 2020 value is lost.
+  sim$LandTypeCC_reporting <- terra::crop(sim$LandTypeCC_reporting, sim$rasterToMatch)
 
   ## Age from Current Conditions -----------------------------------------------------------------
   ## fRI Research's `age_in2025` composite (delivered 2026-08-21). Built in ArcGIS as
