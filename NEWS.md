@@ -2,6 +2,8 @@ Known issues: <https://github.com/fRI-Research/LandWeb_preamble/issues>
 
 # LandWeb_preamble (development version)
 
+* Dropped the module metadata's `spatialExtent = raster::extent(rep(NA_real_, 4))` (1.0.10), the module's last use of raster. The slot defaults to `NULL`, and `terra::ext()` rejects an all-`NA` extent, so deleting the line is the terra equivalent.
+
 * `LandTypeCC_reporting` is now on the `rasterToMatch` grid (1.0.9). It was built on the larger `rasterToMatch_biomassParam` grid, so NRV_summary's check against the simulation's year-0 maps failed and the urban correction to current-condition metrics was skipped: 5,903 urban cells (0.3% of WesternAlbertaUpland's vegetated cells) were counted as forest.
 
 * **Replaced the never-run test stub with metadata tests, and added testthat CI.** `tests/testthat/test-template.R` was the SpaDES boilerplate, unedited: paths from another machine, calls to `Event1`/`Event2` functions this module does not define, and assertions against placeholder strings. It had never been run and would have failed instantly, while making the module look tested. In its place, characterization tests over the module's public contract -- the input and output object names and classes, and the parameter names -- which is what a project binds to and what nothing checked until now. The expectations are GENERATED from the module's live metadata rather than transcribed, and were verified to fail when the contract changes.

@@ -19,8 +19,7 @@ defineModule(
       )
     ),
     childModules = character(0),
-    version = list(LandWeb_preamble = "1.0.9"),
-    spatialExtent = raster::extent(rep(NA_real_, 4)),
+    version = list(LandWeb_preamble = "1.0.10"),
     timeframe = as.POSIXlt(c(NA, NA)),
     timeunit = "year",
     citation = list("citation.bib"),
