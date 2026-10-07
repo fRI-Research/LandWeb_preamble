@@ -38,7 +38,6 @@ test_that("outputs are the expected names and classes", {
       "rasterToMatchReporting"     = "RasterLayer",
       "ROSTable"                   = "data.table",
       "rstLCC"                     = "SpatRaster",
-      "speciesParams"              = "list",
       "speciesTable"               = "data.table",
       "sppColorVect"               = "character",
       "sppEquiv"                   = "data.table",
@@ -58,7 +57,7 @@ test_that("parameters are the expected names", {
     sort(md$parameters$paramName),
     c(
       ".plotInitialTime", ".plotInterval", ".plots", ".saveInitialTime",
-      ".saveInterval", ".sslVerify", ".studyAreaName", ".useCache", "bufferDist",
+      ".saveInterval", ".sslVerify", ".studyAreaName", ".useCache", "anppEcoLevel", "bufferDist",
       "bufferDistLarge", "ccAgeDriveId", "ccAgeMaxMissing", "dispersalType",
       "forceResprout", "friMultiple", "mergeSlivers", "minFRI", "ntemsAgeFile",
       "ntemsAgeYear", "pixelSize", "ROStype", "treeClassesLCC", "treeClassesToReplace"

@@ -19,7 +19,7 @@ defineModule(
       )
     ),
     childModules = character(0),
-    version = list(LandWeb_preamble = "1.0.10"),
+    version = list(LandWeb_preamble = "1.0.11"),
     timeframe = as.POSIXlt(c(NA, NA)),
     timeunit = "year",
     citation = list("citation.bib"),
@@ -44,7 +44,7 @@ defineModule(
       "FOR-CAST/spatialutils",
       "FOR-CAST/workflowtools@development",
       "PredictiveEcology/LandR@development (>= 1.1.0.9015)",
-      "PredictiveEcology/LandWebUtils@development (>= 1.0.3.9036)",
+      "PredictiveEcology/LandWebUtils@development (>= 1.0.3.9044)", ## landweb_species_sppEquiv()
       "PredictiveEcology/map@development (>= 0.0.5)",
       "PredictiveEcology/pemisc@development (>= 0.0.3.9007)",
       "PredictiveEcology/reproducible@development (>= 1.2.16.9024)"
@@ -101,6 +101,19 @@ defineModule(
           "have no current-condition stand age before `LandWeb_preamble` stops. Measured: groups",
           "whose only age source is CanLAD sit near 74%; with the NTEMS fill, 0.8-12.8%. Raising",
           "this does not fix the data -- it initialises a landscape with almost no old forest."
+        )
+      ),
+      defineParameter(
+        "anppEcoLevel",
+        "character",
+        "ecoprovince",
+        NA,
+        NA,
+        paste(
+          "Ecological level whose units touching `studyArea` make `studyAreaANPP`, the area",
+          "Biomass_speciesParameters takes permanent sample plots from to fit growth curves:",
+          "'ecoprovince' or 'ecozone'. Ecozones hold more plots, so more species get growth",
+          "curves of their own, fitted over a wider area."
         )
       ),
       defineParameter(
@@ -348,14 +361,6 @@ defineModule(
       ),
       createsOutput("flammableMap", "RasterLayer", desc = NA),
       createsOutput(
-        "speciesParams",
-        "list",
-        desc = paste(
-          "list of updated species trait values to be used to updated",
-          "`speciesTable` to create `species`."
-        )
-      ),
-      createsOutput(
         "speciesTable",
         "data.table",
         desc = paste(
@@ -372,9 +377,8 @@ defineModule(
         "sppColorVect",
         "character",
         desc = paste(
-          "A named vector of colors to use for plotting.",
-          "The names must be in `sim$sppEquiv[['LandWeb']]`,",
-          "and should also contain a color for 'Mixed'"
+          "A named vector of colors to use for plotting: one per species in",
+          "`sim$sppEquiv[['LandWeb']]`, and one for 'Mixed'."
         )
       ),
       createsOutput(
@@ -544,12 +548,16 @@ InitMaps <- function(sim) {
     sim$studyAreaReporting,
     P(sim)$bufferDistLarge
   )
-  ## TODO: is ecoprovince a good size? ecoregion not big enough
-  ## use ecological boundaries to create studyAreaANPP
+  ## studyAreaANPP: the ecological units (anppEcoLevel) touching the study area. Ecoregions hold too
+  ## few NFI plots; ecozones give more species a growth curve of their own than ecoprovinces do.
+  ecoUrl <- switch(
+    P(sim)$anppEcoLevel,
+    ecoprovince = "https://sis.agr.gc.ca/cansis/nsdb/ecostrat/province/ecoprovince_shp.zip",
+    ecozone = "https://sis.agr.gc.ca/cansis/nsdb/ecostrat/zone/ecozone_shp.zip",
+    stop("anppEcoLevel must be 'ecoprovince' or 'ecozone', not '", P(sim)$anppEcoLevel, "'.")
+  )
   studyAreaANPP <- prepInputs(
-    # url = "https://sis.agr.gc.ca/cansis/nsdb/ecostrat/district/ecodistrict_shp.zip",
-    # url = "https://sis.agr.gc.ca/cansis/nsdb/ecostrat/region/ecoregion_shp.zip",
-    url = "https://sis.agr.gc.ca/cansis/nsdb/ecostrat/province/ecoprovince_shp.zip",
+    url = ecoUrl,
     destinationPath = mod$dPath,
     projectTo = sim$studyArea,
     fun = "sf::st_read",
@@ -1068,9 +1076,10 @@ InitMaps <- function(sim) {
 }
 
 InitSpecies <- function(sim) {
-  ## LandWeb species groups: SCANFI species merged into the simulated species
-  ## (see `LandWebUtils::landweb_species_map()` for the merges and their rationale)
-  sim$sppEquiv <- LandWebUtils::landweb_sppEquiv(LandR::sppEquivalencies_CA)
+  ## LandWeb species, one code per species. Which run on their own is decided per study area from
+  ## their cover, after the speciesData stage (`LandWebUtils::landweb_species_units()`); the rest
+  ## stay in their merged groups (`LandWebGroup`).
+  sim$sppEquiv <- LandWebUtils::landweb_species_sppEquiv(LandR::sppEquivalencies_CA)
   sim$sppColorVect <- LandR::sppColors(
     sim$sppEquiv,
     "LandWeb",
@@ -1080,23 +1089,6 @@ InitSpecies <- function(sim) {
 
   ## species parameter tables
   sim$speciesTable <- LandR::getSpeciesTable(dPath = mod$dPath) ## uses default URL
-
-  ## TODO: restore changes made by LandR::speciesTableUpdate,
-  ## so shadetol to 'defaults' listed below -- except perhaps increase Pinu to 1.5 or 2
-  speciesParams <- list(
-    # resproutage_min = list(Popu_spp = 25L), # default 10L
-    shadetolerance = list(
-      ## defaults: 4, 3, 4, 1, 1, 3
-      Abie_spp = 3,
-      Pice_gla = 2,
-      Pice_mar = 3,
-      Pinu_spp = 1,
-      Popu_spp = 1,
-      Pseu_men = 3
-    )
-  )
-
-  sim$speciesParams <- speciesParams
 
   return(invisible(sim))
 }

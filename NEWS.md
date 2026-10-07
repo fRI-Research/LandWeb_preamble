@@ -2,6 +2,9 @@ Known issues: <https://github.com/fRI-Research/LandWeb_preamble/issues>
 
 # LandWeb_preamble (development version)
 
+* Species are now simulated one code per species (1.0.11). `sppEquiv` comes from `LandWebUtils::landweb_species_sppEquiv()`: the `LandWeb` column holds each species' `LandR` code, today's merged group goes to `LandWebGroup`, and the reporting group to `LandWebReport`. Which species run on their own is decided per study area after the speciesData stage. `sppColorVect` follows the species. The `speciesParams` output is gone: no module read it, and its group-keyed shade tolerances equalled `LandR::speciesTableUpdate()`'s.
+* New parameter `anppEcoLevel` chooses the ecological units that make `studyAreaANPP`, the area Biomass_speciesParameters takes plots from to fit growth curves: `"ecoprovince"` (default, as before) or `"ecozone"`, which holds more plots, so more species get a growth curve of their own.
+
 * Dropped the module metadata's `spatialExtent = raster::extent(rep(NA_real_, 4))` (1.0.10), the module's last use of raster. The slot defaults to `NULL`, and `terra::ext()` rejects an all-`NA` extent, so deleting the line is the terra equivalent.
 
 * `LandTypeCC_reporting` is now on the `rasterToMatch` grid (1.0.9). It was built on the larger `rasterToMatch_biomassParam` grid, so NRV_summary's check against the simulation's year-0 maps failed and the urban correction to current-condition metrics was skipped: 5,903 urban cells (0.3% of WesternAlbertaUpland's vegetated cells) were counted as forest.
