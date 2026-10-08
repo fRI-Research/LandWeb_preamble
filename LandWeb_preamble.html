@@ -2972,8 +2972,8 @@ border-radius: 0px;
 
 
 <h1 class="title toc-ignore">LandWeb_preamble Manual</h1>
-<h3 class="subtitle">v.1.0.10</h3>
-<h4 class="date">Last updated: 2026-10-02</h4>
+<h3 class="subtitle">v.1.0.11</h3>
+<h4 class="date">Last updated: 2026-10-08</h4>
 
 </div>
 
@@ -3099,6 +3099,26 @@ numeric
 </td>
 <td style="text-align:left;">
 Maximum percent of FOREST (LCC 2020 classes 1/2/5/6) inside the study area allowed to have no current-condition stand age before <code>LandWeb_preamble</code> stops. Measured: groups whose only age source is CanLAD sit near 74%; with the NTEMS fill, 0.8-12.8%. Raising this does not fix the data – it initialises a landscape with almost no old forest.
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+anppEcoLevel
+</td>
+<td style="text-align:left;">
+character
+</td>
+<td style="text-align:left;">
+ecoprovince
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+Ecological level whose units touching <code>studyArea</code> make <code>studyAreaANPP</code>, the area Biomass_speciesParameters takes permanent sample plots from to fit growth curves: ‘ecoprovince’ or ‘ecozone’. Ecozones hold more plots, so more species get growth curves of their own, fitted over a wider area.
 </td>
 </tr>
 <tr>
@@ -3687,17 +3707,6 @@ NA
 </tr>
 <tr>
 <td style="text-align:left;">
-speciesParams
-</td>
-<td style="text-align:left;">
-list
-</td>
-<td style="text-align:left;">
-list of updated species trait values to be used to updated <code>speciesTable</code> to create <code>species</code>.
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
 speciesTable
 </td>
 <td style="text-align:left;">
@@ -3715,7 +3724,7 @@ sppColorVect
 character
 </td>
 <td style="text-align:left;">
-A named vector of colors to use for plotting. The names must be in <code>sim$sppEquiv[[&#39;LandWeb&#39;]]</code>, and should also contain a color for ‘Mixed’
+A named vector of colors to use for plotting: one per species in <code>sim$sppEquiv[[&#39;LandWeb&#39;]]</code>, and one for ‘Mixed’.
 </td>
 </tr>
 <tr>
