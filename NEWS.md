@@ -2,6 +2,7 @@ Known issues: <https://github.com/fRI-Research/LandWeb_preamble/issues>
 
 # LandWeb_preamble (development version)
 
+* The LandWeb area (`studyAreaLandWeb`) and `studyAreaANPP` are built by `LandWebUtils::landweb_lthfc()`, `landweb_area()` and `landweb_anpp_area()` (1.0.12), the code that was here, moved so that LandWeb's shared growth-curve fit builds its fitting area the same way. Outputs are unchanged. Requires LandWebUtils >= 1.0.3.9047.
 * Species are now simulated one code per species (1.0.11). `sppEquiv` comes from `LandWebUtils::landweb_species_sppEquiv()`: the `LandWeb` column holds each species' `LandR` code, today's merged group goes to `LandWebGroup`, and the reporting group to `LandWebReport`. Which species run on their own is decided per study area after the speciesData stage. `sppColorVect` follows the species. The `speciesParams` output is gone: no module read it, and its group-keyed shade tolerances equalled `LandR::speciesTableUpdate()`'s.
 * New parameter `anppEcoLevel` chooses the ecological units that make `studyAreaANPP`, the area Biomass_speciesParameters takes plots from to fit growth curves: `"ecoprovince"` (default, as before) or `"ecozone"`, which holds more plots, so more species get a growth curve of their own.
 

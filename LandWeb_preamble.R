@@ -19,7 +19,7 @@ defineModule(
       )
     ),
     childModules = character(0),
-    version = list(LandWeb_preamble = "1.0.11"),
+    version = list(LandWeb_preamble = "1.0.12"),
     timeframe = as.POSIXlt(c(NA, NA)),
     timeunit = "year",
     citation = list("citation.bib"),
@@ -44,7 +44,7 @@ defineModule(
       "FOR-CAST/spatialutils",
       "FOR-CAST/workflowtools@development",
       "PredictiveEcology/LandR@development (>= 1.1.0.9015)",
-      "PredictiveEcology/LandWebUtils@development (>= 1.0.3.9044)", ## landweb_species_sppEquiv()
+      "PredictiveEcology/LandWebUtils@development (>= 1.0.3.9047)", ## landweb_lthfc(), landweb_area(), landweb_anpp_area()
       "PredictiveEcology/map@development (>= 0.0.5)",
       "PredictiveEcology/pemisc@development (>= 0.0.3.9007)",
       "PredictiveEcology/reproducible@development (>= 1.2.16.9024)"
@@ -452,25 +452,12 @@ InitMaps <- function(sim) {
   ## NOTE needs to be character, not `CRS` class, for downstream use with `data.table`
   targetCRS <- LandWebUtils::LandWebCRS
 
-  ## v10 LTHFC map: download with workflowtools (googledrive direct), bypassing
-  ## reproducible's Drive path which lost service-account auth (reproducible #447).
-  ## The session/download controller authenticates first via
-  ## googledrive::drive_auth(path = <service-account JSON>).
-  lthfc_id <- "176yAq5NCfZZ5ZQX36zHcu0w3uh-V9qvf" ## landweb_ltfc_v10 (Google Drive)
-  lthfc_dir <- file.path(inputPath(sim), "lthfc") |> fs::dir_create()
-  lthfc_zip <- file.path(lthfc_dir, "landweb_ltfc_v10.zip")
-  workflowtools::drive_download_once(googledrive::as_id(lthfc_id), lthfc_zip)
-  workflowtools::archive_extract_once(lthfc_zip, dir = lthfc_dir)
-
-  ## keep only the LTHFC column (v10 renamed it LTFC10), and recalculate area.
+  ## v10 LTHFC map, downloaded with workflowtools (googledrive direct), bypassing reproducible's Drive
+  ## path, which lost service-account auth (reproducible #447): its LTHFC column and each polygon's area.
+  ## The shared growth-curve fitting area is built from the same map, by the same LandWebUtils code.
   ## TODO (lakes): v10 is the wLakes layer -- LAKE_TYPE == 1 are lakes (LAKE_NAME).
   ## Decide whether to drop lakes here or carry them as a water mask downstream.
-  lthfc <- terra::vect(list.files(lthfc_dir, "\\.shp$", full.names = TRUE)[[
-    1
-  ]]) |>
-    terra::project(targetCRS) |>
-    dplyr::select(LTHFC = LTFC10) ## tidyterra dispatches dplyr verbs on the SpatVector
-  lthfc$area <- terra::expanse(lthfc, unit = "m") ## terra::expanse, not sf::st_area(geometry)
+  lthfc <- LandWebUtils::landweb_lthfc(inputPath(sim), targetCRS)
 
   ## 2023-09: added additional geoprocessing to LTHFC map to remove polygon fragments
   ## TODO (mergeSlivers + terra migration): replace the nearest-feature merge below
@@ -522,12 +509,7 @@ InitMaps <- function(sim) {
   sf::st_as_sf(lthfc_clean) |>
     sf::write_sf(file.path(outputPath(sim), "landweb_lthfc_clean.shp"))
 
-  landweb_area <- sf::st_as_sf(lthfc_clean) |>
-    sf::st_union() |>
-    sf::st_make_valid() |>
-    nngeo::st_remove_holes()
-
-  sim$studyAreaLandWeb <- landweb_area
+  sim$studyAreaLandWeb <- LandWebUtils::landweb_area(lthfc_clean)
 
   ## study areas ---------------------------------------------------------------------------------
   ## studyAreaReporting is the study area used for reporting (e.g., FMA);
@@ -550,25 +532,11 @@ InitMaps <- function(sim) {
   )
   ## studyAreaANPP: the ecological units (anppEcoLevel) touching the study area. Ecoregions hold too
   ## few NFI plots; ecozones give more species a growth curve of their own than ecoprovinces do.
-  ecoUrl <- switch(
-    P(sim)$anppEcoLevel,
-    ecoprovince = "https://sis.agr.gc.ca/cansis/nsdb/ecostrat/province/ecoprovince_shp.zip",
-    ecozone = "https://sis.agr.gc.ca/cansis/nsdb/ecostrat/zone/ecozone_shp.zip",
-    stop("anppEcoLevel must be 'ecoprovince' or 'ecozone', not '", P(sim)$anppEcoLevel, "'.")
+  sim$studyAreaANPP <- LandWebUtils::landweb_anpp_area(
+    sim$studyArea,
+    ecoLevel = P(sim)$anppEcoLevel,
+    destinationPath = mod$dPath
   )
-  studyAreaANPP <- prepInputs(
-    url = ecoUrl,
-    destinationPath = mod$dPath,
-    projectTo = sim$studyArea,
-    fun = "sf::st_read",
-    overwrite = TRUE
-  )
-  ## ensure matching CRS before the intersect (prepInputs projectTo not honoured here)
-  studyAreaANPP <- sf::st_transform(studyAreaANPP, sf::st_crs(sim$studyArea))
-  studyAreaANPP <- studyAreaANPP[
-    which(sapply(sf::st_intersects(studyAreaANPP, sim$studyArea), length) > 0),
-  ]
-  sim$studyAreaANPP <- studyAreaANPP
 
   ## save study area maps to file
   studyAreaDir <- file.path(inputPath(sim), "studyAreas") |> fs::dir_create()
