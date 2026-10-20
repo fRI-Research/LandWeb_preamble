@@ -19,7 +19,7 @@ defineModule(
       )
     ),
     childModules = character(0),
-    version = list(LandWeb_preamble = "1.0.12"),
+    version = list(LandWeb_preamble = "1.0.13"),
     timeframe = as.POSIXlt(c(NA, NA)),
     timeunit = "year",
     citation = list("citation.bib"),
@@ -567,7 +567,7 @@ InitMaps <- function(sim) {
   ## BYPASS LandR::prepInputs_SCANFI_LCC_FAO: its FAO step -- prepInputs(fao, to = lcc) --
   ## makes reproducible reproject the WHOLE 840 MB Canada-wide FAO (>50 min) instead of
   ## cropping first. Keep its (fast) SCANFI LCC load, align the FAO windowed (~2 s), then
-  ## apply the identical DisturbedAdjust (FAO == 2 & non-forest LCC -> disturbedCode 240).
+  ## relabel non-treed LCC on FAO 2019 code 2 as 240, LandR's rule before LandR#228 (see below).
   ## TODO: move into a LandWebUtils helper (e.g. prepInputs_SCANFI_LCC_FAO_fast).
   ## download only (SCANFI via SA/GOOGLEDRIVE_AUTH, FAO via http), then crop both layers
   ## windowed ourselves. The FAO MUST be windowed before reprojecting or reproducible warps
@@ -599,11 +599,14 @@ InitMaps <- function(sim) {
   ))
   fao <- terra::crop(fao, terra::ext(terra::project(sa, terra::crs(fao)))) |>
     terra::project(lcc, method = "near")
+  ## FAO code 2 is forest land whose trees a fire or harvest removed; non-treed LCC there becomes
+  ## 240 (disturbed). Water (20), snow/ice (31) and 0 (no data) keep their class, as in LandR#251:
+  ## a lake or a glacier is not forest without trees.
   LCClarge <- terra::lapp(
     c(lcc, fao),
     usenames = FALSE,
     fun = function(LCC, FAO) {
-      LCC[FAO == 2 & !LCC %in% c(210, 220, 230)] <- 240L
+      LCC[FAO == 2 & !LCC %in% c(0, 20, 31, 210, 220, 230)] <- 240L
       LCC
     }
   )
