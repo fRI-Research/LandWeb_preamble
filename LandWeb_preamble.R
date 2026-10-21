@@ -579,12 +579,21 @@ InitMaps <- function(sim) {
     targetFile = "SCANFI_att_nfiLandcover_CanadaLCCclassCodes_2020_v2_20260119.tif",
     destinationPath = mod$dPath
   )
-  reproducible::preProcess(
+  ## The companions are named rather than "similar": beside a url, "similar" also makes
+  ## reproducible ask the server for sidecars by name (.aux.xml, .msk, ...), and NFIS answers a
+  ## missing file with an HTML page that is saved under the sidecar's name and then read by GDAL.
+  ## The 2022 zip has no folder in it (2019's did), so take the path preProcess() extracted to.
+  faoFile <- reproducible::preProcess(
     url = "https://opendata.nfis.org/downloads/forest_change/CA_FAO_forest_2022.zip",
     targetFile = "CA_FAO_forest_2022.tif",
-    alsoExtract = "similar",
+    alsoExtract = c(
+      "CA_FAO_forest_2022.tfw",
+      "CA_FAO_forest_2022.tif.ovr",
+      "CA_FAO_forest_2022.tif.vat.cpg",
+      "CA_FAO_forest_2022.tif.vat.dbf"
+    ),
     destinationPath = mod$dPath
-  )
+  )$targetFilePath
   ## study area as a SpatVector for the windowed crops below
   sa <- terra::vect(sf::st_as_sf(sim$studyArea_biomassParam))
   lcc <- terra::rast(file.path(
@@ -593,11 +602,7 @@ InitMaps <- function(sim) {
   ))
   lcc <- terra::crop(lcc, terra::project(sa, terra::crs(lcc)), mask = TRUE) |>
     terra::as.int()
-  fao <- terra::rast(file.path(
-    mod$dPath,
-    "CA_FAO_forest_2022",
-    "CA_FAO_forest_2022.tif"
-  ))
+  fao <- terra::rast(faoFile)
   fao <- terra::crop(fao, terra::ext(terra::project(sa, terra::crs(fao)))) |>
     terra::project(lcc, method = "near")
   ## Forest land, as LandR#228 decides it: ground the FAO 2022 forest layer calls forest (code 1,
