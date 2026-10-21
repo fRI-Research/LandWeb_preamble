@@ -19,7 +19,7 @@ defineModule(
       )
     ),
     childModules = character(0),
-    version = list(LandWeb_preamble = "1.0.13"),
+    version = list(LandWeb_preamble = "1.0.14"),
     timeframe = as.POSIXlt(c(NA, NA)),
     timeunit = "year",
     citation = list("citation.bib"),
@@ -43,8 +43,8 @@ defineModule(
       "XML",
       "FOR-CAST/spatialutils",
       "FOR-CAST/workflowtools@development",
-      "PredictiveEcology/LandR@development (>= 1.1.0.9015)",
-      "PredictiveEcology/LandWebUtils@development (>= 1.0.3.9047)", ## landweb_lthfc(), landweb_area(), landweb_anpp_area()
+      "PredictiveEcology/LandR@development (>= 1.2.0.9061)",
+      "PredictiveEcology/LandWebUtils@development (>= 1.0.3.9049)", ## lcc2020_remap_table() rule order
       "PredictiveEcology/map@development (>= 0.0.5)",
       "PredictiveEcology/pemisc@development (>= 0.0.3.9007)",
       "PredictiveEcology/reproducible@development (>= 1.2.16.9024)"
@@ -567,7 +567,8 @@ InitMaps <- function(sim) {
   ## BYPASS LandR::prepInputs_SCANFI_LCC_FAO: its FAO step -- prepInputs(fao, to = lcc) --
   ## makes reproducible reproject the WHOLE 840 MB Canada-wide FAO (>50 min) instead of
   ## cropping first. Keep its (fast) SCANFI LCC load, align the FAO windowed (~2 s), then
-  ## relabel non-treed LCC on FAO 2019 code 2 as 240, LandR's rule before LandR#228 (see below).
+  ## relabel the forest land that is not treed in 2020 as 240, with LandR's rules as of
+  ## LandR#228 and #251 (see below).
   ## TODO: move into a LandWebUtils helper (e.g. prepInputs_SCANFI_LCC_FAO_fast).
   ## download only (SCANFI via SA/GOOGLEDRIVE_AUTH, FAO via http), then crop both layers
   ## windowed ourselves. The FAO MUST be windowed before reprojecting or reproducible warps
@@ -579,8 +580,8 @@ InitMaps <- function(sim) {
     destinationPath = mod$dPath
   )
   reproducible::preProcess(
-    url = "https://opendata.nfis.org/downloads/forest_change/CA_FAO_forest_2019.zip",
-    targetFile = "CA_FAO_forest_2019.tif",
+    url = "https://opendata.nfis.org/downloads/forest_change/CA_FAO_forest_2022.zip",
+    targetFile = "CA_FAO_forest_2022.tif",
     alsoExtract = "similar",
     destinationPath = mod$dPath
   )
@@ -594,23 +595,37 @@ InitMaps <- function(sim) {
     terra::as.int()
   fao <- terra::rast(file.path(
     mod$dPath,
-    "CA_FAO_forest_2019",
-    "CA_FAO_forest_2019.tif"
+    "CA_FAO_forest_2022",
+    "CA_FAO_forest_2022.tif"
   ))
   fao <- terra::crop(fao, terra::ext(terra::project(sa, terra::crs(fao)))) |>
     terra::project(lcc, method = "near")
-  ## FAO code 2 is forest land whose trees a fire or harvest removed; non-treed LCC there becomes
-  ## 240 (disturbed). Water (20), snow/ice (31) and 0 (no data) keep their class, as in LandR#251:
-  ## a lake or a glacier is not forest without trees.
-  LCClarge <- terra::lapp(
-    c(lcc, fao),
-    usenames = FALSE,
-    fun = function(LCC, FAO) {
-      LCC[FAO == 2 & !LCC %in% c(0, 20, 31, 210, 220, 230)] <- 240L
-      LCC
-    }
+  ## Forest land, as LandR#228 decides it: ground the FAO 2022 forest layer calls forest (code 1,
+  ## treed; code 2, opened by fire or harvest since 1984) or that SCANFI shows treed in any of
+  ## LandR's default forest-land years (one per decade and the latest). FAO 2019 code 2 alone,
+  ## the rule before, dropped every stand that had grown back by 2019. The SCANFI years are on
+  ## the 2020 grid, so a crop aligns them.
+  scanfiLCCIds <- c(
+    "1985" = "1iAEEpkVofQBggIJaxwXKcKADU3zka7Wh",
+    "1995" = "15pvm2h9X6dreC9rKuC3oxr4c3hHsYRkI",
+    "2005" = "1eKNGWrwGEFRFOK2TLVXldfd8hB3OsbSG",
+    "2015" = "1olWPzlM2SfMC8Fq_uXslJfYIINAd4wGP",
+    "2025" = "1eb1zEWC3VRycA_aRzTB2ODhWDLZis-YG"
   )
-
+  lccYears <- lapply(names(scanfiLCCIds), function(y) {
+    tf <- paste0("SCANFI_att_nfiLandcover_CanadaLCCclassCodes_", y, "_v2_20260119.tif")
+    reproducible::preProcess(
+      url = paste0("https://drive.google.com/file/d/", scanfiLCCIds[[y]]),
+      targetFile = tf,
+      destinationPath = mod$dPath
+    )
+    out <- terra::crop(terra::rast(file.path(mod$dPath, tf)), lcc) |>
+      terra::as.int()
+    terra::compareGeom(out, lcc)
+    out
+  })
+  forestLand <- LandR::forestLandMask(lccList = lccYears, faoRas = fao, faoForestCodes = c(1L, 2L))
+  rm(lccYears)
   ## Canada LCC 2020 (NALCMS/CCRS) -- the CURRENT-CONDITIONS land cover, independent of SCANFI.
   ## Public datacube COG (no auth), EPSG:3979, tiled with overviews, so windowed reads are cheap.
   ## Reprojected onto the SCANFI grid: same LCC projection family but lat_0 = 0 vs 49, a constant
@@ -634,6 +649,21 @@ InitMaps <- function(sim) {
   cc2020 <- terra::crop(cc2020, terra::ext(terra::project(sa, terra::crs(cc2020)))) |>
     terra::project(lcc, method = "near") |>
     terra::as.int()
+
+  ## Forest land without trees in 2020 becomes 240 (disturbed). Water (20), snow/ice (31) and 0
+  ## (no data) keep their class, as in LandR#251: a lake or a glacier is not forest without trees.
+  ## Nor does land LCC 2020 calls cropland (15) become 240: land cleared for farming since 1985 is
+  ## treed in an earlier SCANFI year, but it is no longer forest land. LandR excludes cropland only
+  ## where its land cover names it (SCANFI v3); SCANFI v2 has no cropland class. On
+  ## WesternAlbertaUpland this keeps 37,950 pixels (about 219,000 ha) of cropland out of the forest.
+  LCClarge <- terra::lapp(
+    c(lcc, forestLand, cc2020),
+    usenames = FALSE,
+    fun = function(LCC, FL, CC) {
+      LCC[FL == 1 & !is.na(LCC) & !LCC %in% c(0, 20, 31, 81, 210, 220, 230) & !CC %in% 15L] <- 240L
+      LCC
+    }
+  )
 
   if (P(sim)$pixelSize != 30) {
     stopifnot(P(sim)$pixelSize %in% c(240, 120, 90))
@@ -699,11 +729,10 @@ InitMaps <- function(sim) {
   ##   15           cropland                                         <- v2 CC 5 (grassland for fire)
   ##   16, 18, 19   barren / water / snow-ice                        <- v2 CC 4 (dropped)
   ##   17           urban                                            <- NO v2 equivalent (see below)
-  ## The class groups are defined once, in `LandWebUtils::lcc2020_classes()`, so the remap, the
-  ## flammability map and the age check below cannot drift apart.
+  ## The class groups are defined once, in `LandWebUtils::lcc2020_classes()`, so the remap (which
+  ## the flammability map follows) and the age check below cannot drift apart.
   lccCC <- LandWebUtils::lcc2020_classes()
   treeClassesCC <- lccCC$forest
-  nonFlammClassesCC <- lccCC$nonFlammable ## barren, water, snow/ice
   ## Urban has no v2 counterpart: v2's CC layer had no urban class at all. It is sent to 99 so
   ## convertUnwantedLCC() imputes the nearest type -- the correct PRE-INDUSTRIAL treatment, since
   ## that land was forest. Measured footprint is small: 0.15% of the FMA reporting area at 240 m
@@ -746,6 +775,8 @@ InitMaps <- function(sim) {
   ## all-"5" filler is no longer needed (it existed because overlayLCCs cannot digest an all-NA
   ## CC layer: its internal pixelIndex join fails on logical vs integer columns).
   LandTypeCCfiller <- sim$LandTypeCC
+  ## the pixels with land cover before the overlay, which may make some of them non-vegetated (NA)
+  hasLandCover <- !is.na(terra::values(LCClarge, mat = FALSE))
   message("Overlaying land cover maps...")
   LCClarge <- overlayLCCs(
     LCCs = list(CC = LandTypeCCfiller, LCC = LCClarge),
@@ -759,11 +790,13 @@ InitMaps <- function(sim) {
     ## to another urban pixel's code, perpetuating the industrial footprint this step exists to
     ## remove (37% of urban landed on `30` before this change).
     ##
-    ## This is surgical rather than broad: genuine barren -- where SCANFI AND LCC 2020 agree
-    ## (`CC %in% c(16, 18, 19)`) -- is already sent to NA by `remapDT` above and is untouched here.
-    ## The only `30`s that survive to this point are pixels SCANFI reads as barren while LCC 2020
-    ## calls them vegetated or cropland, i.e. roads/clearings/industrial disturbance. Those are
-    ## exactly what should be reclassified, not donated from.
+    ## This is surgical rather than broad: every pixel LCC 2020 calls barren, water or snow/ice
+    ## (`CC %in% c(16, 18, 19)`) is sent to NA (non-vegetated) by `remapDT` above, unless it is
+    ## forest land without trees (240), and is untouched here. Before LandR 1.2.0.9061 overlayLCCs()
+    ## dropped the remap's NAs and kept SCANFI's class, so SCANFI forest on LCC 2020 water or barren
+    ## stayed forest. The only `30`s that survive to this point are pixels SCANFI reads as barren
+    ## while LCC 2020 calls them vegetated or cropland, i.e. roads/clearings/industrial disturbance.
+    ## Those are exactly what should be reclassified, not donated from.
     classesToReplace = c(P(sim)$treeClassesToReplace, 99L, 30L),
     availableERC_by_Sp = NULL
   ) |>
@@ -967,36 +1000,27 @@ InitMaps <- function(sim) {
 
   ## Flammability and Fire Return Interval rasters -----------------------------------------------
 
-  ## flammability map shouldn't be masked (no gaps!);
-  #    NAs outside the buffered study & snow/rock/ice area are the only values we want NA
-  #    use the LCC flammability map to fill in NA / nodata values
-
-  ## No data class is 5 -- these will be filled in by LCC layer
-  # NA_ids <- which(is.na(sim$LandTypeCC[]) | sim$LandTypeCC[] == 5)
-  ## Only class 4 is considered non-flammable
-  ## With no CC layer (LandTypeCC all NA), flammability comes entirely from the LCC map:
-  ## defineFlammable() errors on an all-NA layer, and the CC values would be fully overwritten
-  ## by LCC below anyway (LandTypeCCNA all TRUE). Only blend a CC-based layer when CC has data.
-  flammableMapLCC <- defineFlammable(
+  ## Flammability comes from the overlaid land cover the simulated forest comes from, as in the
+  ## LandR modules (scfm and fireSense call defineFlammable() on the land cover that
+  ## Biomass_borealDataPrep reads), so a forest pixel cannot be non-flammable. It used to come from
+  ## LCC 2020 alone: the pixels SCANFI calls forest and LCC 2020 water or barren (0.8% of the
+  ## WesternAlbertaUpland forest) had cohorts but never burned. Every vegetated class burns --
+  ## forest, shrubs, herbs and bryoids, as LCC 2020's shrub, grass, lichen-moss and wetland classes
+  ## (v2's CC class 3) did. The overlay makes LCC 2020 barren, water and snow/ice NA
+  ## (non-vegetated); water (20), rock (30), snow/ice (31) and no data (0) cover the pixels it
+  ## leaves with those codes. Non-vegetated pixels are 0, so NA remains only outside the land cover.
+  flammableMap <- defineFlammable(
     LCClarge,
-    nonFlammClasses = c(20, 30, 40, 80), ## see LCC classes above
+    nonFlammClasses = c(0L, 20L, 30L, 31L),
     mask = NULL,
     filename2 = NULL
-  )
-
-  if (all(LandTypeCCNA)) {
-    sim$flammableMap <- flammableMapLCC
-  } else {
-    flammableMapCC <- defineFlammable(
-      sim$LandTypeCC,
-      nonFlammClasses = nonFlammClassesCC, ## LCC 2020: barren, water, snow/ice
-      mask = NULL,
-      filename2 = NULL
-    )
-    sim$flammableMap <- flammableMapCC
-    sim$flammableMap[LandTypeCCNA] <- flammableMapLCC[LandTypeCCNA]
+  ) |>
+    terra::as.int()
+  flammableMap[which(hasLandCover & is.na(terra::values(LCClarge, mat = FALSE)))] <- 0L
+  if (!all(terra::values(flammableMap, mat = FALSE)[treePixelsLCC] %in% 1L)) {
+    stop("LandWeb_preamble: some forest pixels are not flammable.", call. = FALSE)
   }
-  sim$flammableMap <- terra::as.int(sim$flammableMap) |>
+  sim$flammableMap <- flammableMap |>
     terra::crop(sim$rasterToMatch) ## ensure it matches studyArea
 
   ## fireReturnInterval needs to be masked by flammableMap
