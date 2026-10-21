@@ -2972,8 +2972,8 @@ border-radius: 0px;
 
 
 <h1 class="title toc-ignore">LandWeb_preamble Manual</h1>
-<h3 class="subtitle">v.1.0.12</h3>
-<h4 class="date">Last updated: 2026-10-09</h4>
+<h3 class="subtitle">v.1.0.14</h3>
+<h4 class="date">Last updated: 2026-10-21</h4>
 
 </div>
 
@@ -3018,6 +3018,9 @@ max
 <th style="text-align:left;">
 paramDesc
 </th>
+<th style="text-align:left;">
+cacheKey
+</th>
 </tr>
 </thead>
 <tbody>
@@ -3040,6 +3043,9 @@ NA
 <td style="text-align:left;">
 Google Drive id of fRI Research’s <code>age_in2025.zip</code> current-condition stand-age composite (AB Crown AVI + AB AVIE + BC VEG_COMP 2025 + CanLAD, combined by <code>CellStatistics(MINIMUM, DATA)</code>). Update if the file is re-delivered.
 </td>
+<td style="text-align:left;">
+TRUE
+</td>
 </tr>
 <tr>
 <td style="text-align:left;">
@@ -3059,6 +3065,9 @@ NA
 </td>
 <td style="text-align:left;">
 File name, resolved under <code>inputPath(sim)</code>, of the NTEMS per-pixel forest age used to fill <code>age_in2025</code>‘s gaps outside AB/BC (where CanLAD is its only source and cannot date an undisturbed stand). Values are 0-150 years, 151 meaning’&gt;150’, and 255 non-treed. Deliberately NOT SCANFI, which would be circular and is 14-100x too low on old forest outside AB – see the fill block in <code>.inputObjects</code>. <code>NA</code> disables the fill and is allowed only where <code>age_in2025</code> alone meets <code>ccAgeMaxMissing</code>.
+</td>
+<td style="text-align:left;">
+TRUE
 </td>
 </tr>
 <tr>
@@ -3080,6 +3089,9 @@ NA
 <td style="text-align:left;">
 Vintage of <code>ntemsAgeFile</code>. The fill is aged forward to the <code>age_in2025</code> epoch by <code>2025 - ntemsAgeYear</code>; omitting that would put a step discontinuity along the AB/BC boundary. Must match the file actually supplied – NTEMS publishes several vintages of one product line (2019 and 2022 differ only in the disturbance window).
 </td>
+<td style="text-align:left;">
+TRUE
+</td>
 </tr>
 <tr>
 <td style="text-align:left;">
@@ -3099,6 +3111,9 @@ numeric
 </td>
 <td style="text-align:left;">
 Maximum percent of FOREST (LCC 2020 classes 1/2/5/6) inside the study area allowed to have no current-condition stand age before <code>LandWeb_preamble</code> stops. Measured: groups whose only age source is CanLAD sit near 74%; with the NTEMS fill, 0.8-12.8%. Raising this does not fix the data – it initialises a landscape with almost no old forest.
+</td>
+<td style="text-align:left;">
+TRUE
 </td>
 </tr>
 <tr>
@@ -3120,6 +3135,9 @@ NA
 <td style="text-align:left;">
 Ecological level whose units touching <code>studyArea</code> make <code>studyAreaANPP</code>, the area Biomass_speciesParameters takes permanent sample plots from to fit growth curves: ‘ecoprovince’ or ‘ecozone’. Ecozones hold more plots, so more species get growth curves of their own, fitted over a wider area.
 </td>
+<td style="text-align:left;">
+TRUE
+</td>
 </tr>
 <tr>
 <td style="text-align:left;">
@@ -3139,6 +3157,9 @@ numeric
 </td>
 <td style="text-align:left;">
 Study area buffer distance (m) used to make <code>studyArea</code>.
+</td>
+<td style="text-align:left;">
+TRUE
 </td>
 </tr>
 <tr>
@@ -3160,6 +3181,9 @@ numeric
 <td style="text-align:left;">
 Study area buffer distance (m) used to make <code>studyArea_biomassParam</code>.
 </td>
+<td style="text-align:left;">
+TRUE
+</td>
 </tr>
 <tr>
 <td style="text-align:left;">
@@ -3179,6 +3203,9 @@ NA
 </td>
 <td style="text-align:left;">
 <code>TRUE</code> forces all species to resprout, setting <code>resproutage_min</code> to zero, <code>resproutage_max</code> to 400, and <code>resproutProb</code> to 1.0.
+</td>
+<td style="text-align:left;">
+TRUE
 </td>
 </tr>
 <tr>
@@ -3200,6 +3227,9 @@ numeric
 <td style="text-align:left;">
 Multiplication factor for adjusting fire return intervals.
 </td>
+<td style="text-align:left;">
+TRUE
+</td>
 </tr>
 <tr>
 <td style="text-align:left;">
@@ -3219,6 +3249,9 @@ NA
 </td>
 <td style="text-align:left;">
 One of ‘aspen’, ‘high’, ‘none’, or ‘default’.
+</td>
+<td style="text-align:left;">
+TRUE
 </td>
 </tr>
 <tr>
@@ -3240,6 +3273,9 @@ NA
 <td style="text-align:left;">
 Should sliver polygons in LTHFC map be merged into nearest non-zero polygon?
 </td>
+<td style="text-align:left;">
+TRUE
+</td>
 </tr>
 <tr>
 <td style="text-align:left;">
@@ -3259,6 +3295,9 @@ numeric
 </td>
 <td style="text-align:left;">
 The value of fire return interval below which, pixels will be changed to <code>NA</code>, i.e., ignored
+</td>
+<td style="text-align:left;">
+TRUE
 </td>
 </tr>
 <tr>
@@ -3280,6 +3319,9 @@ NA
 <td style="text-align:left;">
 Pixel size in metres. Should be one of 240, 120, 90, 30.
 </td>
+<td style="text-align:left;">
+TRUE
+</td>
 </tr>
 <tr>
 <td style="text-align:left;">
@@ -3299,6 +3341,9 @@ NA
 </td>
 <td style="text-align:left;">
 Rate of spread preset to use. One of ‘default’ or ‘burny’.
+</td>
+<td style="text-align:left;">
+TRUE
 </td>
 </tr>
 <tr>
@@ -3320,6 +3365,9 @@ integer
 <td style="text-align:left;">
 AKA <code>forestedLCCClasses</code>. The classes in the <code>LCC</code> layer that are considered ‘trees’ from the perspective of LandR-Biomass.
 </td>
+<td style="text-align:left;">
+TRUE
+</td>
 </tr>
 <tr>
 <td style="text-align:left;">
@@ -3339,6 +3387,9 @@ NA
 </td>
 <td style="text-align:left;">
 The transient classes in the <code>LCC</code> layer that will become ‘trees’ from the perspective of LandR-Biomass (e.g., burned)
+</td>
+<td style="text-align:left;">
+TRUE
 </td>
 </tr>
 <tr>
@@ -3360,6 +3411,9 @@ NA
 <td style="text-align:left;">
 This describes the simulation time at which the first plot event should occur
 </td>
+<td style="text-align:left;">
+TRUE
+</td>
 </tr>
 <tr>
 <td style="text-align:left;">
@@ -3379,6 +3433,9 @@ NA
 </td>
 <td style="text-align:left;">
 This describes the simulation time interval between plot events
+</td>
+<td style="text-align:left;">
+TRUE
 </td>
 </tr>
 <tr>
@@ -3400,6 +3457,9 @@ NA
 <td style="text-align:left;">
 Passed to <code>types</code> in <code>Plots</code> (see <code>?Plots</code>). There are a few plots that are made within this module, if set. Note that plots (or their data) saving will ONLY occur at <code>end(sim)</code>. If <code>NA</code>, plotting is turned off completely (this includes plot saving).
 </td>
+<td style="text-align:left;">
+TRUE
+</td>
 </tr>
 <tr>
 <td style="text-align:left;">
@@ -3419,6 +3479,9 @@ NA
 </td>
 <td style="text-align:left;">
 This describes the simulation time at which the first save event should occur
+</td>
+<td style="text-align:left;">
+TRUE
 </td>
 </tr>
 <tr>
@@ -3440,6 +3503,9 @@ NA
 <td style="text-align:left;">
 This describes the simulation time interval between save events
 </td>
+<td style="text-align:left;">
+TRUE
+</td>
 </tr>
 <tr>
 <td style="text-align:left;">
@@ -3459,6 +3525,9 @@ NA
 </td>
 <td style="text-align:left;">
 Passed to <code>httr::config(ssl_verifypeer = P(sim)$sslVerify)</code> when downloading KNN (NFI) datasets. Set to 0L if necessary to bypass checking the SSL certificate (this may be necessary when NFI’s website SSL certificate is not correctly configured).
+</td>
+<td style="text-align:left;">
+TRUE
 </td>
 </tr>
 <tr>
@@ -3480,6 +3549,9 @@ NA
 <td style="text-align:left;">
 Human-readable name for the study area used. If <code>NA</code>, a hash of <code>studyArea_biomassParam</code> will be used.
 </td>
+<td style="text-align:left;">
+TRUE
+</td>
 </tr>
 <tr>
 <td style="text-align:left;">
@@ -3499,6 +3571,9 @@ NA
 </td>
 <td style="text-align:left;">
 Should this entire module be run with caching activated? This is generally intended for data-type modules, where stochasticity and time are not relevant
+</td>
+<td style="text-align:left;">
+TRUE
 </td>
 </tr>
 </tbody>
