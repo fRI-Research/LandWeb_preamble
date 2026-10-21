@@ -814,7 +814,9 @@ InitMaps <- function(sim) {
   message("...done.")
 
   treePixelsLCC <- which(LCClarge[] %in% P(sim)$treeClassesLCC)
-  nonTreePixels <- which(LCClarge[] %in% nontreeClassesLCC)
+  ## the pixels the overlay made non-vegetated (NA) are not trees either; before LandR 1.2.0.9061
+  ## they kept their SCANFI class, mostly water (20) or rock (30), so this list caught them
+  nonTreePixels <- which(LCClarge[] %in% nontreeClassesLCC | (hasLandCover & is.na(LCClarge[])))
 
   sim$nonTreePixels <- nonTreePixels
 
