@@ -779,7 +779,12 @@ InitMaps <- function(sim) {
   ## LandTypeCC now carries real data (Canada LCC 2020), so the all-NA workaround that forced an
   ## all-"5" filler is no longer needed (it existed because overlayLCCs cannot digest an all-NA
   ## CC layer: its internal pixelIndex join fails on logical vs integer columns).
-  LandTypeCCfiller <- sim$LandTypeCC
+  ## Only where SCANFI has a class: SCANFI is masked to the study area but LCC 2020 is only cropped,
+  ## and the remap sends a pixel with no SCANFI class and LCC 2020 forest or urban to 99.
+  ## overlayLCCs() never re-imputes a pixel with no class of its own, so those stayed 99 (957,299
+  ## pixels outside the WesternAlbertaUpland polygon, 1,683 on its edge), and Biomass_borealDataPrep
+  ## skips its site and composition step when rstLCC holds a code it does not know.
+  LandTypeCCfiller <- terra::mask(sim$LandTypeCC, LCClarge)
   ## the pixels with land cover before the overlay, which may make some of them non-vegetated (NA)
   hasLandCover <- !is.na(terra::values(LCClarge, mat = FALSE))
   message("Overlaying land cover maps...")
