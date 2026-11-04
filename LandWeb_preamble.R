@@ -19,7 +19,7 @@ defineModule(
       )
     ),
     childModules = character(0),
-    version = list(LandWeb_preamble = "1.0.14"),
+    version = list(LandWeb_preamble = "1.0.15"),
     timeframe = as.POSIXlt(c(NA, NA)),
     timeunit = "year",
     citation = list("citation.bib"),
@@ -50,6 +50,20 @@ defineModule(
       "PredictiveEcology/reproducible@development (>= 1.2.16.9024)"
     ),
     parameters = rbind(
+      defineParameter(
+        "dataYear",
+        "numeric",
+        2020,
+        NA,
+        NA,
+        paste(
+          "Year of the SCANFI v2 land cover that `rstLCC` and `rasterToMatch` are built from;",
+          "forest land without trees in that year becomes 240. Set it to",
+          "Biomass_borealDataPrep's `dataYear`, so the land cover is from the year of the SCANFI",
+          "biomass and species cover that dataPrep reads. One of 1985, 1995, 2005, 2015, 2020 or",
+          "2025."
+        )
+      ),
       defineParameter(
         "ccAgeDriveId",
         "character",
@@ -567,16 +581,37 @@ InitMaps <- function(sim) {
   ## BYPASS LandR::prepInputs_SCANFI_LCC_FAO: its FAO step -- prepInputs(fao, to = lcc) --
   ## makes reproducible reproject the WHOLE 840 MB Canada-wide FAO (>50 min) instead of
   ## cropping first. Keep its (fast) SCANFI LCC load, align the FAO windowed (~2 s), then
-  ## relabel the forest land that is not treed in 2020 as 240, with LandR's rules as of
+  ## relabel the forest land that is not treed in `dataYear` as 240, with LandR's rules as of
   ## LandR#228 and #251 (see below).
   ## TODO: move into a LandWebUtils helper (e.g. prepInputs_SCANFI_LCC_FAO_fast).
   ## download only (SCANFI via SA/GOOGLEDRIVE_AUTH, FAO via http), then crop both layers
   ## windowed ourselves. The FAO MUST be windowed before reprojecting or reproducible warps
   ## the whole ~840 MB Canada-wide raster (>50 min); see LandR::prepInputs_SCANFI_LCC_FAO.
   ## SCANFI LCC cropped the same way for consistency/speed.
+  ## Drive ids of SCANFI v2 land cover in Canada LCC codes, by year (the same ids as LandR's
+  ## SCANFI mirror manifest). `dataYear` picks the year the land cover is from; the forest-land
+  ## years are below. Every year is on one 30 m grid, so a crop aligns them.
+  scanfiLCCIds <- c(
+    "1985" = "1iAEEpkVofQBggIJaxwXKcKADU3zka7Wh",
+    "1995" = "15pvm2h9X6dreC9rKuC3oxr4c3hHsYRkI",
+    "2005" = "1eKNGWrwGEFRFOK2TLVXldfd8hB3OsbSG",
+    "2015" = "1olWPzlM2SfMC8Fq_uXslJfYIINAd4wGP",
+    "2020" = "1EGp7LUA7cXMR6KpXDmu617xsjwGM6aIx",
+    "2025" = "1eb1zEWC3VRycA_aRzTB2ODhWDLZis-YG"
+  )
+  scanfiLCCFile <- function(y) {
+    paste0("SCANFI_att_nfiLandcover_CanadaLCCclassCodes_", y, "_v2_20260119.tif")
+  }
+  lccYear <- as.character(P(sim)$dataYear)
+  if (!lccYear %in% names(scanfiLCCIds)) {
+    stop(
+      "`dataYear` must be one of ", paste(names(scanfiLCCIds), collapse = ", "),
+      " (the SCANFI v2 land-cover years this module has Drive ids for), not ", P(sim)$dataYear
+    )
+  }
   reproducible::preProcess(
-    url = "https://drive.google.com/file/d/1EGp7LUA7cXMR6KpXDmu617xsjwGM6aIx",
-    targetFile = "SCANFI_att_nfiLandcover_CanadaLCCclassCodes_2020_v2_20260119.tif",
+    url = paste0("https://drive.google.com/file/d/", scanfiLCCIds[[lccYear]]),
+    targetFile = scanfiLCCFile(lccYear),
     destinationPath = mod$dPath
   )
   ## The companions are named rather than "similar": beside a url, "similar" also makes
@@ -596,10 +631,7 @@ InitMaps <- function(sim) {
   )$targetFilePath
   ## study area as a SpatVector for the windowed crops below
   sa <- terra::vect(sf::st_as_sf(sim$studyArea_biomassParam))
-  lcc <- terra::rast(file.path(
-    mod$dPath,
-    "SCANFI_att_nfiLandcover_CanadaLCCclassCodes_2020_v2_20260119.tif"
-  ))
+  lcc <- terra::rast(file.path(mod$dPath, scanfiLCCFile(lccYear)))
   lcc <- terra::crop(lcc, terra::project(sa, terra::crs(lcc)), mask = TRUE) |>
     terra::as.int()
   fao <- terra::rast(faoFile)
@@ -608,17 +640,10 @@ InitMaps <- function(sim) {
   ## Forest land, as LandR#228 decides it: ground the FAO 2022 forest layer calls forest (code 1,
   ## treed; code 2, opened by fire or harvest since 1984) or that SCANFI shows treed in any of
   ## LandR's default forest-land years (one per decade and the latest). FAO 2019 code 2 alone,
-  ## the rule before, dropped every stand that had grown back by 2019. The SCANFI years are on
-  ## the 2020 grid, so a crop aligns them.
-  scanfiLCCIds <- c(
-    "1985" = "1iAEEpkVofQBggIJaxwXKcKADU3zka7Wh",
-    "1995" = "15pvm2h9X6dreC9rKuC3oxr4c3hHsYRkI",
-    "2005" = "1eKNGWrwGEFRFOK2TLVXldfd8hB3OsbSG",
-    "2015" = "1olWPzlM2SfMC8Fq_uXslJfYIINAd4wGP",
-    "2025" = "1eb1zEWC3VRycA_aRzTB2ODhWDLZis-YG"
-  )
-  lccYears <- lapply(names(scanfiLCCIds), function(y) {
-    tf <- paste0("SCANFI_att_nfiLandcover_CanadaLCCclassCodes_", y, "_v2_20260119.tif")
+  ## the rule before, dropped every stand that had grown back by 2019.
+  forestLandYears <- c("1985", "1995", "2005", "2015", "2025")
+  lccYears <- lapply(forestLandYears, function(y) {
+    tf <- scanfiLCCFile(y)
     reproducible::preProcess(
       url = paste0("https://drive.google.com/file/d/", scanfiLCCIds[[y]]),
       targetFile = tf,
@@ -655,8 +680,8 @@ InitMaps <- function(sim) {
     terra::project(lcc, method = "near") |>
     terra::as.int()
 
-  ## Forest land without trees in 2020 becomes 240 (disturbed). Water (20), snow/ice (31) and 0
-  ## (no data) keep their class, as in LandR#251: a lake or a glacier is not forest without trees.
+  ## Forest land without trees in `dataYear` becomes 240 (disturbed). Water (20), snow/ice (31) and
+  ## 0 (no data) keep their class, as in LandR#251: a lake or a glacier is not forest without trees.
   ## Nor does land LCC 2020 calls cropland (15) become 240: land cleared for farming since 1985 is
   ## treed in an earlier SCANFI year, but it is no longer forest land. LandR excludes cropland only
   ## where its land cover names it (SCANFI v3); SCANFI v2 has no cropland class. On
