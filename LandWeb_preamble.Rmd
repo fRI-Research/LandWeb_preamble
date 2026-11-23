@@ -21,7 +21,7 @@ always_allow_html: true
 # *LandWeb_preamble* Module
 
 <!-- the following are text references used in captions for LaTeX compatibility -->
-(ref:LandWeb_preamble) *LandWeb_preamble*
+(ref:LandWeb-preamble) *LandWeb_preamble*
 
 ```{r setup-LandWeb_preamble, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE, eval = FALSE, message = FALSE, warning = FALSE, results = "hold")
@@ -45,6 +45,27 @@ if (isTRUE(Sys.getenv("R_USE_REQUIRE"))) {
 ### Module summary
 
 Set up study areas and parameters for LandWeb simulations.
+
+### Events
+
+```{r eventFlowCheck-LandWeb-preamble, include = FALSE, eval = TRUE, cache = FALSE}
+## the generated figures need SpaDES.core 3.2.1.9068 or later; older versions skip them
+.efOK <- utils::packageVersion("SpaDES.core") >= "3.2.1.9068"
+```
+
+```{r eventFlow-LandWeb-preamble, echo = FALSE, eval = .efOK, cache = FALSE, out.width = "100%", fig.pos = "H", fig.cap = "(ref:LandWeb-preamble) events, as read from the module code with its default parameters."}
+ef <- tryCatch(SpaDES.core::moduleEventFlow("LandWeb_preamble", path = ".."), error = function(e) e)
+SpaDES.core::includeModuleEventFlow(ef, "figures/LandWeb_preamble_eventFlow.png")
+```
+
+```{r eventObjects-LandWeb-preamble, echo = FALSE, eval = .efOK, cache = FALSE}
+SpaDES.core::kableModuleObjects(ef, caption = "Where each object of (ref:LandWeb-preamble) is written and read, in run order.",
+                                lead = "Table \\@ref(tab:eventObjects-LandWeb-preamble) lists, for each object, the code that writes it and the code that only reads it.")
+```
+
+```{r eventFigures-LandWeb-preamble, echo = FALSE, eval = .efOK, cache = FALSE, results = "asis"}
+SpaDES.core::moduleEventFigures(ef, figDir = "figures", level = 4)
+```
 
 ## Parameters
 
