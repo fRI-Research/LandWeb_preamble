@@ -1,7 +1,7 @@
 ---
 title: "LandWeb_preamble Manual"
 subtitle: "v.1.0.15"
-date: "Last updated: 2026-11-13"
+date: "Last updated: 2026-11-24"
 output:
   bookdown::html_document2:
     toc: true
@@ -21,7 +21,7 @@ always_allow_html: true
 # *LandWeb_preamble* Module
 
 <!-- the following are text references used in captions for LaTeX compatibility -->
-(ref:LandWeb_preamble) *LandWeb_preamble*
+(ref:LandWeb-preamble) *LandWeb_preamble*
 
 
 
@@ -35,6 +35,156 @@ Eliot J B McIntire <eliot.mcintire@nrcan-rncan.gc.ca> [aut], Alex M. Chubaty <ac
 ### Module summary
 
 Set up study areas and parameters for LandWeb simulations.
+
+### Events
+
+
+
+<div class="figure">
+<img src="figures/LandWeb_preamble_eventFlow.png" alt="(ref:LandWeb-preamble) events, as read from the module code with its default parameters." width="100%" />
+<p class="caption">(\#fig:eventFlow-LandWeb-preamble)(ref:LandWeb-preamble) events, as read from the module code with its default parameters.</p>
+</div>
+
+Table \@ref(tab:eventObjects-LandWeb-preamble) lists, for each object, the code that writes it and the code that only reads it.
+
+<table class="table" style="width: auto !important; border-bottom: 0;">
+<caption>(\#tab:eventObjects-LandWeb-preamble)Where each object of (ref:LandWeb-preamble) is written and read, in run order.</caption>
+ <thead>
+  <tr>
+   <th style="text-align:left;"> Object </th>
+   <th style="text-align:left;"> Written by </th>
+   <th style="text-align:left;"> Read by </th>
+  </tr>
+ </thead>
+<tbody>
+  <tr grouplength="20"><td colspan="3" style="border-bottom: 1px solid;"><strong>Outputs</strong></td></tr>
+<tr>
+   <td style="text-align:left;padding-left: 2em;" indentlevel="1"> fireReturnInterval </td>
+   <td style="text-align:left;"> init: InitMaps() </td>
+   <td style="text-align:left;">  </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;padding-left: 2em;" indentlevel="1"> flammableMap </td>
+   <td style="text-align:left;"> init: InitMaps() </td>
+   <td style="text-align:left;">  </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;padding-left: 2em;" indentlevel="1"> LandTypeCC </td>
+   <td style="text-align:left;"> init: InitMaps() </td>
+   <td style="text-align:left;">  </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;padding-left: 2em;" indentlevel="1"> LandTypeCC_reporting </td>
+   <td style="text-align:left;"> init: InitMaps() </td>
+   <td style="text-align:left;">  </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;padding-left: 2em;" indentlevel="1"> LCC </td>
+   <td style="text-align:left;"> init: InitMaps() </td>
+   <td style="text-align:left;">  </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;padding-left: 2em;" indentlevel="1"> nonTreePixels </td>
+   <td style="text-align:left;"> init: InitMaps() </td>
+   <td style="text-align:left;">  </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;padding-left: 2em;" indentlevel="1"> rasterToMatch </td>
+   <td style="text-align:left;"> init: InitMaps() </td>
+   <td style="text-align:left;">  </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;padding-left: 2em;" indentlevel="1"> rasterToMatch_biomassParam </td>
+   <td style="text-align:left;"> init: InitMaps() </td>
+   <td style="text-align:left;">  </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;padding-left: 2em;" indentlevel="1"> rasterToMatchReporting </td>
+   <td style="text-align:left;"> init: InitMaps() </td>
+   <td style="text-align:left;">  </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;padding-left: 2em;" indentlevel="1"> rstLCC </td>
+   <td style="text-align:left;"> init: InitMaps() </td>
+   <td style="text-align:left;">  </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;padding-left: 2em;" indentlevel="1"> standAgeMap </td>
+   <td style="text-align:left;"> init: InitMaps() </td>
+   <td style="text-align:left;">  </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;padding-left: 2em;" indentlevel="1"> studyArea </td>
+   <td style="text-align:left;"> init: InitMaps() </td>
+   <td style="text-align:left;">  </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;padding-left: 2em;" indentlevel="1"> studyArea_biomassParam </td>
+   <td style="text-align:left;"> init: InitMaps() </td>
+   <td style="text-align:left;">  </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;padding-left: 2em;" indentlevel="1"> studyAreaANPP </td>
+   <td style="text-align:left;"> init: InitMaps() </td>
+   <td style="text-align:left;">  </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;padding-left: 2em;" indentlevel="1"> studyAreaLandWeb </td>
+   <td style="text-align:left;"> init: InitMaps() </td>
+   <td style="text-align:left;">  </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;padding-left: 2em;" indentlevel="1"> studyAreaReporting </td>
+   <td style="text-align:left;"> init: InitMaps() </td>
+   <td style="text-align:left;">  </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;padding-left: 2em;" indentlevel="1"> speciesTable </td>
+   <td style="text-align:left;"> init: InitSpecies() </td>
+   <td style="text-align:left;">  </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;padding-left: 2em;" indentlevel="1"> sppColorVect </td>
+   <td style="text-align:left;"> init: InitSpecies() </td>
+   <td style="text-align:left;">  </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;padding-left: 2em;" indentlevel="1"> sppEquiv </td>
+   <td style="text-align:left;"> init: InitSpecies() </td>
+   <td style="text-align:left;">  </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;padding-left: 2em;" indentlevel="1"> ROSTable </td>
+   <td style="text-align:left;"> init: InitLandMine() </td>
+   <td style="text-align:left;">  </td>
+  </tr>
+</tbody>
+<tfoot><tr><td style="padding: 0; " colspan="100%">
+<sup></sup> Not traced to any code (e.g. reached indirectly): CC TSF.</td></tr></tfoot>
+</table>
+
+
+#### InitMaps() {-}
+
+init event, step 1 of 3
+
+![](figures/LandWeb_preamble_io_init_InitMaps.png){width=100%}
+
+
+
+#### InitSpecies() {-}
+
+init event, step 2 of 3
+
+![](figures/LandWeb_preamble_io_init_InitSpecies.png){width=100%}
+
+
+
+#### InitLandMine() {-}
+
+init event, step 3 of 3
+
+![](figures/LandWeb_preamble_io_init_InitLandMine.png){width=100%}
 
 ## Parameters
 
