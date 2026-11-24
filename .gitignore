@@ -1,2 +1,5 @@
 
 LandWeb_preamble2.Rmd
+
+# rendered locally; CI commits only the .md
+LandWeb_preamble.html
