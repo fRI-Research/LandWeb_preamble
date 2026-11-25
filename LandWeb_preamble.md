@@ -1,6 +1,6 @@
 ---
 title: "LandWeb_preamble Manual"
-subtitle: "v.1.0.16"
+subtitle: "v.1.0.17"
 date: "Last updated: 2026-11-25"
 output:
   bookdown::html_document2:
@@ -276,30 +276,12 @@ Provide a summary of user-visible parameters.
    <td style="text-align:left;"> TRUE </td>
   </tr>
   <tr>
-   <td style="text-align:left;"> forceResprout </td>
-   <td style="text-align:left;"> logical </td>
-   <td style="text-align:left;"> FALSE </td>
-   <td style="text-align:left;"> NA </td>
-   <td style="text-align:left;"> NA </td>
-   <td style="text-align:left;"> `TRUE` forces all species to resprout, setting `resproutage_min` to zero, `resproutage_max` to 400, and `resproutProb` to 1.0. </td>
-   <td style="text-align:left;"> TRUE </td>
-  </tr>
-  <tr>
    <td style="text-align:left;"> friMultiple </td>
    <td style="text-align:left;"> numeric </td>
    <td style="text-align:left;"> 1 </td>
    <td style="text-align:left;"> 0.5 </td>
    <td style="text-align:left;"> 2 </td>
    <td style="text-align:left;"> Multiplication factor for adjusting fire return intervals. </td>
-   <td style="text-align:left;"> TRUE </td>
-  </tr>
-  <tr>
-   <td style="text-align:left;"> dispersalType </td>
-   <td style="text-align:left;"> character </td>
-   <td style="text-align:left;"> default </td>
-   <td style="text-align:left;"> NA </td>
-   <td style="text-align:left;"> NA </td>
-   <td style="text-align:left;"> One of 'aspen', 'high', 'none', or 'default'. </td>
    <td style="text-align:left;"> TRUE </td>
   </tr>
   <tr>
