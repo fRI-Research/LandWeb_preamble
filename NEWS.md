@@ -2,6 +2,7 @@ Known issues: <https://github.com/fRI-Research/LandWeb_preamble/issues>
 
 # LandWeb_preamble (development version)
 
+* Removed the parameters `forceResprout` and `dispersalType` (1.0.17). Nothing has read them since September 2025, when the v2 resprouting and seed-dispersal settings they chose were removed, so setting them changed nothing. A project that still passes them should drop them.
 * `reqdPkgs` no longer lists the map package, which the module never called (1.0.16).
 * The README shows the module's events, the objects each reads and writes, and a figure per event, generated from the code (needs SpaDES.core 3.2.1.9068 or later; older versions leave them out).
 * New parameter `dataYear` (default 2020, as before): the year of the SCANFI v2 land cover that `rstLCC` and `rasterToMatch` are built from, and whose forest land without trees becomes 240 (1.0.15). Set it to Biomass_borealDataPrep's `dataYear`: with 2020 land cover and 2025 biomass and species cover, forest burned or harvested after 2020 keeps a forest class while its biomass and cover are a young stand's. One of 1985, 1995, 2005, 2015, 2020 or 2025; the forest-land years and the LCC 2020 cropland rule are unchanged.

@@ -58,8 +58,8 @@ test_that("parameters are the expected names", {
     c(
       ".plotInitialTime", ".plotInterval", ".plots", ".saveInitialTime",
       ".saveInterval", ".sslVerify", ".studyAreaName", ".useCache", "anppEcoLevel", "bufferDist",
-      "bufferDistLarge", "ccAgeDriveId", "ccAgeMaxMissing", "dataYear", "dispersalType",
-      "forceResprout", "friMultiple", "mergeSlivers", "minFRI", "ntemsAgeFile",
+      "bufferDistLarge", "ccAgeDriveId", "ccAgeMaxMissing", "dataYear", "friMultiple",
+      "mergeSlivers", "minFRI", "ntemsAgeFile",
       "ntemsAgeYear", "pixelSize", "ROStype", "treeClassesLCC", "treeClassesToReplace"
 )
   )

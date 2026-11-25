@@ -19,7 +19,7 @@ defineModule(
       )
     ),
     childModules = character(0),
-    version = list(LandWeb_preamble = "1.0.16"),
+    version = list(LandWeb_preamble = "1.0.17"),
     timeframe = as.POSIXlt(c(NA, NA)),
     timeunit = "year",
     citation = list("citation.bib"),
@@ -146,31 +146,12 @@ defineModule(
         "Study area buffer distance (m) used to make `studyArea_biomassParam`."
       ),
       defineParameter(
-        "forceResprout",
-        "logical",
-        FALSE,
-        NA,
-        NA,
-        paste(
-          "`TRUE` forces all species to resprout, setting `resproutage_min` to zero,",
-          "`resproutage_max` to 400, and `resproutProb` to 1.0."
-        )
-      ),
-      defineParameter(
         "friMultiple",
         "numeric",
         1.0,
         0.5,
         2.0,
         "Multiplication factor for adjusting fire return intervals."
-      ),
-      defineParameter(
-        "dispersalType",
-        "character",
-        "default",
-        NA,
-        NA,
-        "One of 'aspen', 'high', 'none', or 'default'."
       ),
       defineParameter(
         "mergeSlivers",
