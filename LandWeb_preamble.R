@@ -19,7 +19,7 @@ defineModule(
       )
     ),
     childModules = character(0),
-    version = list(LandWeb_preamble = "1.0.15"),
+    version = list(LandWeb_preamble = "1.0.16"),
     timeframe = as.POSIXlt(c(NA, NA)),
     timeunit = "year",
     citation = list("citation.bib"),
@@ -45,7 +45,6 @@ defineModule(
       "FOR-CAST/workflowtools@development",
       "PredictiveEcology/LandR@development (>= 1.2.0.9061)",
       "PredictiveEcology/LandWebUtils@development (>= 1.0.3.9049)", ## lcc2020_remap_table() rule order
-      "PredictiveEcology/map@development (>= 0.0.5)",
       "PredictiveEcology/pemisc@development (>= 0.0.3.9007)",
       "PredictiveEcology/reproducible@development (>= 1.2.16.9024)"
     ),
