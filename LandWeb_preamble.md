@@ -1,7 +1,7 @@
 ---
 title: "LandWeb_preamble Manual"
-subtitle: "v.1.0.15"
-date: "Last updated: 2026-11-24"
+subtitle: "v.1.0.16"
+date: "Last updated: 2026-11-25"
 output:
   bookdown::html_document2:
     toc: true
